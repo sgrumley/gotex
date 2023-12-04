@@ -17,8 +17,10 @@ type menuItem struct {
 }
 
 type model struct {
-	Menu         []menuItem
-	CurrentIndex int // Index of the currently selected item
+	Menu                []menuItem
+	CurrentIndex        int  // Index of the currently selected item in the main menu
+	CurrentSubmenuIndex int  // Index of the currently selected item in the submenu
+	InSubmenu           bool // Flag to indicate if the user is currently in a submenu
 }
 
 func Driver() {
@@ -49,17 +51,21 @@ func (m model) View() string {
 	s.WriteString("Menu:\n\n")
 
 	for i, item := range m.Menu {
-		// Render menu item
+		// Render main menu item
 		prefix := " "
-		if i == m.CurrentIndex {
+		if i == m.CurrentIndex && !m.InSubmenu {
 			prefix = ">"
 		}
 		s.WriteString(fmt.Sprintf("%s %s\n", prefix, item.Title))
 
-		// Render children if expanded
+		// Render submenu items if expanded
 		if item.Expanded {
-			for _, child := range item.Children {
-				s.WriteString(fmt.Sprintf("  - %s\n", child.Title))
+			for j, subitem := range item.Children {
+				subprefix := "  "
+				if j == m.CurrentSubmenuIndex && m.InSubmenu && i == m.CurrentIndex {
+					subprefix = "> "
+				}
+				s.WriteString(fmt.Sprintf("%s%s\n", subprefix, subitem.Title))
 			}
 		}
 	}
@@ -72,19 +78,43 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "j", "down":
-			// Handle down key
-			if m.CurrentIndex < len(m.Menu)-1 {
+			if m.InSubmenu {
+				// Navigate within the submenu
+				if m.CurrentSubmenuIndex < len(m.Menu[m.CurrentIndex].Children)-1 {
+					m.CurrentSubmenuIndex++
+				}
+			} else if m.Menu[m.CurrentIndex].Expanded {
+				// Enter the submenu
+				m.InSubmenu = true
+				m.CurrentSubmenuIndex = 0
+			} else if m.CurrentIndex < len(m.Menu)-1 {
+				// Navigate in the main menu
 				m.CurrentIndex++
 			}
 		case "k", "up":
-			// Handle up key
-			if m.CurrentIndex > 0 {
+			if m.InSubmenu {
+				// Navigate within the submenu
+				if m.CurrentSubmenuIndex > 0 {
+					m.CurrentSubmenuIndex--
+				}
+			} else if m.CurrentIndex > 0 {
+				// Navigate in the main menu
 				m.CurrentIndex--
 			}
-		case "enter", "o":
-			// Toggle expansion of submenu
-			if len(m.Menu[m.CurrentIndex].Children) > 0 {
+		case "enter":
+			// Toggle expansion and navigation of submenu
+			if m.InSubmenu {
+				// Handle submenu item selection
+				// (You can add actions here for when a submenu item is selected)
+				m.InSubmenu = false
+			} else if len(m.Menu[m.CurrentIndex].Children) > 0 {
 				m.Menu[m.CurrentIndex].Expanded = !m.Menu[m.CurrentIndex].Expanded
+			}
+		case "esc":
+			// Exit submenu
+			if m.InSubmenu {
+				m.InSubmenu = false
+				m.CurrentSubmenuIndex = 0
 			}
 		case "q":
 			os.Exit(1)
