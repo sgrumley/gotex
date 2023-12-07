@@ -7,7 +7,6 @@ use this to cat the subtests: cat internal/jwt/writer_test.go | rg name:
 use this to get all the test files fzf --filter _test.go
 
 main components:
-  closest project layout https://github.com/SaltFishPr/redis-viewer
   https://github.com/mistakenelf/fm
   sub menus
   test output
@@ -21,3 +20,7 @@ things to considers:
 
 might be able to have a setup like lazygit where folders are top left, tests are middle left, results are bottom left??
 https://github.com/dlvhdr/gh-dash -> could use
+
+Current Tasks:
+  - set viewports width and heights
+  - navigate between panels
