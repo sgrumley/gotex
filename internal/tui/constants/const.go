@@ -21,7 +21,7 @@ var (
 	AlertStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(CatpFlavor.Peach().Hex)).Render
 )
 
-type keymap struct {
+type Keymap struct {
 	Run      key.Binding
 	Enter    key.Binding
 	Help     key.Binding
@@ -30,7 +30,7 @@ type keymap struct {
 	Quit     key.Binding
 }
 
-var Keymap = keymap{
+var Keymaps = Keymap{
 	Run: key.NewBinding(
 		key.WithKeys("r"),
 		key.WithHelp("r", "run"),

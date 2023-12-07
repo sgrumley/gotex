@@ -7,7 +7,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 
-	"sgrumley/test-tui/tui/constants"
+	"sgrumley/test-tui/internal/tui/constants"
 )
 
 func StartTea() error {
@@ -23,11 +23,17 @@ func StartTea() error {
 		}()
 	}
 
-	m, _ := InitProject()
+	m := initModel()
+	// constants.P = tea.NewProgram(m, tea.WithAltScreen())
 	constants.P = tea.NewProgram(m, tea.WithAltScreen())
+	fmt.Println(constants.P)
 	if _, err := constants.P.Run(); err != nil {
 		fmt.Println("error running program: ", err)
 		os.Exit(1)
 	}
+	return nil
+}
+
+func (m model) Init() tea.Cmd {
 	return nil
 }

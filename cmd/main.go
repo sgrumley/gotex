@@ -1,12 +1,17 @@
 package main
 
 import (
-	"sgrumley/test-tui/gpt"
+	"log"
+
+	"sgrumley/test-tui/internal/tui"
 )
 
 func main() {
 	// menu, projectName := data.LoadDummyData()
 	// fmt.Println(projectName)
 	// data.PrintMenu(menu, 0)
-	gpt.Driver()
+	err := tui.StartTea()
+	if err != nil {
+		log.Fatalf("failed to start: %v", err)
+	}
 }
