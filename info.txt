@@ -2,8 +2,9 @@ Notes:
 use charm/log https://github.com/charmbracelet/log
 https://pkg.go.dev/cmd/go/internal/test make use of `go test -json` then parse the output and clean
 
+run all tests with a 0.01 timeout
+  or
 use this to cat the subtests: cat internal/jwt/writer_test.go | rg name:
-
 use this to get all the test files fzf --filter _test.go
 
 main components:
