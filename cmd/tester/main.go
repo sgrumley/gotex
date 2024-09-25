@@ -1,28 +1,25 @@
 package main
 
 import (
-	"sgrumley/test-tui/internal/finder"
+	// "sgrumley/test-tui/internal/finder"
+	"sgrumley/test-tui/internal/runner"
 )
 
 func main() {
 
-	project := finder.InitProject()
-	project.PrettyPrint()
-	// testpath := "./testdata/case_test.go"
-	// _, err := finder.ListAll(testpath)
-	// if err != nil {
-	// 	log.Fatalf("failed finding tests: %s", err)
-	// }
+	// project := finder.InitProject()
+	// project.PrettyPrint()
 
-	// TODO: these functions may need new implementations since the existing functionality requires passing in ast types
+	runner.RunTest()
+	// config -> InitProject -> fzf -> runner
 
-	// _, err := finder.ListFunctions(testpath)
-	// if err != nil {
-	// 	log.Fatalf("failed finding test functions")
-	// }
-
-	// _, err := finder.ListTestCases(testpath, testFunction)
-	// if err != nil {
-	// 	log.Fatalf("failed finding test functions")
-	// }
+	// TODO:
+	// - setup config
+	//		- allow project param or cwd
+	//		- configure defaults (tc.Name, prettyPrint, ...)
+	// - use fzf (as lib) to allow searching tests (this will be the interface for this repo, TUIs and other plugins can import the libs)
+	//		- when selecting a test it should run
+	//		- cntrl j,k or up down
+	//		- enter to run
+	//- how nice can I make results look in just the terminal
 }
