@@ -3,120 +3,154 @@ package finder
 import (
 	"fmt"
 	"go/ast"
-	"go/parser"
-	"go/token"
-	"strings"
+	"log"
 )
 
-/*
-	filePath := "../retina/mono/internal/services/project/v1/service_test.go"
-	_, err := finder.FindSubTests(filePath)
+type Project struct {
+	RootDir string
+	Files   []*File
+}
+
+type File struct {
+	Name      string
+	Path      string
+	Functions []Function
+}
+
+type Function struct {
+	Name    string
+	Cases   []Case
+	decl    *ast.FuncDecl
+	VarName string
+}
+
+type Case struct {
+	Name string
+}
+
+func InitProject() *Project {
+	projectRoot, err := FindGoProjectRoot()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to find project root: %s", err)
 	}
-*/
 
-func FindSubTests(filePath string) (map[string][]string, error) {
-	fset := token.NewFileSet()
-
-	// Parse the file
-	node, err := parser.ParseFile(fset, filePath, nil, parser.AllErrors)
+	files, err := ListTestFilesWithCWD()
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse file %s: %v", filePath, err)
+		log.Fatalf("failed finding any test files: %s", err)
 	}
 
-	// var subtests []string
-	subtests := make(map[string][]string)
-
-	// Walk the AST and find subtests (t.Run)
-	ast.Inspect(node, func(n ast.Node) bool {
-		// Check all call expressions (function calls)
-		if callExpr, ok := n.(*ast.CallExpr); ok {
-			// Check if the function being called is `t.Run`
-			if selExpr, ok := callExpr.Fun.(*ast.SelectorExpr); ok && selExpr.Sel.Name == "Run" {
-				// Get the parent function (this is intended to be the test function containing the subtests)
-				fn := findEnclosingFunction(node, callExpr)
-				fmt.Println("parent func: ", fn.Name)
-				if fn == nil {
-					return true // Skip if no enclosing function found
-				}
-
-				// Extract the subtest variable name (this should be something like tc.name where tc is the stuct and name is the attribute provided to t.Run(tc.name, ...))
-				subtestName := extractSubtestVariableName(callExpr.Args[0])
-				fmt.Println("test case variable name: ", subtestName)
-
-				// setting a default that I use, probably needs better error handling in general
-				// structName := "tc"
-				caseName := "name"
-
-				subtestNameSplit := strings.Split(subtestName, ".")
-				if len(subtestNameSplit) == 2 {
-					// structName = subtestNameSplit[0]
-					caseName = subtestNameSplit[1]
-				} else {
-					fmt.Println("failed identifying struct.name, defaulting to tc.name")
-				}
-
-				// TODO: add the name of the struct back in for validation
-				// tcNames := findValuesOfIndexedField(fn, "tc", "name")
-
-				// Find all occurrences of `tc.name` in the function
-				tcNames := findValuesOfIndexedField(fn, caseName)
-				fmt.Printf("occurrences of test name: %s\n\n", tcNames)
-
-				// Store the subtest with its associated `tc.name` occurrences
-				subtests[subtestName] = tcNames
-			}
+	// PERF: this could be concurrent
+	for _, file := range files {
+		fmt.Printf("searching file: %s\n", file.Path)
+		err := ListAll(file)
+		if err != nil {
+			log.Fatalf("failed finding tests: %s", err)
 		}
-		return true
-	})
-
-	return subtests, nil
-}
-
-// extractSubtestName handles both string literals and dynamic subtest names
-func extractSubtestVariableName(expr ast.Expr) string {
-	if lit, ok := expr.(*ast.BasicLit); ok && lit.Kind == token.STRING {
-		return strings.Trim(lit.Value, "\"")
 	}
-	return formatExpr(expr) // Dynamic name
+
+	return &Project{
+		RootDir: projectRoot,
+		Files:   files,
+	}
 }
 
-// findEnclosingFunction traverses the AST upwards to find the function that encloses the node
-func findEnclosingFunction(node ast.Node, n ast.Node) *ast.FuncDecl {
-	// Walk the AST to find the enclosing function
-	var fn *ast.FuncDecl
-	ast.Inspect(node, func(x ast.Node) bool {
-		if f, ok := x.(*ast.FuncDecl); ok {
-			if f.Body != nil && f.Body.Pos() <= n.Pos() && f.Body.End() >= n.End() {
-				fn = f
-				return false // Stop traversing
-			}
-		}
-		return true
-	})
-	return fn
+func (p Project) PrettyPrint() {
+	fmt.Printf("\n┌── 📂 %s/\n", p.RootDir)
+	for i, file := range p.Files {
+		isLastFile := i == len(p.Files)-1
+		PrettyPrintFile(file, "", isLastFile)
+	}
 }
 
-func findValuesOfIndexedField(fn *ast.FuncDecl, fieldName string) []string {
-	var nameValues []string
+// PrettyPrintFile prints the File struct with tree lines
+func PrettyPrintFile(f *File, prefix string, isLast bool) {
+	fileBranch := "└──" // Last element
+	if !isLast {
+		fileBranch = "├──" // Intermediate element
+	}
+	fmt.Printf("%s%s 📝 %s\n", prefix, fileBranch, f.Name)
 
-	// findValuesOfIndexedField looks for the value of a field in an array or slice (e.g., `tc[i].name`)
-	ast.Inspect(fn.Body, func(n ast.Node) bool {
-		// We're looking for composite literals (array/slice initialization) or assignments
-		if compLit, ok := n.(*ast.CompositeLit); ok {
-			for _, elt := range compLit.Elts {
-				if kvExpr, ok := elt.(*ast.KeyValueExpr); ok {
-					if ident, ok := kvExpr.Key.(*ast.Ident); ok && ident.Name == fieldName {
-						// Extract the value assigned to the field (e.g., "TestA" for `name: "TestA"`)
-						nameValue := extractRHSValue(kvExpr.Value)
-						nameValues = append(nameValues, nameValue)
-					}
-				}
-			}
-		}
-		return true
-	})
+	// Update the prefix for nested levels
+	newPrefix := prefix
+	if isLast {
+		newPrefix += "    " // Indent for last element
+	} else {
+		newPrefix += "│   " // Continue the tree line for intermediate elements
+	}
 
-	return nameValues
+	// Print functions inside the file
+	for i, fn := range f.Functions {
+		isLastFunc := i == len(f.Functions)-1
+		PrettyPrintFunction(fn, newPrefix, isLastFunc)
+	}
 }
+
+// PrettyPrintFunction prints the Function struct with tree lines
+func PrettyPrintFunction(fn Function, prefix string, isLast bool) {
+	funcBranch := "└──" // Last element
+	if !isLast {
+		funcBranch = "├──" // Intermediate element
+	}
+	fmt.Printf("%s%s 🧪 %s\n", prefix, funcBranch, fn.Name)
+
+	// Update the prefix for cases
+	newPrefix := prefix
+	if isLast {
+		newPrefix += "    "
+	} else {
+		newPrefix += "│   "
+	}
+
+	// Print cases inside the function
+	for i, c := range fn.Cases {
+		isLastCase := i == len(fn.Cases)-1
+		PrettyPrintCase(c, newPrefix, isLastCase)
+	}
+}
+
+// PrettyPrintCase prints the Case struct with tree lines
+func PrettyPrintCase(c Case, prefix string, isLast bool) {
+	caseBranch := "└──" // Last element
+	if !isLast {
+		caseBranch = "├──" // Intermediate element
+	}
+	fmt.Printf("%s%s 💼 %s\n", prefix, caseBranch, c.Name)
+}
+
+// Just tabbed space
+// // PrettyPrintProject prints the Project struct in a readable format
+// func PrettyPrintProject(p Project) {
+// 	fmt.Printf("Project Root: %s\n", p.RootDir)
+// 	fmt.Println("Files:")
+// 	for _, file := range p.Files {
+// 		PrettyPrintFile(file, 1)
+// 	}
+// }
+
+// // PrettyPrintFile prints the File struct with indentation
+// func PrettyPrintFile(f *File, indentLevel int) {
+// 	indent := strings.Repeat("  ", indentLevel)
+// 	fmt.Printf("%sFile Name: %s\n", indent, f.Name)
+// 	fmt.Printf("%sFile Path: %s\n", indent, f.Path)
+// 	fmt.Printf("%sFunctions:\n", indent)
+// 	for _, fn := range f.Functions {
+// 		PrettyPrintFunction(fn, indentLevel+1)
+// 	}
+// }
+
+// // PrettyPrintFunction prints the Function struct with indentation
+// func PrettyPrintFunction(fn Function, indentLevel int) {
+// 	indent := strings.Repeat("  ", indentLevel)
+// 	fmt.Printf("%sFunction Name: %s\n", indent, fn.Name)
+// 	fmt.Printf("%sVariable Name: %s\n", indent, fn.VarName)
+// 	fmt.Printf("%sCases:\n", indent)
+// 	for _, c := range fn.Cases {
+// 		PrettyPrintCase(c, indentLevel+1)
+// 	}
+// }
+
+// // PrettyPrintCase prints the Case struct with indentation
+// func PrettyPrintCase(c Case, indentLevel int) {
+// 	indent := strings.Repeat("  ", indentLevel)
+// 	fmt.Printf("%sCase Name: %s\n", indent, c.Name)
+// }
