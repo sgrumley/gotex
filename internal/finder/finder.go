@@ -30,26 +30,38 @@ func FindSubTests(filePath string) (map[string][]string, error) {
 
 	// Walk the AST and find subtests (t.Run)
 	ast.Inspect(node, func(n ast.Node) bool {
-		// We are looking for CallExpr nodes like t.Run("subtest name", func(t *testing.T))
+		// Check all call expressions (function calls)
 		if callExpr, ok := n.(*ast.CallExpr); ok {
 			// Check if the function being called is `t.Run`
 			if selExpr, ok := callExpr.Fun.(*ast.SelectorExpr); ok && selExpr.Sel.Name == "Run" {
-				// Get the function that contains this `t.Run` call
+				// Get the parent function (this is intended to be the test function containing the subtests)
 				fn := findEnclosingFunction(node, callExpr)
 				fmt.Println("parent func: ", fn.Name)
 				if fn == nil {
 					return true // Skip if no enclosing function found
 				}
 
-				// Extract the subtest name or expression
+				// Extract the subtest variable name (this should be something like tc.name where tc is the stuct and name is the attribute provided to t.Run(tc.name, ...))
 				subtestName := extractSubtestVariableName(callExpr.Args[0])
-				fmt.Println("sub test variable name e.g t.Run(varName, fn): ", subtestName)
+				fmt.Println("test case variable name: ", subtestName)
 
-				// Find all occurrences of `tc.name` in the function
-				// TODO: split subtestname '.' instead of hardcode
+				// setting a default that I use, probably needs better error handling in general
+				// structName := "tc"
+				caseName := "name"
+
+				subtestNameSplit := strings.Split(subtestName, ".")
+				if len(subtestNameSplit) == 2 {
+					// structName = subtestNameSplit[0]
+					caseName = subtestNameSplit[1]
+				} else {
+					fmt.Println("failed identifying struct.name, defaulting to tc.name")
+				}
+
 				// TODO: add the name of the struct back in for validation
 				// tcNames := findValuesOfIndexedField(fn, "tc", "name")
-				tcNames := findValuesOfIndexedField(fn, "name")
+
+				// Find all occurrences of `tc.name` in the function
+				tcNames := findValuesOfIndexedField(fn, caseName)
 				fmt.Printf("occurrences of test name: %s\n\n", tcNames)
 
 				// Store the subtest with its associated `tc.name` occurrences
