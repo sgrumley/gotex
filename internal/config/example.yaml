@@ -1,0 +1,11 @@
+---
+# external options
+pipeto: tparse
+# go test options
+# run go help testflag for more
+json: true
+timeout:
+short: false
+verbose: true
+failfast: false
+cover: true

@@ -1,9 +1,6 @@
 TODO: 
-- setup config
-  - use tparse
-  - set timout
-  - -short
-- fzf keypresses
+- test on other repos and understand how permissions will effect
+- fzf keypresses (added the bind param but doesn't work)
   - vim nav
   - can I have a press cntrl-r to replay?
 - History fzf

@@ -2,7 +2,11 @@ module sgrumley/test-tui
 
 go 1.21.4
 
-require github.com/junegunn/fzf v0.55.0
+require (
+	github.com/junegunn/fzf v0.55.0
+	github.com/kelseyhightower/envconfig v1.4.0
+	gopkg.in/yaml.v3 v3.0.1
+)
 
 require (
 	github.com/charlievieth/fastwalk v1.0.8 // indirect

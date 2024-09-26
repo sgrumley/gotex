@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"sgrumley/test-tui/internal/config"
 	"sgrumley/test-tui/internal/runner"
 	"syscall"
 
@@ -11,6 +12,11 @@ import (
 )
 
 func Run(tests []string, locationMapping map[string]string) {
+	cfg, err := config.GetConfig("./internal/config/example.yaml")
+	if err != nil {
+		fmt.Println("failed to read config: ", err)
+	}
+
 	inputChan := make(chan string)
 	go func() {
 		for _, s := range tests {
@@ -30,7 +36,7 @@ func Run(tests []string, locationMapping map[string]string) {
 				return
 			}
 
-			testOutput, err := runner.RunTest(s, location)
+			testOutput, err := runner.RunTest(s, location, cfg)
 			if err != nil {
 				fmt.Printf("failed to execute test: %s\n", err.Error())
 				wait <- true
@@ -38,7 +44,7 @@ func Run(tests []string, locationMapping map[string]string) {
 			}
 
 			// TODO: need to do something with the output
-			fmt.Println("DEBUG got: " + testOutput)
+			fmt.Println("\n" + testOutput)
 			wait <- true
 		}
 	}()
