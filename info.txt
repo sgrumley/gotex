@@ -1,27 +1,10 @@
-Notes:
-use charm/log https://github.com/charmbracelet/log
-https://pkg.go.dev/cmd/go/internal/test make use of `go test -json` then parse the output and clean
-
-run all tests with a 0.01 timeout
-  or
-use this to cat the subtests: cat internal/jwt/writer_test.go | rg name:
-use this to get all the test files fzf --filter _test.go
-
-main components:
-  https://github.com/mistakenelf/fm
-  sub menus
-  test output
-  loading animation while tests are running
-
-things to considers:
-  When you run a test in a folder somehow update the ui in all submenus to show result with emoji
-  Use go.mod as a project point
-  Allow unique ways to specify test cases
-  allow pre reqs for tests in dir. setup config like docker compose up ...
-
-might be able to have a setup like lazygit where folders are top left, tests are middle left, results are bottom left??
-https://github.com/dlvhdr/gh-dash -> could use
-
-Current Tasks:
-  - set viewports width and heights
-  - navigate between panels
+TODO: 
+- setup config
+  - use tparse
+  - set timout
+  - -short
+- fzf keypresses
+  - vim nav
+  - can I have a press cntrl-r to replay?
+- History fzf
+- Logging -> should be to a file?? same place to store history?

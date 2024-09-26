@@ -101,8 +101,9 @@ func findValuesOfIndexedField(fn *ast.FuncDecl, fieldName string) []Case {
 					if ident, ok := kvExpr.Key.(*ast.Ident); ok && ident.Name == fieldName {
 						// Extract the value assigned to the field (e.g. "TestA" for `name: "TestA"`)
 						nameValue := extractRHSValue(kvExpr.Value)
+						nameValueStripped := strings.ReplaceAll(nameValue, `"`, "")
 						cases = append(cases, Case{
-							Name: nameValue,
+							Name: nameValueStripped,
 						})
 					}
 				}
