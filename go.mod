@@ -1,4 +1,4 @@
-module sgrumley/test-tui
+module sgrumley/gotex
 
 go 1.21.4
 

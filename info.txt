@@ -5,3 +5,4 @@ TODO:
   - can I have a press cntrl-r to replay?
 - History fzf
 - Logging -> should be to a file?? same place to store history?
+- work on test functions without cases

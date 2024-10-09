@@ -6,7 +6,7 @@ import (
 	"os"
 	"os/exec"
 
-	"sgrumley/test-tui/internal/config"
+	"sgrumley/gotex/internal/config"
 )
 
 // NOTE: good resource: https://www.dolthub.com/blog/2022-11-28-go-os-exec-patterns/

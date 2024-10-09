@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"sgrumley/test-tui/internal/config"
-	"sgrumley/test-tui/internal/runner"
+	"sgrumley/gotex/internal/config"
+	"sgrumley/gotex/internal/runner"
 	"syscall"
 
 	fzf "github.com/junegunn/fzf/src"
