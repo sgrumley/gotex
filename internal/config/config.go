@@ -7,13 +7,16 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/kelseyhightower/envconfig"
 	"gopkg.in/yaml.v3"
 )
 
 type EnvVar struct {
-	ConfigFilePath string `envconfig:"CONFIG_FILE_PATH" default:"~/.config/tester"`
+	ConfigFilePath string `envconfig:"GOTEX_CONFIG_FILE_PATH" default:"~/.config/gotex/config.yaml"`
+	// ConfigFilePath string `envconfig:"GOTEX_CONFIG_FILE_PATH" default:"~/repo/go-tester/internal/config/default.yaml"`
+	// ConfigFilePath string `envconfig:"GOTEX_CONFIG_FILE_PATH" default:"./internal/config/default.yaml"`
 }
 
 type Config struct {
@@ -27,17 +30,23 @@ type Config struct {
 }
 
 // Filepath param is temporary or moved to options pattern
-func GetConfig(filepath string) (Config, error) {
+func GetConfig(fp string) (Config, error) {
 	configLocation := ""
-	if filepath != "" {
-		configLocation = filepath
+	if fp != "" {
+		configLocation = fp
 	} else {
 		e := EnvVar{}
-		err := envconfig.Process("", &e)
+		err := envconfig.Process("GOTEX_CONFIG_FILE_PATH", &e)
 		if err != nil {
-			return Config{}, fmt.Errorf("failed to find config, proceeding with default %w", err)
+			// TODO: loading default is not an error
+			fmt.Printf("failed to find config at %s, proceeding with default\n", e.ConfigFilePath)
 		}
-		configLocation = e.ConfigFilePath
+		// if err != nil {
+		// 	return Config{}, fmt.Errorf("failed to find config, proceeding with default %w", err)
+		// }
+		// TODO: this needs to set default to the yaml in this folder
+		configLocation  = e.ConfigFilePath
+		fmt.Println(e.ConfigFilePath)
 	}
 
 	cfg, err := LoadYAML[Config](configLocation)
@@ -49,9 +58,10 @@ func GetConfig(filepath string) (Config, error) {
 }
 
 func LoadYAML[T any](path string) (*T, error) {
-	b, err := os.ReadFile(path)
+	fp := replaceHomeDirChar(path)
+	b, err := os.ReadFile(fp)
 	if err != nil {
-		return nil, fmt.Errorf("failed reading file with error: %w", err)
+		return nil, err
 	}
 
 	return LoadConfig[T](bytes.NewReader(b))
@@ -66,4 +76,17 @@ func LoadConfig[T any](reader io.Reader) (*T, error) {
 	}
 
 	return &cfg, nil
+}
+
+func replaceHomeDirChar(fp string) string {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		fmt.Println("Error getting home directory:", err)
+		return ""
+	}
+	// Replace `~` with the home directory path
+	if fp[:2] == "~/" {
+		fp = filepath.Join(homeDir, fp[2:])
+	}
+	return fp
 }

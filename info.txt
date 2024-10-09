@@ -1,8 +1,6 @@
 TODO: 
-- test on other repos and understand how permissions will effect
+- clean code -> write tests (black box pkg) -> clean output -> implement logging
+extra
 - fzf keypresses (added the bind param but doesn't work)
   - vim nav
-  - can I have a press cntrl-r to replay?
-- History fzf
-- Logging -> should be to a file?? same place to store history?
 - work on test functions without cases

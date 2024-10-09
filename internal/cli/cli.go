@@ -12,9 +12,10 @@ import (
 )
 
 func Run(tests []string, locationMapping map[string]string) {
-	cfg, err := config.GetConfig("./internal/config/example.yaml")
+	// cfg, err := config.GetConfig("./internal/config/example.yaml")
+	cfg, err := config.GetConfig("")
 	if err != nil {
-		fmt.Println("failed to read config: ", err)
+		fmt.Println(err)
 	}
 
 	inputChan := make(chan string)
@@ -43,7 +44,7 @@ func Run(tests []string, locationMapping map[string]string) {
 				return
 			}
 
-			// TODO: need to do something with the output
+			// TODO: need to do something with the output?
 			fmt.Println("\n" + testOutput)
 			wait <- true
 		}
