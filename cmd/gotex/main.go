@@ -3,7 +3,7 @@ package main
 import (
 	"sgrumley/gotex/internal/cli"
 
-	"sgrumley/gotex/internal/finder"
+	"sgrumley/gotex/pkg/finder"
 )
 
 func main() {

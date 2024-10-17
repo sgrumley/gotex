@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"sgrumley/gotex/internal/config"
+	"sgrumley/gotex/pkg/config"
 )
 
 // NOTE: good resource: https://www.dolthub.com/blog/2022-11-28-go-os-exec-patterns/

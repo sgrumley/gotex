@@ -15,8 +15,6 @@ import (
 
 type EnvVar struct {
 	ConfigFilePath string `envconfig:"GOTEX_CONFIG_FILE_PATH" default:"~/.config/gotex/config.yaml"`
-	// ConfigFilePath string `envconfig:"GOTEX_CONFIG_FILE_PATH" default:"~/repo/go-tester/internal/config/default.yaml"`
-	// ConfigFilePath string `envconfig:"GOTEX_CONFIG_FILE_PATH" default:"./internal/config/default.yaml"`
 }
 
 type Config struct {
@@ -72,7 +70,7 @@ func LoadConfig[T any](reader io.Reader) (*T, error) {
 	decoder := yaml.NewDecoder(reader)
 	decoder.KnownFields(true)
 	if err := decoder.Decode(&cfg); err != nil {
-		return nil, fmt.Errorf("the config yaml is invalid: %w", err)
+		return nil, fmt.Errorf("the yaml config is invalid: %w", err)
 	}
 
 	return &cfg, nil
@@ -84,7 +82,7 @@ func replaceHomeDirChar(fp string) string {
 		fmt.Println("Error getting home directory:", err)
 		return ""
 	}
-	// Replace `~` with the home directory path
+	// Replace ~ with the home directory path
 	if fp[:2] == "~/" {
 		fp = filepath.Join(homeDir, fp[2:])
 	}
