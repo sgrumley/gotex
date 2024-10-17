@@ -3,15 +3,16 @@ module sgrumley/gotex
 go 1.21.4
 
 require (
+	github.com/gdamore/tcell/v2 v2.7.4
 	github.com/junegunn/fzf v0.55.0
 	github.com/kelseyhightower/envconfig v1.4.0
+	github.com/rivo/tview v0.0.0-20241016194538-c5e4fb24af13
 	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
 	github.com/charlievieth/fastwalk v1.0.8 // indirect
 	github.com/gdamore/encoding v1.0.0 // indirect
-	github.com/gdamore/tcell/v2 v2.7.4 // indirect
 	github.com/junegunn/go-shellwords v0.0.0-20240813092932-a62c48c52e97 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect

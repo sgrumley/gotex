@@ -4,3 +4,5 @@ extra
 - fzf keypresses (added the bind param but doesn't work)
   - vim nav
 - work on test functions without cases
+
+Write TUI -> tcell/tview
