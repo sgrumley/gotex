@@ -1,11 +1,8 @@
 package config
 
-// TODO: write a package to help read conf from ~/.config/go-tester/conf.yaml
-// read from env var but default to .config
 import (
-	"bytes"
+	"embed"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 
@@ -13,8 +10,16 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+//go:embed default.yaml
+var embedCfg embed.FS
+
+var (
+	defaultCfg      *Config
+	defaultFilePath = "~/.config/gotex/config.yaml"
+)
+
 type EnvVar struct {
-	ConfigFilePath string `envconfig:"GOTEX_CONFIG_FILE_PATH" default:"~/.config/gotex/config.yaml"`
+	ConfigFilePath string `envconfig:"GOTEX_CONFIG_FILE_PATH"` //  default:"~/.config/gotex/config.yaml"`
 }
 
 type Config struct {
@@ -27,56 +32,94 @@ type Config struct {
 	Cover    bool   `yaml:"cover"`
 }
 
-// Filepath param is temporary or moved to options pattern
-func GetConfig(fp string) (Config, error) {
-	configLocation := ""
-	if fp != "" {
-		configLocation = fp
-	} else {
-		e := EnvVar{}
-		err := envconfig.Process("GOTEX_CONFIG_FILE_PATH", &e)
-		if err != nil {
-			// TODO: loading default is not an error
-			fmt.Printf("failed to find config at %s, proceeding with default\n", e.ConfigFilePath)
-		}
-		// if err != nil {
-		// 	return Config{}, fmt.Errorf("failed to find config, proceeding with default %w", err)
-		// }
-		// TODO: this needs to set default to the yaml in this folder
-		configLocation  = e.ConfigFilePath
-		fmt.Println(e.ConfigFilePath)
+/*
+- check env var for config file path
+- else it should check ~/.config/gotex/config.yaml
+- else use the default yaml file in this folder
+*/
+
+func GetConfig() (Config, error) {
+	filepath := GetConfigPath()
+	if filepath == "" {
+		return getDefaultCfg()
 	}
 
-	cfg, err := LoadYAML[Config](configLocation)
+	cfg, err := LoadYAML(filepath)
 	if err != nil {
-		return Config{}, fmt.Errorf("failed to load config at path: %s with error: %w", configLocation, err)
+		return Config{}, fmt.Errorf("failed to load config at path: %s with error: %w", filepath, err)
 	}
 	fmt.Printf("\nconfig: %+v\n\n", cfg)
-	return *cfg, nil
+	return cfg, nil
 }
 
-func LoadYAML[T any](path string) (*T, error) {
-	fp := replaceHomeDirChar(path)
+func FileExists(filepath string) bool {
+	_, err := os.Stat(filepath)
+	if os.IsNotExist(err) {
+		return false
+	}
+
+	return true
+}
+
+// getDefaultCfg returns the config of default config specified in the local file default.yaml
+// it uses embed to allow for a nicer way to document a example config as opposed to an incode struct
+func getDefaultCfg() (Config, error) {
+	if defaultCfg != nil {
+		return *defaultCfg, nil
+	}
+
+	b, err := embedCfg.ReadFile("default.yaml")
+	if err != nil {
+		return Config{}, err
+	}
+
+	cfg, err := LoadConfig(b)
+	if err != nil {
+		return Config{}, err
+	}
+	defaultCfg = &cfg
+
+	return *defaultCfg, nil
+}
+
+func GetConfigPath() string {
+	// check for user specified config path
+	e := EnvVar{}
+	err := envconfig.Process("GOTEX_CONFIG_FILE_PATH", &e)
+	if err != nil {
+		fmt.Printf("no config env found, proceeding with default path: %s\n", defaultFilePath)
+		return defaultFilePath
+	}
+
+	// check that the user specified exists
+	if FileExists(e.ConfigFilePath) {
+		fmt.Printf("config file not found at specified location %s, proceeding with default config\n", e.ConfigFilePath)
+		return e.ConfigFilePath
+	}
+
+	return ""
+}
+
+func LoadYAML(path string) (Config, error) {
+	fp := ReplaceHomeDirChar(path)
 	b, err := os.ReadFile(fp)
 	if err != nil {
-		return nil, err
+		return Config{}, err
 	}
-
-	return LoadConfig[T](bytes.NewReader(b))
+	return LoadConfig(b)
 }
 
-func LoadConfig[T any](reader io.Reader) (*T, error) {
-	var cfg T
-	decoder := yaml.NewDecoder(reader)
-	decoder.KnownFields(true)
-	if err := decoder.Decode(&cfg); err != nil {
-		return nil, fmt.Errorf("the yaml config is invalid: %w", err)
+func LoadConfig(b []byte) (Config, error) {
+	var cfg Config
+	err := yaml.Unmarshal(b, &cfg)
+	if err != nil {
+		return Config{}, fmt.Errorf("failed to unmarshal yaml: %v", err)
 	}
 
-	return &cfg, nil
+	return cfg, nil
 }
 
-func replaceHomeDirChar(fp string) string {
+func ReplaceHomeDirChar(fp string) string {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		fmt.Println("Error getting home directory:", err)
