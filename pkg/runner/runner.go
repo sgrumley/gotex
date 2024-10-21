@@ -8,8 +8,6 @@ import (
 	"sgrumley/gotex/pkg/config"
 )
 
-// NOTE: good resource: https://www.dolthub.com/blog/2022-11-28-go-os-exec-patterns/
-// TODO: check if go test tool can be imported or terminal exec - https://pkg.go.dev/testing#InternalExample -> this would come with issues piping into other commands, at the least it wouldn't remove the need
 func RunTest(testName string, dir string, cfg config.Config) (string, error) {
 	buf := new(bytes.Buffer)
 	errBuf := new(bytes.Buffer)
@@ -79,9 +77,8 @@ func RunTestPiped(cmdStr1 []string, cmdStr2 string, dir string) (*bytes.Buffer, 
 	if err != nil {
 		return nil, fmt.Errorf("failed to create pipe: %w", err)
 	}
-	defer r.Close() // Ensure the read end is closed after function exit
+	defer r.Close() 
 
-	// Write command 1's output to the write end of the pipe
 	go func() {
 		_, _ = w.Write(cmd1Output.Bytes())
 		w.Close()
@@ -108,43 +105,10 @@ func RunTestPiped(cmdStr1 []string, cmdStr2 string, dir string) (*bytes.Buffer, 
 	}
 
 	return &cmd2Output, nil
-
-	// ORIGINAL
-	// r, w, err := os.Pipe()
-	// if err != nil {
-	// 	fmt.Println("returning 1, ", err)
-	// 	return nil, err
-	// }
-	// defer r.Close()
-	// cmd1 := exec.Command("go", cmdStr1...)
-	// cmd1.Stdout = w
-	// cmd1.Dir = dir
-	// err = cmd1.Start()
-	// if err != nil {
-
-	// 	fmt.Println("returning 2, ", err)
-	// 	return nil, err
-	// }
-	// defer cmd1.Wait()
-	// w.Close()
-
-	// buf := new(bytes.Buffer)
-	// cmd2 := exec.Command(cmdStr2)
-	// cmd2.Stdin = r
-	// cmd2.Stdout = buf
-	// err = cmd2.Run()
-	// if err != nil {
-	// 	fmt.Println("returning 3, ", err.Error(), " detail: " )
-	// 	fmt.Println(buf.String())
-	// 	return nil, err
-	// }
-
-	// return buf, nil
 }
 
 func applyConfig(cfg config.Config, cmd []string) []string {
-	// Start with the original command
-	args := append([]string{}, cmd...) // Create a copy of the command
+	args := append([]string{}, cmd...)
 
 	// Add options based on the config
 	if cfg.Timeout != "" {
@@ -173,15 +137,15 @@ func GetCommand(typed int, testName string) []string {
 	switch typed {
 	case 1:
 		return []string{"test", "-run", testName}
-	// TODO: test whole package
 	case 2:
+		// TODO: test all
 		return []string{"test", "./..."}
-	// TODO: test all
 	case 3:
-		return []string{"test", "./..."}
-	// TODO: test single file
+		// TODO: test single file
+		return []string{"test", "path to file"}
 	case 4:
-		return []string{"test", "./..."}
+		// TODO: test whole package
+		return []string{"test", "package name"}
 	default:
 		return nil
 	}

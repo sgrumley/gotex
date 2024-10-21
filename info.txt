@@ -13,3 +13,4 @@ extra
 make public
 
 Write TUI -> tcell/tview
+Check if it might make more sence to call go test package instead of using os.exec
