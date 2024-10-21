@@ -2,9 +2,12 @@ package config
 
 import (
 	"embed"
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/kelseyhightower/envconfig"
 	"gopkg.in/yaml.v3"
@@ -53,11 +56,12 @@ func GetConfig() (Config, error) {
 }
 
 func FileExists(filepath string) bool {
-	_, err := os.Stat(filepath)
-	if os.IsNotExist(err) {
+	fp := ReplaceHomeDirChar(filepath)
+	_, err := os.Stat(fp)
+	if errors.Is(err, fs.ErrNotExist) {
 		return false
 	}
-
+	
 	return true
 }
 
@@ -93,10 +97,11 @@ func GetConfigPath() string {
 
 	// check that the user specified exists
 	if FileExists(e.ConfigFilePath) {
-		fmt.Printf("config file not found at specified location %s, proceeding with default config\n", e.ConfigFilePath)
+		fmt.Printf("config file found at specified location %s, proceeding with user config\n", e.ConfigFilePath)
 		return e.ConfigFilePath
 	}
 
+	fmt.Println("Could not find file path: ", e.ConfigFilePath)
 	return ""
 }
 
@@ -120,6 +125,9 @@ func LoadConfig(b []byte) (Config, error) {
 }
 
 func ReplaceHomeDirChar(fp string) string {
+	if !strings.Contains(fp, "~") {
+		return fp
+	}
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		fmt.Println("Error getting home directory:", err)

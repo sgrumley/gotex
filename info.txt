@@ -3,7 +3,7 @@ TODO:
 1. Test (bb pkg)
 2. Clean Code (return errors/output, remove prints, log to file option)
 
-config -> runner -> finder
+config(finish tests) -> runner -> finder
 
 extra
 - fzf keypresses (added the bind param but doesn't work)

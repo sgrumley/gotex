@@ -1,0 +1,8 @@
+---
+pipeto: tparse
+json: true
+# timeout:
+short: false
+verbose: true
+failfast: false
+cover: true
