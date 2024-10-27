@@ -54,7 +54,9 @@ func (f *testFiles) setKeybinding(t *TUI) {
 	})
 }
 
-func (f *testFiles) hoverEvent() {}
+func (f *testFiles) hoverEvent() {
+	// f.SetSelectedFunc will give it a function to execute when 'enter' is pressed on an element this should be the same as 'r'
+}
 
 func (f *testFiles) Populate(t *TUI) {
 	f.Clear()
@@ -65,6 +67,13 @@ func (f *testFiles) Populate(t *TUI) {
 	currentTitle := f.GetTitle()
 	newTitle := fmt.Sprintf("%s (%d)", currentTitle, f.GetItemCount())
 	f.SetTitle(newTitle)
-	// HACK: assuming that every time this function is called it will reset the selected item to index 0
-	t.state.resources.currentFile = t.state.resources.data.Files[0]
+
+	// HACK: an initial value is required to choose which test->case is displayed in other panels
+	// this may not sync correctly with no garunteed order to iterating a map
+
+	// set state
+	for _, file := range t.state.resources.data.Files {
+		t.state.resources.currentFile = file
+		break
+	}
 }

@@ -50,13 +50,18 @@ func ListAll(file *File) error {
 
 				// Find all occurrences of `tc.name` in the function
 				cases := findValuesOfIndexedField(fn, caseName)
+				caseMap := make(map[string]*Case)
+				for _, c := range cases {
+					caseMap[c.Name] = &c
+				}
 
-				file.Functions = append(file.Functions, &Function{
+				file.Functions[fn.Name.Name] = &Function{
 					Name:    fn.Name.Name,
-					Cases:   cases,
+					Cases:   caseMap,
 					decl:    fn,
 					VarName: subtestName,
-				})
+				}
+				// file.Functions = append(file.Functions)
 			}
 		}
 		return true

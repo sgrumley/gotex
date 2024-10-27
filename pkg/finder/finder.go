@@ -9,24 +9,28 @@ import (
 
 type Project struct {
 	RootDir string
-	Files   []*File
+	// Files   []*File
+	Files map[string]*File
 }
 
-type Packages struct {
-	// TODO: this needs to be linked to the files and be included in project
-}
+// type Packages struct {
+// TODO: this needs to be linked to the files and be included in project
+// }
 
 type File struct {
-	Name      string
-	Path      string
-	Functions []*Function
+	Name string
+	Path string
+	// Functions []*Function
+	Functions map[string]*Function
 }
 
 type Function struct {
-	Name    string
-	Cases   []Case
-	decl    *ast.FuncDecl
+	Name string
+	// Cases []Case
+	Cases map[string]*Case
+	// meta data that may be helpful
 	VarName string
+	decl    *ast.FuncDecl
 }
 
 type Case struct {
@@ -47,15 +51,23 @@ func InitProject() *Project {
 	// PERF: this could be concurrent
 	for _, file := range files {
 		fmt.Printf("searching file: %s\n", file.Path)
+		file.Functions = make(map[string]*Function)
 		err := ListAll(file)
 		if err != nil {
 			log.Fatalf("failed finding tests: %s\n", err)
 		}
 	}
 
+	// map files to map[name]file
+	fileMap := make(map[string]*File)
+
+	for _, file := range files {
+		fileMap[file.Name] = file
+	}
+
 	return &Project{
 		RootDir: projectRoot,
-		Files:   files,
+		Files:   fileMap,
 	}
 }
 

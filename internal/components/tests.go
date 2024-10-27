@@ -49,20 +49,13 @@ func (f *testFunctions) Populate(t *TUI, init bool) {
 	f.Clear()
 
 	// get selected files from files panel
-	var selectedFileIndex int
-	var selectedFileName string
 	var selectedFile *finder.File
 
 	if !init {
-		selectedFileIndex = t.state.panels.panel["files"].GetCurrentItem()
-		selectedFileName, _ = t.state.panels.panel["files"].GetItemText(selectedFileIndex)
-		// TODO: this set of data should be maps to avoid the loops -> make this change in api??
-		for _, file := range t.state.resources.data.Files {
-			if file.Name == selectedFileName {
-				selectedFile = file
-				break
-			}
-		}
+		selectedFileIndex := t.state.panels.panel["files"].GetCurrentItem()
+		selectedFileName, _ := t.state.panels.panel["files"].GetItemText(selectedFileIndex)
+		selectedFile = t.state.resources.data.Files[selectedFileName]
+
 	} else {
 		selectedFile = t.state.resources.currentFile
 	}
@@ -76,6 +69,12 @@ func (f *testFunctions) Populate(t *TUI, init bool) {
 	newTitle := fmt.Sprintf("%s (%d)", currentTitle, f.GetItemCount())
 	f.SetTitle(newTitle)
 
+	// HACK: an initial value is required to choose which test->case is displayed in other panels
+	// this may not sync correctly with no garunteed order to iterating a map
+
 	// set state
-	t.state.resources.currentTest = selectedFile.Functions[0]
+	for _, function := range selectedFile.Functions {
+		t.state.resources.currentTest = function
+		break
+	}
 }

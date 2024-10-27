@@ -50,18 +50,16 @@ func (c *testCases) Populate(t *TUI, init bool) {
 	var selectedFunction *finder.Function
 
 	if !init {
-		// selectedFunctionIndex := t.state.panels.panel["tests"].GetCurrentItem()
-		// selectedFunctionName, _ := t.state.panels.panel["tests"].GetItemText(selectedFunctionIndex)
+		// choice of file
+		selectedFileIndex := t.state.panels.panel["files"].GetCurrentItem()
+		selectedFileName, _ := t.state.panels.panel["files"].GetItemText(selectedFileIndex)
 
-		// TODO: this set of data should be maps to avoid the loops -> make this change in api??
-		// this has to be a map to avoid traversing all files -> all function
+		// choice of function
+		selectedFunctionIndex := t.state.panels.panel["tests"].GetCurrentItem()
+		selectedFunctionName, _ := t.state.panels.panel["tests"].GetItemText(selectedFunctionIndex)
 
-		// for _, function := range t.state.resources.data.Files {
-		// 	if function.Name == selectedFunctionName {
-		// 		selectedFunction = cases
-		// 		break
-		// 	}
-		// }
+		selectedFunction = t.state.resources.data.Files[selectedFileName].Functions[selectedFunctionName]
+
 	} else {
 		selectedFunction = t.state.resources.currentTest
 	}
@@ -70,11 +68,14 @@ func (c *testCases) Populate(t *TUI, init bool) {
 		c.AddItem(cases.Name, "", 0, nil)
 	}
 
+	// set state
+	for _, cases := range selectedFunction.Cases {
+		t.state.resources.currentCase = cases
+		break
+	}
+
 	// update title with list count
 	currentTitle := c.GetTitle()
 	newTitle := fmt.Sprintf("%s (%d)", currentTitle, c.GetItemCount())
 	c.SetTitle(newTitle)
-
-	// set state
-	t.state.resources.currentCase = &selectedFunction.Cases[0]
 }

@@ -43,68 +43,68 @@ func formatExpr(expr ast.Expr) string {
 	}
 }
 
-func (p Project) PrettyPrint() {
-	fmt.Printf("\n┌── 📂 %s/\n", p.RootDir)
-	for i, file := range p.Files {
-		isLastFile := i == len(p.Files)-1
-		PrettyPrintFile(file, "", isLastFile)
-	}
-}
+// func (p Project) PrettyPrint() {
+// 	fmt.Printf("\n┌── 📂 %s/\n", p.RootDir)
+// 	for i, file := range p.Files {
+// 		isLastFile := i == len(p.Files)-1
+// 		PrettyPrintFile(file, "", isLastFile)
+// 	}
+// }
 
-// PrettyPrintFile prints the File struct with tree lines
-func PrettyPrintFile(f *File, prefix string, isLast bool) {
-	fileBranch := "└──" // Last element
-	if !isLast {
-		fileBranch = "├──" // Intermediate element
-	}
-	fmt.Printf("%s%s 📝 %s\n", prefix, fileBranch, f.Name)
+// // PrettyPrintFile prints the File struct with tree lines
+// func PrettyPrintFile(f *File, prefix string, isLast bool) {
+// 	fileBranch := "└──" // Last element
+// 	if !isLast {
+// 		fileBranch = "├──" // Intermediate element
+// 	}
+// 	fmt.Printf("%s%s 📝 %s\n", prefix, fileBranch, f.Name)
 
-	// Update the prefix for nested levels
-	newPrefix := prefix
-	if isLast {
-		newPrefix += "    " // Indent for last element
-	} else {
-		newPrefix += "│   " // Continue the tree line for intermediate elements
-	}
+// 	// Update the prefix for nested levels
+// 	newPrefix := prefix
+// 	if isLast {
+// 		newPrefix += "    " // Indent for last element
+// 	} else {
+// 		newPrefix += "│   " // Continue the tree line for intermediate elements
+// 	}
 
-	// Print functions inside the file
-	for i, fn := range f.Functions {
-		isLastFunc := i == len(f.Functions)-1
-		PrettyPrintFunction(*fn, newPrefix, isLastFunc)
-	}
-}
+// 	// Print functions inside the file
+// 	for i, fn := range f.Functions {
+// 		isLastFunc := i == len(f.Functions)-1
+// 		PrettyPrintFunction(*fn, newPrefix, isLastFunc)
+// 	}
+// }
 
-// PrettyPrintFunction prints the Function struct with tree lines
-func PrettyPrintFunction(fn Function, prefix string, isLast bool) {
-	funcBranch := "└──" // Last element
-	if !isLast {
-		funcBranch = "├──" // Intermediate element
-	}
-	fmt.Printf("%s%s 🧪 %s\n", prefix, funcBranch, fn.Name)
+// // PrettyPrintFunction prints the Function struct with tree lines
+// func PrettyPrintFunction(fn Function, prefix string, isLast bool) {
+// 	funcBranch := "└──" // Last element
+// 	if !isLast {
+// 		funcBranch = "├──" // Intermediate element
+// 	}
+// 	fmt.Printf("%s%s 🧪 %s\n", prefix, funcBranch, fn.Name)
 
-	// Update the prefix for cases
-	newPrefix := prefix
-	if isLast {
-		newPrefix += "    "
-	} else {
-		newPrefix += "│   "
-	}
+// 	// Update the prefix for cases
+// 	newPrefix := prefix
+// 	if isLast {
+// 		newPrefix += "    "
+// 	} else {
+// 		newPrefix += "│   "
+// 	}
 
-	// Print cases inside the function
-	for i, c := range fn.Cases {
-		isLastCase := i == len(fn.Cases)-1
-		PrettyPrintCase(c, newPrefix, isLastCase)
-	}
-}
+// 	// Print cases inside the function
+// 	for i, c := range fn.Cases {
+// 		isLastCase := i == len(fn.Cases)-1
+// 		PrettyPrintCase(c, newPrefix, isLastCase)
+// 	}
+// }
 
-// PrettyPrintCase prints the Case struct with tree lines
-func PrettyPrintCase(c Case, prefix string, isLast bool) {
-	caseBranch := "└──" // Last element
-	if !isLast {
-		caseBranch = "├──" // Intermediate element
-	}
-	fmt.Printf("%s%s 💼 %s\n", prefix, caseBranch, c.Name)
-}
+// // PrettyPrintCase prints the Case struct with tree lines
+// func PrettyPrintCase(c Case, prefix string, isLast bool) {
+// 	caseBranch := "└──" // Last element
+// 	if !isLast {
+// 		caseBranch = "├──" // Intermediate element
+// 	}
+// 	fmt.Printf("%s%s 💼 %s\n", prefix, caseBranch, c.Name)
+// }
 
 // Just tabbed space
 // // PrettyPrintProject prints the Project struct in a readable format
