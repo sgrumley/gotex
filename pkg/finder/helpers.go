@@ -70,7 +70,7 @@ func PrettyPrintFile(f *File, prefix string, isLast bool) {
 	// Print functions inside the file
 	for i, fn := range f.Functions {
 		isLastFunc := i == len(f.Functions)-1
-		PrettyPrintFunction(fn, newPrefix, isLastFunc)
+		PrettyPrintFunction(*fn, newPrefix, isLastFunc)
 	}
 }
 

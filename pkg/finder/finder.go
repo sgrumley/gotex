@@ -12,10 +12,14 @@ type Project struct {
 	Files   []*File
 }
 
+type Packages struct {
+	// TODO: this needs to be linked to the files and be included in project
+}
+
 type File struct {
 	Name      string
 	Path      string
-	Functions []Function
+	Functions []*Function
 }
 
 type Function struct {

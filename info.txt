@@ -1,16 +1,12 @@
 TODO: 
+1. Write TUI
+2. Decide if refactor needed for API
+3. Test API code 
+4. Logging to file
 
-1. Test (bb pkg)
-2. Clean Code (return errors/output, remove prints, log to file option)
 
-config(finish tests) -> runner -> finder
+Upcoming:
+- different types for running go test e.g files, pkgs...
 
-extra
-- fzf keypresses (added the bind param but doesn't work)
-  - vim nav
-- work on test functions without cases
-
-make public
-
-Write TUI -> tcell/tview
-Check if it might make more sence to call go test package instead of using os.exec
+Notes
+- Check if it might make more sence to call go test package instead of using os.exec

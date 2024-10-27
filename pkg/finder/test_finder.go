@@ -51,7 +51,7 @@ func ListAll(file *File) error {
 				// Find all occurrences of `tc.name` in the function
 				cases := findValuesOfIndexedField(fn, caseName)
 
-				file.Functions = append(file.Functions, Function{
+				file.Functions = append(file.Functions, &Function{
 					Name:    fn.Name.Name,
 					Cases:   cases,
 					decl:    fn,
