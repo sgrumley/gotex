@@ -25,6 +25,7 @@ func newTestCases(t *TUI) *testCases {
 	cases.SetBorder(true)
 	cases.setKeybinding(t)
 	cases.Populate(t, true)
+	// cases.SetChangedFunc(ChangeCase)
 
 	return cases
 }
@@ -40,6 +41,10 @@ func (c *testCases) setKeybinding(t *TUI) {
 
 		return event
 	})
+}
+
+func ChangeCase(index int, mainText string, secondaryText string, shortcut rune) {
+	// not sure if there is a case for this
 }
 
 func (c *testCases) Populate(t *TUI, init bool) {

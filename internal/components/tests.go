@@ -26,6 +26,12 @@ func newTestFunctions(t *TUI) *testFunctions {
 	funcs.SetBorder(true)
 	funcs.setKeybinding(t)
 	funcs.Populate(t, true)
+	funcs.SetChangedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
+		// update cases
+		// break populate down to more functions and utilise passing the mainText (function name)
+		// cases.Populate(t, false, function)
+		t.state.panels.panel["cases"].Populate(t, false, mainText)
+	})
 
 	return funcs
 }
@@ -43,7 +49,6 @@ func (f *testFunctions) setKeybinding(t *TUI) {
 	})
 }
 
-// TODO: wipe the panel before adding things
 func (f *testFunctions) Populate(t *TUI, init bool) {
 	// clear panel so dupes aren't added
 	f.Clear()

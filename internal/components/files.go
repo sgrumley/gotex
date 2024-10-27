@@ -26,6 +26,12 @@ func newTestFiles(t *TUI) *testFiles {
 	files.SetBorder(true)
 	files.setKeybinding(t)
 	files.Populate(t)
+	files.SetChangedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
+		// update tests
+		// t.state.panels.panel["tests"].Populate(t, false)
+
+		// update cases
+	})
 
 	return files
 }
@@ -56,6 +62,7 @@ func (f *testFiles) setKeybinding(t *TUI) {
 
 func (f *testFiles) hoverEvent() {
 	// f.SetSelectedFunc will give it a function to execute when 'enter' is pressed on an element this should be the same as 'r'
+	// unsure if this should go into results panel or run test or both
 }
 
 func (f *testFiles) Populate(t *TUI) {
