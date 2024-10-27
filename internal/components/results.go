@@ -6,7 +6,7 @@ func newResultsPane() *tview.TextView {
 	results := tview.NewTextView()
 	results.SetBorder(true).SetTitle("Results")
 	RenderResults(results)
-
+	SetTextViewStyling(results)
 	return results
 }
 

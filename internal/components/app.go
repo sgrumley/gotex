@@ -76,11 +76,7 @@ func (t *TUI) Stop() {
 }
 
 func (t *TUI) initPanels() {
-	// styling can be moved else where and add colors
-	tview.Borders.TopLeft = '╭'
-	tview.Borders.TopRight = '╮'
-	tview.Borders.BottomLeft = '╰'
-	tview.Borders.BottomRight = '╯'
+	SetAppStyling()
 
 	// Create the main list (left panel)
 	files := newTestFiles(t)
@@ -102,6 +98,8 @@ func (t *TUI) initPanels() {
 		AddItem(files, 0, 1, true).
 		AddItem(tests, 0, 1, false).
 		AddItem(cases, 0, 1, false)
+		// SetBackgroundColor(tcell.ColorPink)
+	// SetFlexStyling(navFlex)
 
 	help := tview.NewTextView()
 	help.SetLabel("/: search, q: quit, R: rerun last, r: run test, ?: more keys")
@@ -111,12 +109,16 @@ func (t *TUI) initPanels() {
 		SetDirection(tview.FlexColumn).
 		AddItem(navFlex, 0, 1, true).
 		AddItem(results, 0, 6, false)
+		// SetBackgroundColor(tcell.ColorPink)
+	// SetFlexStyling(contentLayout)
 
 	// content with helper bar
 	layout := tview.NewFlex().
 		SetDirection(tview.FlexRow).
 		AddItem(contentLayout, 0, 15, true).
 		AddItem(help, 2, 1, false)
+		// SetBackgroundColor(tcell.ColorPink)
+	// SetFlexStyling(layout)
 
 	t.app.SetRoot(layout, true)
 }

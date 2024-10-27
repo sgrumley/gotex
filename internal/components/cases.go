@@ -21,6 +21,7 @@ func newTestCases(t *TUI) *testCases {
 		List: tview.NewList(),
 	}
 
+	SetListStyling(cases.List)
 	cases.SetTitle("Cases")
 	cases.SetBorder(true)
 	cases.setKeybinding(t)

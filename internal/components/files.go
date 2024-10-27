@@ -22,6 +22,7 @@ func newTestFiles(t *TUI) *testFiles {
 		List: tview.NewList(),
 	}
 
+	SetListStyling(files.List)
 	files.SetTitle("Files")
 	files.SetBorder(true)
 	files.setKeybinding(t)

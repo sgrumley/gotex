@@ -22,6 +22,7 @@ func newTestFunctions(t *TUI) *testFunctions {
 		List: tview.NewList(),
 	}
 
+	SetListStyling(funcs.List)
 	funcs.SetTitle("Tests")
 	funcs.SetBorder(true)
 	funcs.setKeybinding(t)
@@ -30,7 +31,8 @@ func newTestFunctions(t *TUI) *testFunctions {
 		// update cases
 		// break populate down to more functions and utilise passing the mainText (function name)
 		// cases.Populate(t, false, function)
-		t.state.panels.panel["cases"].Populate(t, false, mainText)
+
+		// t.state.panels.panel["cases"].Populate(t, false, mainText)
 	})
 
 	return funcs
