@@ -1,13 +1,16 @@
 package components
 
 import (
+	"fmt"
+	"sgrumley/gotex/pkg/finder"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
 type testFile struct {
-	name string
-	// list of functions
+	name  string
+	files []finder.File
 }
 
 type testFiles struct {
@@ -22,7 +25,7 @@ func newTestFiles(t *TUI) *testFiles {
 	files.SetTitle("Files")
 	files.SetBorder(true)
 	files.setKeybinding(t)
-	files.Populate()
+	files.Populate(t)
 
 	return files
 }
@@ -51,8 +54,17 @@ func (f *testFiles) setKeybinding(t *TUI) {
 	})
 }
 
-func (f *testFiles) Populate() {
-	f.AddItem("File A", "Details of test case A", 'a', nil).
-		AddItem("File B", "Details of test case B", 'b', nil).
-		AddItem("File C", "Details of test case C", 'c', nil)
+func (f *testFiles) hoverEvent() {}
+
+func (f *testFiles) Populate(t *TUI) {
+	f.Clear()
+	for _, file := range t.state.resources.data.Files {
+		f.AddItem(file.Name, "", 0, nil)
+	}
+
+	currentTitle := f.GetTitle()
+	newTitle := fmt.Sprintf("%s (%d)", currentTitle, f.GetItemCount())
+	f.SetTitle(newTitle)
+	// HACK: assuming that every time this function is called it will reset the selected item to index 0
+	t.state.resources.currentFile = t.state.resources.data.Files[0]
 }

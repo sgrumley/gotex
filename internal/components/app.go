@@ -1,6 +1,10 @@
 package components
 
-import "github.com/rivo/tview"
+import (
+	"sgrumley/gotex/pkg/finder"
+
+	"github.com/rivo/tview"
+)
 
 type panel interface {
 	name() string
@@ -15,9 +19,10 @@ type panels struct {
 }
 
 type resources struct {
-	files []*testFile
-	tests []*testFunction
-	cases []*testCase
+	currentFile *finder.File
+	currentTest *finder.Function
+	currentCase *finder.Case
+	data        *finder.Project
 }
 
 type state struct {
@@ -29,7 +34,12 @@ type state struct {
 
 func newState() *state {
 	initPanels := make(map[string]*tview.List)
+	project := finder.InitProject()
+
 	return &state{
+		resources: resources{
+			data: project,
+		},
 		panels: panels{
 			currentPanel: "",
 			panel:        initPanels,
