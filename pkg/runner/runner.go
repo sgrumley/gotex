@@ -8,6 +8,7 @@ import (
 	"sgrumley/gotex/pkg/config"
 )
 
+// TODO: no std -> write everything to a buf and return it
 func RunTest(testName string, dir string, cfg config.Config) (string, error) {
 	buf := new(bytes.Buffer)
 	errBuf := new(bytes.Buffer)
@@ -27,10 +28,12 @@ func RunTest(testName string, dir string, cfg config.Config) (string, error) {
 			return res.String(), nil
 		}
 
-		fmt.Println("failed piped command, running without it: ", err)
+		// TODO: log to file
+		// fmt.Println("failed piped command, running without it: ", err)
 	}
 
-	fmt.Printf("running cmd: %v from dir: %s\n", cmd.Args, cmd.Dir)
+	// TODO: log to file
+	// fmt.Printf("running cmd: %v from dir: %s\n", cmd.Args, cmd.Dir)
 	if err := cmd.Start(); err != nil {
 		return "", fmt.Errorf("failed to start command: %w", err)
 	}
@@ -40,9 +43,9 @@ func RunTest(testName string, dir string, cfg config.Config) (string, error) {
 		// some logic to determine if the output is exit 1. If so this does not mean an error within the command but could be that the test did not pass
 		errStr := errBuf.String()
 		if err.Error() != "exit status 1" {
-			fmt.Println("buf inside", buf.String())
-			fmt.Println("err inside", errStr)
-			fmt.Println("err ", err)
+			// fmt.Println("buf inside", buf.String())
+			// fmt.Println("err inside", errStr)
+			// fmt.Println("err ", err)
 			return "", fmt.Errorf(errStr)
 		}
 	}
@@ -77,7 +80,7 @@ func RunTestPiped(cmdStr1 []string, cmdStr2 string, dir string) (*bytes.Buffer, 
 	if err != nil {
 		return nil, fmt.Errorf("failed to create pipe: %w", err)
 	}
-	defer r.Close() 
+	defer r.Close()
 
 	go func() {
 		_, _ = w.Write(cmd1Output.Bytes())

@@ -10,3 +10,6 @@ Upcoming:
 
 Notes
 - Check if it might make more sence to call go test package instead of using os.exec
+
+BUGS: 
+- initialising set values isn't working properly (panic if you dont change list before you run test case)

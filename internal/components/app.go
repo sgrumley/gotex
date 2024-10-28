@@ -1,6 +1,7 @@
 package components
 
 import (
+	"sgrumley/gotex/pkg/config"
 	"sgrumley/gotex/pkg/finder"
 
 	"github.com/rivo/tview"
@@ -31,6 +32,7 @@ type state struct {
 	panels    panels
 	navigate  *navigate
 	resources resources // TODO: should this be the types from finder?
+	result    *results
 }
 
 func newState() *state {
@@ -78,11 +80,14 @@ func (t *TUI) Stop() {
 
 func (t *TUI) initPanels() {
 	SetAppStyling()
-
+	cfg, err := config.GetConfig()
+	if err != nil {
+		return
+	}
 	// Create the main list (left panel)
 	files := newTestFiles(t)
 	tests := newTestFunctions(t)
-	cases := newTestCases(t)
+	cases := newTestCases(t, cfg)
 
 	// initialise panel state
 	t.state.panels.panel["files"] = files
@@ -91,7 +96,8 @@ func (t *TUI) initPanels() {
 	t.state.panels.currentPanel = "files"
 
 	// Create the results panel (right panel)
-	results := newResultsPane()
+	results := newResultsPane(t)
+	t.state.result = results
 
 	// this is the navigations column made up of interactive panels
 	navFlex := tview.NewFlex().
@@ -109,7 +115,7 @@ func (t *TUI) initPanels() {
 	contentLayout := tview.NewFlex().
 		SetDirection(tview.FlexColumn).
 		AddItem(navFlex, 0, 1, true).
-		AddItem(results, 0, 6, false)
+		AddItem(results.TextView, 0, 6, false)
 		// SetBackgroundColor(tcell.ColorPink)
 	// SetFlexStyling(contentLayout)
 

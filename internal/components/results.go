@@ -2,15 +2,24 @@ package components
 
 import "github.com/rivo/tview"
 
-func newResultsPane() *tview.TextView {
-	results := tview.NewTextView()
-	results.SetBorder(true).SetTitle("Results")
-	RenderResults(results)
-	SetTextViewStyling(results)
-	return results
+type results struct {
+	*tview.TextView
 }
 
-func RenderResults(view *tview.TextView) {
-	view.SetDynamicColors(true).
-		SetText("See test results here")
+func newResultsPane(t *TUI) *results {
+	res := &results{
+		TextView: tview.NewTextView(),
+	}
+
+	res.SetBorder(true).SetTitle("Results")
+	res.RenderResults("Run a test to see results...")
+	SetTextViewStyling(res.TextView)
+
+	return res
+}
+
+func (r *results) RenderResults(msg string) {
+	r.TextView.SetDynamicColors(true).
+		SetText(msg)
+	// SetText("test results 1 \n test 2")
 }

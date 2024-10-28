@@ -2,7 +2,9 @@ package components
 
 import (
 	"fmt"
+	"sgrumley/gotex/pkg/config"
 	"sgrumley/gotex/pkg/finder"
+	"sgrumley/gotex/pkg/runner"
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
@@ -17,7 +19,7 @@ type testCases struct {
 	*tview.List
 }
 
-func newTestCases(t *TUI) *testCases {
+func newTestCases(t *TUI, cfg config.Config) *testCases {
 	cases := &testCases{
 		List: tview.NewList(),
 	}
@@ -27,22 +29,39 @@ func newTestCases(t *TUI) *testCases {
 	cases.SetBorder(true)
 	cases.setKeybinding(t)
 	cases.Populate(t, true, "")
-	// cases.SetChangedFunc(ChangeCase)
 	cases.SetChangedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
 		// not sure if there is a case for this
 	})
+	cases.SetSelectedFunc(func(index int, mainText, subText string, shortcut rune) {
+		selectedFileIndex := t.state.panels.panel["files"].GetList().GetCurrentItem()
+		selectedFileName, _ := t.state.panels.panel["files"].GetList().GetItemText(selectedFileIndex)
 
+		// choice of function
+		selectedFunctionIndex := t.state.panels.panel["tests"].GetList().GetCurrentItem()
+		selectedFunctionName, _ := t.state.panels.panel["tests"].GetList().GetItemText(selectedFunctionIndex)
+
+		path := t.state.resources.data.Files[selectedFileName].Path
+		currentCase := t.state.resources.data.Files[selectedFileName].Functions[selectedFunctionName].Cases[mainText]
+
+		testResults, err := runner.RunTest(currentCase.Name, path, cfg)
+		if err != nil {
+			t.state.result.RenderResults(err.Error())
+			// renderError
+		}
+
+		t.state.result.RenderResults(testResults)
+	})
 	return cases
 }
 
 func (c *testCases) setKeybinding(t *TUI) {
 	c.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		t.setGlobalKeybinding(event)
-		switch event.Key() {
-		case tcell.KeyEnter:
-			// TODO: run test
-			c.AddItem("this should be added to resutls pane", "test completed", 'a', nil)
-		}
+		// switch event.Key() {
+		// case tcell.KeyEnter:
+		// 	// TODO: run test
+		// 	c.AddItem("this should be added to resutls pane", "test completed", 'a', nil)
+		// }
 
 		return event
 	})
