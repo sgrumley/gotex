@@ -7,15 +7,16 @@ import (
 )
 
 type panel interface {
-	name() string
-	focus(*TUI)
-	unfocus()
-	setKeybinding(*TUI)
+	// name() string
+	Populate(t *TUI, init bool, name string)
+	GetList() *tview.List
+	SetList(*tview.List)
 }
 
 type panels struct {
 	currentPanel string
-	panel        map[string]*tview.List
+	// panel        map[string]*tview.List
+	panel map[string]panel
 }
 
 type resources struct {
@@ -33,7 +34,7 @@ type state struct {
 }
 
 func newState() *state {
-	initPanels := make(map[string]*tview.List)
+	initPanels := make(map[string]panel)
 	project := finder.InitProject()
 
 	return &state{
@@ -84,9 +85,9 @@ func (t *TUI) initPanels() {
 	cases := newTestCases(t)
 
 	// initialise panel state
-	t.state.panels.panel["files"] = files.List
-	t.state.panels.panel["tests"] = tests.List
-	t.state.panels.panel["cases"] = cases.List
+	t.state.panels.panel["files"] = files
+	t.state.panels.panel["tests"] = tests
+	t.state.panels.panel["cases"] = cases
 	t.state.panels.currentPanel = "files"
 
 	// Create the results panel (right panel)

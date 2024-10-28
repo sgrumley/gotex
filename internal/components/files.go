@@ -3,6 +3,7 @@ package components
 import (
 	"fmt"
 	"sgrumley/gotex/pkg/finder"
+	"strings"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -26,12 +27,15 @@ func newTestFiles(t *TUI) *testFiles {
 	files.SetTitle("Files")
 	files.SetBorder(true)
 	files.setKeybinding(t)
-	files.Populate(t)
+	files.Populate(t, false, "")
+	// SetChangedFunc is called when you navigate to a new item in the list
 	files.SetChangedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
-		// update tests
-		// t.state.panels.panel["tests"].Populate(t, false)
-
-		// update cases
+		// TODO: consider making passing in the name and updating populate
+		t.state.panels.panel["tests"].Populate(t, false, "")
+		t.state.panels.panel["cases"].Populate(t, false, "")
+	})
+	files.SetSelectedFunc(func(index int, mainText, subText string, shortcut rune) {
+		// call go test parsing file command
 	})
 
 	return files
@@ -66,14 +70,19 @@ func (f *testFiles) hoverEvent() {
 	// unsure if this should go into results panel or run test or both
 }
 
-func (f *testFiles) Populate(t *TUI) {
+func (f *testFiles) Populate(t *TUI, init bool, name string) {
 	f.Clear()
 	for _, file := range t.state.resources.data.Files {
 		f.AddItem(file.Name, "", 0, nil)
 	}
 
 	currentTitle := f.GetTitle()
-	newTitle := fmt.Sprintf("%s (%d)", currentTitle, f.GetItemCount())
+	if strings.Contains(currentTitle, "(") {
+		titleSplit := strings.Split(currentTitle, "(")
+		currentTitle = titleSplit[0]
+	}
+
+	newTitle := fmt.Sprintf("%s(%d)", currentTitle, f.GetItemCount())
 	f.SetTitle(newTitle)
 
 	// HACK: an initial value is required to choose which test->case is displayed in other panels
@@ -84,4 +93,12 @@ func (f *testFiles) Populate(t *TUI) {
 		t.state.resources.currentFile = file
 		break
 	}
+}
+
+func (f *testFiles) GetList() *tview.List {
+	return f.List
+}
+
+func (f *testFiles) SetList(l *tview.List) {
+	f.List = l
 }

@@ -37,15 +37,15 @@ func (t *TUI) search() {
 func (t *TUI) nextPanel() {
 	switch t.state.panels.currentPanel {
 	case "files":
-		t.app.SetFocus(t.state.panels.panel["tests"])
+		t.app.SetFocus(t.state.panels.panel["tests"].GetList())
 		t.state.panels.currentPanel = "tests"
 
 	case "tests":
-		t.app.SetFocus(t.state.panels.panel["cases"])
+		t.app.SetFocus(t.state.panels.panel["cases"].GetList())
 		t.state.panels.currentPanel = "cases"
 
 	case "cases":
-		t.app.SetFocus(t.state.panels.panel["files"])
+		t.app.SetFocus(t.state.panels.panel["files"].GetList())
 		t.state.panels.currentPanel = "files"
 	}
 }
@@ -53,15 +53,15 @@ func (t *TUI) nextPanel() {
 func (t *TUI) prevPanel() {
 	switch t.state.panels.currentPanel {
 	case "files":
-		t.app.SetFocus(t.state.panels.panel["cases"])
+		t.app.SetFocus(t.state.panels.panel["cases"].GetList())
 		t.state.panels.currentPanel = "cases"
 
 	case "tests":
-		t.app.SetFocus(t.state.panels.panel["files"])
+		t.app.SetFocus(t.state.panels.panel["files"].GetList())
 		t.state.panels.currentPanel = "files"
 
 	case "cases":
-		t.app.SetFocus(t.state.panels.panel["tests"])
+		t.app.SetFocus(t.state.panels.panel["tests"].GetList())
 		t.state.panels.currentPanel = "tests"
 
 	}

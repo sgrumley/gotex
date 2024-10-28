@@ -3,6 +3,7 @@ package components
 import (
 	"fmt"
 	"sgrumley/gotex/pkg/finder"
+	"strings"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -26,13 +27,13 @@ func newTestFunctions(t *TUI) *testFunctions {
 	funcs.SetTitle("Tests")
 	funcs.SetBorder(true)
 	funcs.setKeybinding(t)
-	funcs.Populate(t, true)
+	funcs.Populate(t, true, "")
 	funcs.SetChangedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
-		// update cases
-		// break populate down to more functions and utilise passing the mainText (function name)
-		// cases.Populate(t, false, function)
-
+		t.state.panels.panel["cases"].Populate(t, false, "")
 		// t.state.panels.panel["cases"].Populate(t, false, mainText)
+	})
+	funcs.SetSelectedFunc(func(index int, mainText, subText string, shortcut rune) {
+		// call go test parsing function command (no appending /case)
 	})
 
 	return funcs
@@ -51,7 +52,7 @@ func (f *testFunctions) setKeybinding(t *TUI) {
 	})
 }
 
-func (f *testFunctions) Populate(t *TUI, init bool) {
+func (f *testFunctions) Populate(t *TUI, init bool, fileName string) {
 	// clear panel so dupes aren't added
 	f.Clear()
 
@@ -59,8 +60,8 @@ func (f *testFunctions) Populate(t *TUI, init bool) {
 	var selectedFile *finder.File
 
 	if !init {
-		selectedFileIndex := t.state.panels.panel["files"].GetCurrentItem()
-		selectedFileName, _ := t.state.panels.panel["files"].GetItemText(selectedFileIndex)
+		selectedFileIndex := t.state.panels.panel["files"].GetList().GetCurrentItem()
+		selectedFileName, _ := t.state.panels.panel["files"].GetList().GetItemText(selectedFileIndex)
 		selectedFile = t.state.resources.data.Files[selectedFileName]
 
 	} else {
@@ -73,7 +74,12 @@ func (f *testFunctions) Populate(t *TUI, init bool) {
 
 	// update title with list count
 	currentTitle := f.GetTitle()
-	newTitle := fmt.Sprintf("%s (%d)", currentTitle, f.GetItemCount())
+	if strings.Contains(currentTitle, "(") {
+		titleSplit := strings.Split(currentTitle, "(")
+		currentTitle = titleSplit[0]
+	}
+
+	newTitle := fmt.Sprintf("%s(%d)", currentTitle, f.GetItemCount())
 	f.SetTitle(newTitle)
 
 	// HACK: an initial value is required to choose which test->case is displayed in other panels
@@ -84,4 +90,12 @@ func (f *testFunctions) Populate(t *TUI, init bool) {
 		t.state.resources.currentTest = function
 		break
 	}
+}
+
+func (f *testFunctions) GetList() *tview.List {
+	return f.List
+}
+
+func (f *testFunctions) SetList(l *tview.List) {
+	f.List = l
 }

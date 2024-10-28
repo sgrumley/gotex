@@ -3,6 +3,7 @@ package components
 import (
 	"fmt"
 	"sgrumley/gotex/pkg/finder"
+	"strings"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -25,8 +26,11 @@ func newTestCases(t *TUI) *testCases {
 	cases.SetTitle("Cases")
 	cases.SetBorder(true)
 	cases.setKeybinding(t)
-	cases.Populate(t, true)
+	cases.Populate(t, true, "")
 	// cases.SetChangedFunc(ChangeCase)
+	cases.SetChangedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
+		// not sure if there is a case for this
+	})
 
 	return cases
 }
@@ -44,11 +48,7 @@ func (c *testCases) setKeybinding(t *TUI) {
 	})
 }
 
-func ChangeCase(index int, mainText string, secondaryText string, shortcut rune) {
-	// not sure if there is a case for this
-}
-
-func (c *testCases) Populate(t *TUI, init bool) {
+func (c *testCases) Populate(t *TUI, init bool, functionName string) {
 	// clear panel so dupes aren't added
 	c.Clear()
 
@@ -57,12 +57,12 @@ func (c *testCases) Populate(t *TUI, init bool) {
 
 	if !init {
 		// choice of file
-		selectedFileIndex := t.state.panels.panel["files"].GetCurrentItem()
-		selectedFileName, _ := t.state.panels.panel["files"].GetItemText(selectedFileIndex)
+		selectedFileIndex := t.state.panels.panel["files"].GetList().GetCurrentItem()
+		selectedFileName, _ := t.state.panels.panel["files"].GetList().GetItemText(selectedFileIndex)
 
 		// choice of function
-		selectedFunctionIndex := t.state.panels.panel["tests"].GetCurrentItem()
-		selectedFunctionName, _ := t.state.panels.panel["tests"].GetItemText(selectedFunctionIndex)
+		selectedFunctionIndex := t.state.panels.panel["tests"].GetList().GetCurrentItem()
+		selectedFunctionName, _ := t.state.panels.panel["tests"].GetList().GetItemText(selectedFunctionIndex)
 
 		selectedFunction = t.state.resources.data.Files[selectedFileName].Functions[selectedFunctionName]
 
@@ -82,6 +82,19 @@ func (c *testCases) Populate(t *TUI, init bool) {
 
 	// update title with list count
 	currentTitle := c.GetTitle()
-	newTitle := fmt.Sprintf("%s (%d)", currentTitle, c.GetItemCount())
+	if strings.Contains(currentTitle, "(") {
+		titleSplit := strings.Split(currentTitle, "(")
+		currentTitle = titleSplit[0]
+	}
+
+	newTitle := fmt.Sprintf("%s(%d)", currentTitle, c.GetItemCount())
 	c.SetTitle(newTitle)
+}
+
+func (c *testCases) GetList() *tview.List {
+	return c.List
+}
+
+func (c *testCases) SetList(l *tview.List) {
+	c.List = l
 }
