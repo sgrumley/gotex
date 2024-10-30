@@ -29,9 +29,9 @@ func (t *TUI) setGlobalKeybinding(event *tcell.EventKey) {
 }
 
 // prompt fzf code in pop up window
-func (t *TUI) search() {
-	// get a popup modal for searching via fzf
-}
+// func (t *TUI) search() {
+// get a popup modal for searching via fzf
+// }
 
 // NOTE: navigating panels might require some middle ware for rendering
 func (t *TUI) nextPanel() {

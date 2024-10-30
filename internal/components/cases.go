@@ -2,13 +2,15 @@ package components
 
 import (
 	"fmt"
-	"sgrumley/gotex/pkg/config"
-	"sgrumley/gotex/pkg/finder"
-	"sgrumley/gotex/pkg/runner"
+	"path/filepath"
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+
+	"sgrumley/gotex/pkg/config"
+	"sgrumley/gotex/pkg/finder"
+	"sgrumley/gotex/pkg/runner"
 )
 
 type testCase struct {
@@ -40,16 +42,19 @@ func newTestCases(t *TUI, cfg config.Config) *testCases {
 		selectedFunctionIndex := t.state.panels.panel["tests"].GetList().GetCurrentItem()
 		selectedFunctionName, _ := t.state.panels.panel["tests"].GetList().GetItemText(selectedFunctionIndex)
 
-		path := t.state.resources.data.Files[selectedFileName].Path
-		currentCase := t.state.resources.data.Files[selectedFileName].Functions[selectedFunctionName].Cases[mainText]
+		path := filepath.Dir(t.state.resources.data.Files[selectedFileName].Path)
+		currentFunction := t.state.resources.data.Files[selectedFileName].Functions[selectedFunctionName]
+		currentCase := currentFunction.Cases[mainText]
 
-		testResults, err := runner.RunTest(currentCase.Name, path, cfg)
+		// running test requires testname/casename
+		caseName := fmt.Sprintf("%s/%s", currentFunction.Name, currentCase.Name)
+		testResults, err := runner.RunTest(caseName, path, cfg)
 		if err != nil {
-			t.state.result.RenderResults(err.Error())
-			// renderError
+			t.state.result.RenderResults(fmt.Sprintf("Error running test: %s", err.Error()))
+			return
 		}
 
-		t.state.result.RenderResults(testResults)
+		t.state.result.RenderResults(fmt.Sprintf("Test results:\n%s", testResults))
 	})
 	return cases
 }

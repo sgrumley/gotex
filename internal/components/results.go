@@ -1,6 +1,8 @@
 package components
 
-import "github.com/rivo/tview"
+import (
+	"github.com/rivo/tview"
+)
 
 type results struct {
 	*tview.TextView
@@ -19,6 +21,7 @@ func newResultsPane(t *TUI) *results {
 }
 
 func (r *results) RenderResults(msg string) {
+	r.TextView.Clear()
 	r.TextView.SetDynamicColors(true).
 		SetText(msg)
 	// SetText("test results 1 \n test 2")

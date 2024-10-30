@@ -1,14 +1,13 @@
 package components
 
 import (
+	"github.com/rivo/tview"
+
 	"sgrumley/gotex/pkg/config"
 	"sgrumley/gotex/pkg/finder"
-
-	"github.com/rivo/tview"
 )
 
 type panel interface {
-	// name() string
 	Populate(t *TUI, init bool, name string)
 	GetList() *tview.List
 	SetList(*tview.List)
@@ -28,10 +27,10 @@ type resources struct {
 }
 
 type state struct {
-	lastTest  string // TODO: probably easiest to try and capture the cmd
+	// lastTest string // TODO: probably easiest to try and capture the cmd
 	panels    panels
 	navigate  *navigate
-	resources resources // TODO: should this be the types from finder?
+	resources resources
 	result    *results
 }
 
@@ -52,7 +51,6 @@ func newState() *state {
 
 type TUI struct {
 	app   *tview.Application
-	pages *tview.Pages
 	state *state
 }
 

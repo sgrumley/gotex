@@ -44,11 +44,14 @@ type Config struct {
 func GetConfig() (Config, error) {
 	filepath := GetConfigPath()
 	if filepath == "" {
-		return getDefaultCfg()
+		cfg, err := getDefaultCfg()
+		fmt.Printf("\n using default config: %+v\n\n", cfg)
+		return cfg, err
 	}
 
 	cfg, err := LoadYAML(filepath)
 	if err != nil {
+		// NOTE: this should use default
 		return Config{}, fmt.Errorf("failed to load config at path: %s with error: %w", filepath, err)
 	}
 	fmt.Printf("\nconfig: %+v\n\n", cfg)
@@ -58,11 +61,8 @@ func GetConfig() (Config, error) {
 func FileExists(filepath string) bool {
 	fp := ReplaceHomeDirChar(filepath)
 	_, err := os.Stat(fp)
-	if errors.Is(err, fs.ErrNotExist) {
-		return false
-	}
-	
-	return true
+
+	return errors.Is(err, fs.ErrNotExist)
 }
 
 // getDefaultCfg returns the config of default config specified in the local file default.yaml

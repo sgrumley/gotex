@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+
 	"sgrumley/gotex/pkg/config"
 )
 
@@ -20,6 +21,7 @@ func RunTest(testName string, dir string, cfg config.Config) (string, error) {
 	cmd.Stdout = buf
 	cmd.Stderr = errBuf
 
+	// return fmt.Sprintf("cmd:%v %s", cmd.Args, cmd.Dir), nil
 	// if the pipe to value is found in config attempt to run both commands via RunTestPiped
 	// if this fails it will run without the piped command
 	if cfg.PipeTo != "" {
