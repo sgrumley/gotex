@@ -32,9 +32,8 @@ func newTestTree(t *TUI, cfg config.Config) *TestTree {
 	}
 
 	tt.setKeybinding(t)
-	tt.SetBorder(true)
 	tt.SetTitle("Tests")
-
+	SetTreeStyling(t, tt.TreeView)
 	tt.Populate(t)
 
 	return tt
@@ -77,7 +76,7 @@ func (tt *TestTree) Populate(t *TUI) {
 	tt.SetRoot(root)
 	tt.SetCurrentNode(root)
 
-	add(root, data)
+	add(t, root, data)
 
 	tt.SetSelectedFunc(func(node *tview.TreeNode) {
 		reference := node.GetReference()
@@ -87,14 +86,14 @@ func (tt *TestTree) Populate(t *TUI) {
 		children := node.GetChildren()
 		if len(children) == 0 {
 			dataNode := reference.(finder.Node)
-			add(node, dataNode)
+			add(t, node, dataNode)
 		} else {
 			node.SetExpanded(!node.IsExpanded())
 		}
 	})
 }
 
-func add(target *tview.TreeNode, n finder.Node) {
+func add(t *TUI, target *tview.TreeNode, n finder.Node) {
 	children := n.GetChildren()
 	for _, child := range children {
 		node := tview.NewTreeNode(child.GetName())
@@ -106,13 +105,13 @@ func add(target *tview.TreeNode, n finder.Node) {
 		switch target.GetLevel() + 1 {
 		case LevelFile:
 			node.SetText("  " + node.GetText())
-			node.SetColor(fileColor)
+			node.SetColor(t.theme.File)
 		case LevelFunction:
 			node.SetText("󰡱 " + node.GetText())
-			node.SetColor(functionColor)
+			node.SetColor(t.theme.Function)
 		case LevelCase:
 			node.SetText("󰙨 " + node.GetText())
-			node.SetColor(caseColor)
+			node.SetColor(t.theme.Case)
 		default:
 			node.SetColor(unknownColor)
 		}

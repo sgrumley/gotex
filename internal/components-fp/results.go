@@ -15,7 +15,7 @@ func newResultsPane(t *TUI) *results {
 
 	res.SetBorder(true).SetTitle("Results")
 	res.RenderResults("Run a test to see results...")
-	SetTextViewStyling(res.TextView)
+	SetTextViewStyling(t, res.TextView)
 
 	return res
 }

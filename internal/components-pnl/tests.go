@@ -62,7 +62,7 @@ func (f *testFunctions) Populate(t *TUI, init bool, fileName string) {
 	if !init {
 		selectedFileIndex := t.state.panels.panel["files"].GetList().GetCurrentItem()
 		selectedFileName, _ := t.state.panels.panel["files"].GetList().GetItemText(selectedFileIndex)
-		selectedFile = t.state.resources.data.Files[selectedFileName]
+		selectedFile = t.state.resources.data.FileMap[selectedFileName]
 
 	} else {
 		selectedFile = t.state.resources.currentFile

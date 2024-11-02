@@ -1,24 +1,14 @@
 TODO: 
-1. Write TUI
-2. Decide if refactor needed for API
-3. Test API code 
-4. Logging to file
-
-
-Upcoming:
-- different types for running go test e.g files, pkgs...
-- use file tree instead 
+- theming
 - search
+- run test 
+  - project (run all)
+  - files
+  - function
+  - pkg
+- rerun last
+- Option to rescan for tests / should this happen on a timer??
 
 Notes
 - Check if it might make more sence to call go test package instead of using os.exec
-
-BUGS: 
-- initialising set values isn't working properly (panic if you dont change list before you run test case)
-- border of pane should change on focus
-- better colour theme
-- dir names with files
-- results pane should keep colors of text
-
-Priority is change to file tree
 

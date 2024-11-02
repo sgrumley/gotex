@@ -17,6 +17,7 @@ type Node interface {
 	RunTest() (string, error)
 }
 
+// TODO: types should be added to their own files
 var _ Node = (*Project)(nil)
 
 type Project struct {
@@ -159,6 +160,7 @@ func (c *Case) RunTest() (string, error) {
 	return runner.RunTest(caseName, path, cfg)
 }
 
+// TODO: get config here make it a type with project
 func InitProject() *Project {
 	p := &Project{}
 	projectRoot, err := FindGoProjectRoot()
@@ -201,8 +203,6 @@ func InitProject() *Project {
 
 func (p *Project) TestNameOut() ([]string, map[string]string) {
 	tests := make([]string, 0)
-	testLocation := make(map[string]string)
-	for _, f := range p.Files {
 		// PERF: concurrent here
 		for _, fn := range f.Functions {
 			for _, c := range fn.Cases {
