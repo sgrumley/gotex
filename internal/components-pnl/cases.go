@@ -3,14 +3,13 @@ package components
 import (
 	"fmt"
 	"path/filepath"
+	"sgrumley/gotex/pkg/config"
+	"sgrumley/gotex/pkg/finder"
+	"sgrumley/gotex/pkg/runner"
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
-
-	"sgrumley/gotex/pkg/config"
-	"sgrumley/gotex/pkg/finder"
-	"sgrumley/gotex/pkg/runner"
 )
 
 type testCase struct {
@@ -42,9 +41,9 @@ func newTestCases(t *TUI, cfg config.Config) *testCases {
 		selectedFunctionIndex := t.state.panels.panel["tests"].GetList().GetCurrentItem()
 		selectedFunctionName, _ := t.state.panels.panel["tests"].GetList().GetItemText(selectedFunctionIndex)
 
-		path := filepath.Dir(t.state.resources.data.Files[selectedFileName].Path)
-		currentFunction := t.state.resources.data.Files[selectedFileName].Functions[selectedFunctionName]
-		currentCase := currentFunction.Cases[mainText]
+		path := filepath.Dir(t.state.resources.data.FileMap[selectedFileName].Path)
+		currentFunction := t.state.resources.data.FileMap[selectedFileName].FunctionMap[selectedFunctionName]
+		currentCase := currentFunction.CaseMap[mainText]
 
 		// running test requires testname/casename
 		caseName := fmt.Sprintf("%s/%s", currentFunction.Name, currentCase.Name)
@@ -88,7 +87,7 @@ func (c *testCases) Populate(t *TUI, init bool, functionName string) {
 		selectedFunctionIndex := t.state.panels.panel["tests"].GetList().GetCurrentItem()
 		selectedFunctionName, _ := t.state.panels.panel["tests"].GetList().GetItemText(selectedFunctionIndex)
 
-		selectedFunction = t.state.resources.data.Files[selectedFileName].Functions[selectedFunctionName]
+		selectedFunction = t.state.resources.data.FileMap[selectedFileName].FunctionMap[selectedFunctionName]
 
 	} else {
 		selectedFunction = t.state.resources.currentTest

@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
-	"sgrumley/gotex/internal/components"
+	"sgrumley/gotex/internal/components-fp"
 )
 
 func main() {

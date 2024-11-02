@@ -51,17 +51,22 @@ func ListAll(file *File) error {
 				// Find all occurrences of `tc.name` in the function
 				cases := findValuesOfIndexedField(fn, caseName)
 				caseMap := make(map[string]*Case)
+				f := &Function{}
+
 				for i := range cases {
-					caseMap[cases[i].Name] = &cases[i]
+					cases[i].Parent = f
+					caseMap[cases[i].Name] = cases[i]
 				}
 
-				file.Functions[fn.Name.Name] = &Function{
-					Name:    fn.Name.Name,
-					Cases:   caseMap,
-					decl:    fn,
-					VarName: subtestName,
-				}
-				// file.Functions = append(file.Functions)
+				f.Name = fn.Name.Name
+				f.Cases = cases
+				f.CaseMap = caseMap
+				f.decl = fn
+				f.VarName = subtestName
+				f.Parent = file
+
+				file.FunctionMap[fn.Name.Name] = f
+				file.Functions = append(file.Functions, f)
 			}
 		}
 		return true
@@ -94,8 +99,8 @@ func findEnclosingFunction(node ast.Node, n ast.Node) *ast.FuncDecl {
 	return fn
 }
 
-func findValuesOfIndexedField(fn *ast.FuncDecl, fieldName string) []Case {
-	var cases []Case
+func findValuesOfIndexedField(fn *ast.FuncDecl, fieldName string) []*Case {
+	var cases []*Case
 
 	// findValuesOfIndexedField looks for the value of a field in an array or slice (e.g. tc[i].name)
 	ast.Inspect(fn.Body, func(n ast.Node) bool {
@@ -107,7 +112,7 @@ func findValuesOfIndexedField(fn *ast.FuncDecl, fieldName string) []Case {
 						// Extract the value assigned to the field (e.g. "TestA" for `name: "TestA"`)
 						nameValue := extractRHSValue(kvExpr.Value)
 						nameValueStripped := strings.ReplaceAll(nameValue, `"`, "")
-						cases = append(cases, Case{
+						cases = append(cases, &Case{
 							Name: nameValueStripped,
 						})
 					}
