@@ -1,15 +1,22 @@
 package main
 
 import (
-	"sgrumley/gotex/internal/cli"
-
-	"sgrumley/gotex/pkg/finder"
+	"fmt"
+	"os"
+	"sgrumley/gotex/internal/components-fp"
 )
 
 func main() {
+	os.Exit(run())
+}
 
-	project := finder.InitProject()
-	// project.PrettyPrint()
+func run() int {
+	app := components.New()
+	err := app.Start()
+	if err != nil {
+		fmt.Printf("application crashed: %s", err.Error())
+		return 1
+	}
 
-	cli.Run(project.TestNameOut())
+	return 0
 }

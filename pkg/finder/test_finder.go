@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func ListAll(file *File) error {
+func SearchFile(file *File) error {
 	fset := token.NewFileSet()
 
 	// Parse the file

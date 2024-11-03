@@ -1,8 +1,8 @@
 package components
 
 import (
-	"sgrumley/gotex/pkg/config"
 	"sgrumley/gotex/pkg/finder"
+	"time"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -26,7 +26,7 @@ type TestTree struct {
 	*tview.TreeView
 }
 
-func newTestTree(t *TUI, cfg config.Config) *TestTree {
+func newTestTree(t *TUI) *TestTree {
 	tt := &TestTree{
 		TreeView: tview.NewTreeView(),
 	}
@@ -46,12 +46,14 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 		// keybinding for single keys
 		switch event.Rune() {
 		case 'r':
-			nodeType, ok := tt.GetCurrentNode().GetReference().(finder.Node)
+			t.state.result.RenderResults("Testing ....")
+			dataNode, ok := tt.GetCurrentNode().GetReference().(finder.Node)
 			if !ok {
 				t.state.result.RenderResults("Error selected node is not a test")
 				return event
 			}
-			output, err := nodeType.RunTest()
+			t.state.lastTest = dataNode
+			output, err := dataNode.RunTest()
 			if err != nil {
 				t.state.result.RenderResults(err.Error())
 				return event
@@ -64,7 +66,21 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 		// keybinding for special keys
 		switch event.Key() {
 		case tcell.KeyCtrlR:
-			// TODO: rerun last test
+			t.state.result.RenderResults("Testing ....")
+			time.Sleep(1 * time.Second)
+
+			node := t.state.lastTest
+			if node == nil {
+				t.state.result.RenderResults("Failed to run last test. Make sure you run a test before rerunning")
+				return event
+			}
+			output, err := node.RunTest()
+			if err != nil {
+				t.state.result.RenderResults(err.Error())
+				return event
+			}
+
+			t.state.result.RenderResults(output)
 		}
 		return event
 	})

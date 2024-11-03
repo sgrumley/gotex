@@ -1,7 +1,6 @@
 package components
 
 import (
-	"sgrumley/gotex/pkg/config"
 	"sgrumley/gotex/pkg/finder"
 
 	"github.com/rivo/tview"
@@ -12,7 +11,7 @@ type resources struct {
 }
 
 type state struct {
-	// lastTest string // TODO: probably easiest to try and capture the cmd
+	lastTest  finder.Node
 	navigate  *navigate
 	resources resources
 	result    *results
@@ -60,16 +59,12 @@ func (t *TUI) initPanels() {
 	// TODO: there should be two configs -> theme and options
 	// options should be found as part of finder
 	// theme should be found here
-	cfg, err := config.GetConfig()
-	if err != nil {
-		return
-	}
 
 	SetAppStyling()
 	t.theme = SetTheme("catppuccin mocha")
 
 	// panels
-	testTree := newTestTree(t, cfg)
+	testTree := newTestTree(t)
 	help := newHelpPane(t)
 
 	results := newResultsPane(t)
