@@ -17,6 +17,7 @@ func newResultsPane(t *TUI) *results {
 	res.RenderResults("[green]Run[-] a test to see results...")
 	res.SetDynamicColors(true)
 	SetTextViewStyling(t, res.TextView)
+	res.SetWrap(true)
 
 	return res
 }

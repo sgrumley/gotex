@@ -1,14 +1,24 @@
 TODO: 
 - theming
 - logging
+- update keymaps (scroll, rerun, ...)
 - add package scope (might look like a folder between project and file)
-- search
+- search (this should have a map from a from search term to struct with a ref to the node and other meta data) 
+  - use fzf
 - rerun last
 - Option to rescan for tests / should this happen on a timer??
 - Create/modify config in app
 - smaller results panel below results that has meta data and logs??
+  - test name
+  - file location
+  - pass / fail
 - some ui impovement to change screen when rerunning test
+- add config option to set how many levels you want displayed before filename
 - add results state to test in tree (tick or cross emoji??)
+- add switch focus to results 
+  - search 
+  - scroll
+  - copy 
 
 Notes
 - Check if it might make more sence to call go test package instead of using os.exec

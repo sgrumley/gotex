@@ -18,10 +18,9 @@ type File struct {
 }
 
 func (f *File) GetName() string {
-	path := fmt.Sprintf("%s/%s", f.Path, f.Name)
-	paths := strings.Split(path, "/")
-	nodeName := fmt.Sprintf("%s/%s", paths[len(paths)-1], paths[len(paths)-2])
-
+	paths := strings.Split(f.Path, "/")
+	nodeName := fmt.Sprintf("%s/%s", paths[len(paths)-2], paths[len(paths)-1])
+	fmt.Println(paths)
 	return nodeName
 }
 

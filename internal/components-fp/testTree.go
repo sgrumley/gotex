@@ -81,6 +81,12 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 			}
 
 			t.state.result.RenderResults(output)
+		case tcell.KeyCtrlU:
+			currentPosition, _ := t.state.result.GetScrollOffset()
+			t.state.result.ScrollTo(currentPosition-10, 0)
+		case tcell.KeyCtrlD:
+			currentPosition, _ := t.state.result.GetScrollOffset()
+			t.state.result.ScrollTo(currentPosition+10, 0)
 		}
 		return event
 	})
