@@ -64,8 +64,9 @@ func (t *TUI) initPanels() {
 	t.theme = SetTheme("catppuccin mocha")
 
 	// panels
-	testTree := newTestTree(t)
 	help := newHelpPane(t)
+	testTree := newTestTree(t)
+	t.app.SetFocus(testTree)
 
 	results := newResultsPane(t)
 	t.state.result = results
