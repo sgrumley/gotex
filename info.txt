@@ -1,17 +1,15 @@
 TODO: 
 - theming
 - logging
-- run test 
-  - project (run all)
-  - files
-  - function
-  - pkg
+- add package scope (might look like a folder between project and file)
 - search
 - rerun last
 - Option to rescan for tests / should this happen on a timer??
 - Create/modify config in app
 - smaller results panel below results that has meta data and logs??
 - some ui impovement to change screen when rerunning test
+- add results state to test in tree (tick or cross emoji??)
+
 Notes
 - Check if it might make more sence to call go test package instead of using os.exec
 - check if a tparse integration works better than piping (piping can be made nicer later)

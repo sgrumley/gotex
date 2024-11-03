@@ -26,11 +26,12 @@ func getDefaultThemes() map[string]Theme {
 			Name:       "catppuccin mocha",
 			Background: HexToColor("#1E1E2E"), // Base
 			Border:     HexToColor("#b4befe"), // Lavender
-			Text:       HexToColor("#b4befe"), // Lavender
-			Project:    HexToColor("#f5e0dc"),
-			File:       HexToColor("#f5e0dc"),
-			Function:   HexToColor("#f5e0dc"),
-			Case:       HexToColor("#f5e0dc"),
+			Text:       HexToColor("#cdd6f4"),
+			Project:    HexToColor("#b4befe"),
+			Function:   HexToColor("#89b4fa"),
+			// Function: HexToColor("#b4befe"),
+			File: HexToColor("#f5e0dc"),
+			Case: HexToColor("#a6e3a1"),
 		},
 	}
 	return themes
