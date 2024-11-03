@@ -61,8 +61,11 @@ func GetConfig() (Config, error) {
 func FileExists(filepath string) bool {
 	fp := ReplaceHomeDirChar(filepath)
 	_, err := os.Stat(fp)
+	if errors.Is(err, fs.ErrNotExist) {
+		return false
+	}
 
-	return errors.Is(err, fs.ErrNotExist)
+	return true
 }
 
 // getDefaultCfg returns the config of default config specified in the local file default.yaml
