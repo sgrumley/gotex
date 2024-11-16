@@ -32,7 +32,11 @@ func SearchFile(file *File, log *slog.Logger) error {
 
 				// Extract the subtest variable name (this should be something like tc.name where tc is the stuct and name is the attribute provided to t.Run(tc.name, ...))
 				subtestName := extractSubtestVariableName(callExpr.Args[0])
-				log.Debug("test case found", slog.String("name", subtestName))
+				log.Debug("test case found",
+					slog.String("case name", subtestName),
+					slog.String("function name", fn.Name.Name),
+					slog.String("file name", file.Name),
+				)
 
 				// setting a default that I use, probably needs better error handling in general
 				// structName := "tc"
