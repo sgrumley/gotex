@@ -23,9 +23,8 @@ Nice to have:
 - add results state to test in tree (tick or cross emoji??) -> this does not persist longer than the session
 
 Bug:
-- file tree panel doesn't scale well. Results should scale with filetree fixed
 - some ui impovement to change screen when rerunning test
-- update keymaps help text (scroll, rerun, ...)
+  -> seems like returning the event is what cause the execution. This means there is no easy way to change the screen while the test runs.
 - file tests don't work in some projects
 - large projects fail in finding tests 
 - some test cases are showing up incorrectly
