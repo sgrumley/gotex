@@ -45,7 +45,10 @@ type Config struct {
 func GetConfig(log *slog.Logger) (Config, error) {
 	filepath, err := GetConfigPath()
 	if err != nil {
-		cfg, err := getDefaultCfg()
+		cfg, errDefault := getDefaultCfg()
+		if errDefault != nil {
+			return Config{}, errDefault
+		}
 		log.Warn("failed to find user specified config, using default",
 			slog.String("cause", err.Error()),
 			slog.Any("default config", cfg),
@@ -55,7 +58,10 @@ func GetConfig(log *slog.Logger) (Config, error) {
 
 	cfg, err := LoadYAML(filepath)
 	if err != nil {
-		cfg, err := getDefaultCfg()
+		cfg, errDefault := getDefaultCfg()
+		if errDefault != nil {
+			return Config{}, errDefault
+		}
 		log.Error("invalid config file",
 			slog.Any("error", fmt.Errorf("failed to load config at path: %s with error: %w", filepath, err)),
 			slog.Any("default config", cfg),
