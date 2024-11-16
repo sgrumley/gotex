@@ -64,5 +64,5 @@ func FindGoProjectRoot() (string, error) {
 		currentDir = parentDir
 	}
 
-	return "", fmt.Errorf("project root not found in any parent directories")
+	return "", fmt.Errorf("go.mod file not found in current directory or any parent directories")
 }

@@ -22,7 +22,11 @@ func run() int {
 		return 1
 	}
 
-	app := components.New(log)
+	app, err := components.New(log)
+	if err != nil {
+		fmt.Printf("failed to initialise project: %s", err.Error())
+		return 1
+	}
 	err = app.Start()
 	if err != nil {
 		// to file

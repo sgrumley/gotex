@@ -19,16 +19,18 @@ type state struct {
 	testTree  *TestTree
 }
 
-func newState(log *slog.Logger) *state {
+func newState(log *slog.Logger) (*state, error) {
 	data, err := finder.InitProject(log)
 	if err != nil {
 		log.Error("failed to initialise project", slog.Any("error", err))
+		return nil, err
 	}
+
 	return &state{
 		resources: resources{
 			data: data,
 		},
-	}
+	}, nil
 }
 
 type TUI struct {
@@ -38,12 +40,16 @@ type TUI struct {
 	log   *slog.Logger
 }
 
-func New(log *slog.Logger) *TUI {
+func New(log *slog.Logger) (*TUI, error) {
+	data, err := newState(log)
+	if err != nil {
+		return nil, err
+	}
 	return &TUI{
 		app:   tview.NewApplication(),
-		state: newState(log),
+		state: data,
 		log:   log,
-	}
+	}, nil
 }
 
 func (t *TUI) Start() error {
