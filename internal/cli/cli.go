@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"os/signal"
 	"sgrumley/gotex/pkg/config"
@@ -12,7 +13,7 @@ import (
 )
 
 func Run(tests []string, locationMapping map[string]string) {
-	cfg, err := config.GetConfig()
+	cfg, err := config.GetConfig(slog.Default())
 	if err != nil {
 		fmt.Println("error getting config", err)
 	}

@@ -54,7 +54,7 @@ func (p *Project) RunTest() (string, error) {
 }
 
 func InitProject(log *slog.Logger) (*Project, error) {
-	cfg, err := config.GetConfig()
+	cfg, err := config.GetConfig(log)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load a config: %w", err)
 	}
@@ -82,7 +82,7 @@ func InitProject(log *slog.Logger) (*Project, error) {
 		file.FunctionMap = make(map[string]*Function)
 		file.Parent = p
 
-		err := SearchFile(file)
+		err := SearchFile(file, log)
 		if err != nil {
 			return nil, fmt.Errorf("failed finding tests: %s\n", err)
 		}

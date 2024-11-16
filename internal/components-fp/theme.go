@@ -1,7 +1,6 @@
 package components
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/gdamore/tcell/v2"
@@ -81,7 +80,6 @@ func SetFlexStyling(t *TUI, flex *tview.Flex) {
 func HexToColor(hex string) tcell.Color {
 	color, err := strconv.ParseInt(hex[1:], 16, 32)
 	if err != nil {
-		fmt.Println("Invalid hex color")
 		return tcell.ColorDefault
 	}
 	return tcell.NewHexColor(int32(color))

@@ -82,6 +82,7 @@ func New(options ...Option) (*slog.Logger, error) {
 		slogHandler = slog.NewJSONHandler(opts.output, baseOpts)
 	}
 	logger := slog.New(slogHandler)
+	slog.SetDefault(logger)
 
 	return logger, nil
 }
@@ -98,7 +99,11 @@ func newLogFile(format Handler) (*os.File, error) {
 		defaultFile = "log.json"
 	}
 
-	logFilePath := ReplaceHomeDirChar(filepath.Join(defaultFolder, defaultFile))
+	logFilePath, err := ReplaceHomeDirChar(filepath.Join(defaultFolder, defaultFile))
+	if err != nil {
+		return nil, err
+	}
+
 	file, err := os.OpenFile(logFilePath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to open log file: %v", err)
@@ -107,18 +112,17 @@ func newLogFile(format Handler) (*os.File, error) {
 	return file, nil
 }
 
-func ReplaceHomeDirChar(fp string) string {
+func ReplaceHomeDirChar(fp string) (string, error) {
 	if !strings.Contains(fp, "~") {
-		return fp
+		return fp, nil
 	}
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
-		fmt.Println("Error getting home directory:", err)
-		return ""
+		return "", fmt.Errorf("Error getting home directory: %w", err)
 	}
 	// Replace ~ with the home directory path
 	if fp[:2] == "~/" {
 		fp = filepath.Join(homeDir, fp[2:])
 	}
-	return fp
+	return fp, nil
 }

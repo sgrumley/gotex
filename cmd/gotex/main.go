@@ -25,7 +25,9 @@ func run() int {
 	app := components.New(log)
 	err = app.Start()
 	if err != nil {
+		// to file
 		log.Error("application crashed", slog.Any("error", err))
+		// to stdout
 		fmt.Printf("application crashed: %s", err.Error())
 		return 1
 	}

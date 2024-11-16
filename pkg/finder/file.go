@@ -20,7 +20,6 @@ type File struct {
 func (f *File) GetName() string {
 	paths := strings.Split(f.Path, "/")
 	nodeName := fmt.Sprintf("%s/%s", paths[len(paths)-2], paths[len(paths)-1])
-	fmt.Println(paths)
 	return nodeName
 }
 

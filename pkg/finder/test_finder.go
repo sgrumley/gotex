@@ -5,10 +5,11 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"log/slog"
 	"strings"
 )
 
-func SearchFile(file *File) error {
+func SearchFile(file *File, log *slog.Logger) error {
 	fset := token.NewFileSet()
 
 	// Parse the file
@@ -31,7 +32,7 @@ func SearchFile(file *File) error {
 
 				// Extract the subtest variable name (this should be something like tc.name where tc is the stuct and name is the attribute provided to t.Run(tc.name, ...))
 				subtestName := extractSubtestVariableName(callExpr.Args[0])
-				fmt.Println("	test case variable name found: ", subtestName)
+				log.Debug("test case found", slog.String("name", subtestName))
 
 				// setting a default that I use, probably needs better error handling in general
 				// structName := "tc"
@@ -42,7 +43,7 @@ func SearchFile(file *File) error {
 					// structName = subtestNameSplit[0]
 					caseName = subtestNameSplit[1]
 				} else {
-					fmt.Println("failed identifying struct.name, defaulting to tc.name")
+					log.Error("failed identifying struct.name, defaulting to tc.name", slog.String("name", subtestName))
 				}
 
 				// TODO: add the name of the struct back in for validation

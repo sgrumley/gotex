@@ -3,12 +3,15 @@ package runner
 import (
 	"bytes"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/exec"
 	"sgrumley/gotex/pkg/config"
 )
 
 func RunTest(testType testType, testName string, dir string, cfg config.Config) (string, error) {
+	// TODO: look into how the default logger works
+	log := slog.Default()
 	buf := new(bytes.Buffer)
 	errBuf := new(bytes.Buffer)
 	cmdStr := GetCommand(testType, testName)
@@ -19,15 +22,21 @@ func RunTest(testType testType, testName string, dir string, cfg config.Config) 
 	cmd.Stdout = buf
 	cmd.Stderr = errBuf
 
-	// TODO: spend some time to renable piping
 	if cfg.PipeTo != "" {
 		res, err := RunTestPiped(cmdStr, cfg.PipeTo, dir)
-		if err == nil {
-			return res.String(), nil
+		if err != nil {
+			slog.Error("failed to run piped command", slog.Any("error", err))
+			return "", err
 		}
+
+		return res.String(), nil
 	}
 
-	// fmt.Printf("running cmd: %v from dir: %s with type %d\n", cmd.Args, cmd.Dir, testType)
+	log.Info("os command executed",
+		slog.Any("args", cmd.Args),
+		slog.String("dir", cmd.Dir),
+		slog.Any("type", testType),
+	)
 	if err := cmd.Start(); err != nil {
 		return "", fmt.Errorf("failed to start command: %w", err)
 	}
@@ -41,6 +50,7 @@ func RunTest(testType testType, testName string, dir string, cfg config.Config) 
 		}
 	}
 
+	log.Info("test run successfully", slog.String("name", testName))
 	return buf.String(), nil
 }
 
@@ -113,10 +123,6 @@ func RunTestPiped(cmdStr1 []string, cmdStr2 string, dir string) (*bytes.Buffer, 
 		return nil, fmt.Errorf("go test command failed: %w, stderr: %s", err, errBuf1.String())
 	}
 
-	// leaving for debugging purposes
-	// fmt.Println("Output of command 1:")
-	// fmt.Println(cmd1Output.String())
-
 	// Create a pipe for the second command
 	r, w, err := os.Pipe()
 	if err != nil {
@@ -129,10 +135,8 @@ func RunTestPiped(cmdStr1 []string, cmdStr2 string, dir string) (*bytes.Buffer, 
 		w.Close()
 	}()
 
-	// Buffer to capture the output of the second command
 	var cmd2Output bytes.Buffer
 	var errBuf2 bytes.Buffer
-	// Prepare the second command
 	cmd2 := exec.Command(cmdStr2)
 	cmd2.Stdin = r
 	cmd2.Stdout = &cmd2Output
@@ -142,9 +146,6 @@ func RunTestPiped(cmdStr1 []string, cmdStr2 string, dir string) (*bytes.Buffer, 
 	if err := cmd2.Run(); err != nil {
 		errStr := errBuf2.String()
 		if errStr != "exit status 1" {
-			// fmt.Println("buf inside", cmd2Output.String())
-			// fmt.Println("err inside", errStr)
-
 			return nil, fmt.Errorf("piped command failed: %w, stderr: %s", err, errBuf2.String())
 		}
 	}
