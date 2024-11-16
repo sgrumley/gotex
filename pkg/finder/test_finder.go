@@ -18,20 +18,24 @@ func SearchFile(file *File, log *slog.Logger) error {
 		return fmt.Errorf("failed to parse file %s: %v", file.Path, err)
 	}
 
-	// Walk the AST and find testcases (t.Run)
 	ast.Inspect(node, func(n ast.Node) bool {
 		// Check all call expressions (function calls)
 		if callExpr, ok := n.(*ast.CallExpr); ok {
-			// Check if the function being called is `t.Run`
+			// a selector expression is the syntax used to access fields or methods of a struct
+			// checking that the selector is `Run`, we can then check that the expression is `t`
 			if selExpr, ok := callExpr.Fun.(*ast.SelectorExpr); ok && selExpr.Sel.Name == "Run" {
+				if ex := exprToString(selExpr.X); ex != "t" {
+					log.Debug("here", slog.String("expression", ex))
+					return true
+				}
 				// Get the parent function (this is intended to be the test function containing the subtests)
 				fn := findEnclosingFunction(node, callExpr)
 				if fn == nil {
-					return true // Skip if no enclosing function found
+					return true
 				}
 
 				// Extract the subtest variable name (this should be something like tc.name where tc is the stuct and name is the attribute provided to t.Run(tc.name, ...))
-				subtestName := extractSubtestVariableName(callExpr.Args[0])
+				subtestName := exprToString(callExpr.Args[0])
 				log.Debug("test case found",
 					slog.String("case name", subtestName),
 					slog.String("function name", fn.Name.Name),
@@ -81,7 +85,7 @@ func SearchFile(file *File, log *slog.Logger) error {
 }
 
 // extractSubtestName handles both string literals and dynamic subtest names
-func extractSubtestVariableName(expr ast.Expr) string {
+func exprToString(expr ast.Expr) string {
 	if lit, ok := expr.(*ast.BasicLit); ok && lit.Kind == token.STRING {
 		return strings.Trim(lit.Value, "\"")
 	}
