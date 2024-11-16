@@ -2,14 +2,14 @@ TODO:
 Once the project has required tasks and bugs completed -> clean code -> update pkg code to be an api -> write readme
 
 Required:
-- logging
 - search (this should have a map from a from search term to struct with a ref to the node and other meta data) 
   - fzf
-- Option to rescan for tests / should this happen on a timer??
-- smaller results panel below results that has meta data and logs??
+- smaller results panel below results that has meta data and logs?? -> there should be a toggle for this
   - test name
   - file location
   - pass / fail
+  - config + location filepath 
+  - logger output filepath
 - add switch focus to results 
   - search 
   - scroll

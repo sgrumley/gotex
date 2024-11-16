@@ -43,7 +43,7 @@ func newNavigate() *navigate {
 	return &navigate{
 		TextView: tview.NewTextView().SetTextColor(tcell.ColorYellow),
 		keybindings: map[string]string{
-			"cases": "/: search, q: quit, R: rerun last, r: run test",
+			"testTree": "/: search, r: run test, R: rerun last test, s: sync project, q: quit",
 		},
 	}
 }

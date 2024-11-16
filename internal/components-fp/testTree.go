@@ -3,7 +3,6 @@ package components
 import (
 	"log/slog"
 	"sgrumley/gotex/pkg/finder"
-	"time"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -46,6 +45,7 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 
 		// keybinding for single keys
 		switch event.Rune() {
+		// run test
 		case 'r':
 			t.state.result.RenderResults("Testing ....")
 			dataNode, ok := tt.GetCurrentNode().GetReference().(finder.Node)
@@ -63,14 +63,12 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 			}
 
 			t.state.result.RenderResults(output)
-		case '/':
-			// TODO: search
-		}
-		// keybinding for special keys
-		switch event.Key() {
-		case tcell.KeyCtrlR:
-			t.state.result.RenderResults("Testing ....")
-			time.Sleep(1 * time.Second)
+		// rerun last test
+		case 'R':
+			// FIX: need a way to show the user that the test has been rerun/ is rerunning
+			// maybe a job for the meta console?
+			t.state.result.RenderResults("Rerunning test")
+			t.log.Error("this should not have run")
 
 			node := t.state.lastTest
 			if node == nil {
@@ -78,14 +76,32 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 				t.log.Error("attempted test rerun, but no test has previously been run")
 				return event
 			}
+
 			output, err := node.RunTest()
 			if err != nil {
 				t.log.Error("failed to re run valid test", slog.Any("error", err))
 				t.state.result.RenderResults(err.Error())
 				return event
 			}
-
 			t.state.result.RenderResults(output)
+
+		// sync tests
+		case 's':
+			// NOTE: this could happen on a timer or by watching the the test files for changes
+			data, err := finder.InitProject(t.log)
+			if err != nil {
+				t.state.result.RenderResults(err.Error())
+			}
+			t.state.resources.data = data
+			t.state.testTree.Populate(t)
+			t.state.result.RenderResults("Project has successfully refreshed")
+		// search
+		case '/':
+			// TODO: search
+
+		}
+		// keybinding for special keys
+		switch event.Key() {
 		case tcell.KeyCtrlU:
 			currentPosition, _ := t.state.result.GetScrollOffset()
 			t.state.result.ScrollTo(currentPosition-10, 0)

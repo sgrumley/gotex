@@ -16,6 +16,7 @@ type state struct {
 	navigate  *navigate
 	resources resources
 	result    *results
+	testTree  *TestTree
 }
 
 func newState(log *slog.Logger) *state {
@@ -73,6 +74,7 @@ func (t *TUI) initPanels() {
 	help := newHelpPane(t)
 	testTree := newTestTree(t)
 	t.app.SetFocus(testTree)
+	t.state.testTree = testTree
 
 	results := newResultsPane(t)
 	t.state.result = results
