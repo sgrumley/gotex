@@ -36,7 +36,7 @@ func Run(tests []string, locationMapping map[string]string) {
 				return
 			}
 
-			testOutput, err := runner.RunTest(s, location, cfg)
+			testOutput, err := runner.RunTest(runner.TEST_TYPE_CASE, s, location, cfg)
 			if err != nil {
 				fmt.Printf("failed to execute test: %s\n", err.Error())
 				wait <- true

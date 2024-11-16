@@ -1,26 +1,37 @@
 TODO: 
-- theming
+Once the project has required tasks and bugs completed -> clean code -> update pkg code to be an api -> write readme
+
+Required:
 - logging
-- update keymaps (scroll, rerun, ...)
-- add package scope (might look like a folder between project and file)
 - search (this should have a map from a from search term to struct with a ref to the node and other meta data) 
-  - use fzf
-- rerun last
+  - fzf
 - Option to rescan for tests / should this happen on a timer??
-- Create/modify config in app
 - smaller results panel below results that has meta data and logs??
   - test name
   - file location
   - pass / fail
-- some ui impovement to change screen when rerunning test
-- add config option to set how many levels you want displayed before filename
-- add results state to test in tree (tick or cross emoji??)
 - add switch focus to results 
   - search 
   - scroll
   - copy 
 
+Nice to have: 
+- theming
+- add package scope (might look like a folder between project and file)
+- Create/modify config in app (this should be stateless, modify yaml for persistent settings)
+- add config option to set how many levels you want displayed before filename
+- add results state to test in tree (tick or cross emoji??) -> this does not persist longer than the session
+
+Bug:
+- file tree panel doesn't scale well. Results should scale with filetree fixed
+- some ui impovement to change screen when rerunning test
+- update keymaps help text (scroll, rerun, ...)
+- file tests don't work in some projects
+- large projects fail in finding tests 
+- some test cases are showing up incorrectly
+
 Notes
 - Check if it might make more sence to call go test package instead of using os.exec
 - check if a tparse integration works better than piping (piping can be made nicer later)
+- optimize with concurrency
 

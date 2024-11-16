@@ -1,6 +1,7 @@
 package components
 
 import (
+	"log/slog"
 	"sgrumley/gotex/pkg/finder"
 
 	"github.com/rivo/tview"
@@ -17,12 +18,14 @@ type state struct {
 	result    *results
 }
 
-func newState() *state {
-	project := finder.InitProject()
-
+func newState(log *slog.Logger) *state {
+	data, err := finder.InitProject(log)
+	if err != nil {
+		log.Error("failed to initialise project", slog.Any("error", err))
+	}
 	return &state{
 		resources: resources{
-			data: project,
+			data: data,
 		},
 	}
 }
@@ -31,18 +34,21 @@ type TUI struct {
 	app   *tview.Application
 	state *state
 	theme Theme
+	log   *slog.Logger
 }
 
-func New() *TUI {
+func New(log *slog.Logger) *TUI {
 	return &TUI{
 		app:   tview.NewApplication(),
-		state: newState(),
+		state: newState(log),
+		log:   log,
 	}
 }
 
 func (t *TUI) Start() error {
 	t.initPanels()
 	if err := t.app.Run(); err != nil {
+		t.log.Error("app stopping", slog.Any("error", err))
 		t.app.Stop()
 
 		return err
@@ -85,4 +91,5 @@ func (t *TUI) initPanels() {
 	SetFlexStyling(t, layout)
 
 	t.app.SetRoot(layout, true)
+	t.log.Info("app started successfully")
 }

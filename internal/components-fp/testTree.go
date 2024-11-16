@@ -1,6 +1,7 @@
 package components
 
 import (
+	"log/slog"
 	"sgrumley/gotex/pkg/finder"
 	"time"
 
@@ -49,12 +50,14 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 			t.state.result.RenderResults("Testing ....")
 			dataNode, ok := tt.GetCurrentNode().GetReference().(finder.Node)
 			if !ok {
+				t.log.Error("reference to current node is not a testable type")
 				t.state.result.RenderResults("Error selected node is not a test")
 				return event
 			}
 			t.state.lastTest = dataNode
 			output, err := dataNode.RunTest()
 			if err != nil {
+				t.log.Error("failed running test", slog.Any("error", err), slog.Any("output", output))
 				t.state.result.RenderResults(err.Error())
 				return event
 			}
@@ -71,11 +74,13 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 
 			node := t.state.lastTest
 			if node == nil {
-				t.state.result.RenderResults("Failed to run last test. Make sure you run a test before rerunning")
+				t.state.result.RenderResults("failed to run last test. Make sure you run a test before rerunning")
+				t.log.Error("attempted test rerun, but no test has previously been run")
 				return event
 			}
 			output, err := node.RunTest()
 			if err != nil {
+				t.log.Error("failed to re run valid test", slog.Any("error", err))
 				t.state.result.RenderResults(err.Error())
 				return event
 			}

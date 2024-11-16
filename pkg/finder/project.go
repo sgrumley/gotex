@@ -2,7 +2,7 @@ package finder
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"path/filepath"
 	"sgrumley/gotex/pkg/config"
 	"sgrumley/gotex/pkg/runner"
@@ -23,6 +23,7 @@ type Project struct {
 	RootDir string
 	Files   []*File
 	FileMap map[string]*File
+	log     *slog.Logger
 }
 
 func (p *Project) GetName() string {
@@ -52,39 +53,41 @@ func (p *Project) RunTest() (string, error) {
 	return runner.RunTest(runner.TEST_TYPE_PROJECT, "", path, p.Config)
 }
 
-func InitProject() *Project {
+func InitProject(log *slog.Logger) (*Project, error) {
 	cfg, err := config.GetConfig()
 	if err != nil {
-		log.Fatal("failed to load a config", err)
+		return nil, fmt.Errorf("failed to load a config: %w", err)
 	}
 
 	p := &Project{
 		Config: cfg,
+		log:    log,
 	}
 	projectRoot, err := FindGoProjectRoot()
 	if err != nil {
-		log.Fatalf("failed to find project root: %s\n", err)
+		return nil, fmt.Errorf("failed to find project root: %s\n", err)
 	}
 
 	files, err := ListTestFilesWithCWD()
 	if err != nil {
-		log.Fatalf("failed finding any test files: %s\n", err)
+		return nil, fmt.Errorf("failed finding any test files: %s\n", err)
 	}
 
 	// PERF: this could be concurrent
 	for _, file := range files {
-		fmt.Printf("searching file: %s\n", file.Path)
+		log.Info("searching file: ",
+			slog.String("file", file.Path),
+		)
 		file.Functions = make([]*Function, 0)
 		file.FunctionMap = make(map[string]*Function)
 		file.Parent = p
 
 		err := SearchFile(file)
 		if err != nil {
-			log.Fatalf("failed finding tests: %s\n", err)
+			return nil, fmt.Errorf("failed finding tests: %s\n", err)
 		}
 	}
 
-	// map files to map[name]file
 	fileMap := make(map[string]*File)
 	fileList := make([]*File, 0)
 	for _, file := range files {
@@ -96,7 +99,11 @@ func InitProject() *Project {
 	p.Files = fileList
 	p.FileMap = fileMap
 
-	return p
+	log.Info("project starting data",
+		slog.String("root dir", p.RootDir),
+	)
+
+	return p, nil
 }
 
 // func (p *Project) TestNameOut() ([]string, map[string]string) {
