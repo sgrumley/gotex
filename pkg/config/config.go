@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -41,28 +42,48 @@ type Config struct {
 - else use the default yaml file in this folder
 */
 
-func GetConfig() (Config, error) {
-	filepath := GetConfigPath()
-	if filepath == "" {
-		cfg, err := getDefaultCfg()
-		fmt.Printf("\n using default config: %+v\n\n", cfg)
+func GetConfig(log *slog.Logger) (Config, error) {
+	filepath, err := GetConfigPath()
+	if err != nil {
+		cfg, errDefault := getDefaultCfg()
+		if errDefault != nil {
+			return Config{}, errDefault
+		}
+		log.Warn("failed to find user specified config, using default",
+			slog.String("cause", err.Error()),
+			slog.Any("default config", cfg),
+		)
 		return cfg, err
 	}
 
 	cfg, err := LoadYAML(filepath)
 	if err != nil {
-		// NOTE: this should use default
-		return Config{}, fmt.Errorf("failed to load config at path: %s with error: %w", filepath, err)
+		cfg, errDefault := getDefaultCfg()
+		if errDefault != nil {
+			return Config{}, errDefault
+		}
+		log.Error("invalid config file",
+			slog.Any("error", fmt.Errorf("failed to load config at path: %s with error: %w", filepath, err)),
+			slog.Any("default config", cfg),
+		)
+		return cfg, err
 	}
-	fmt.Printf("\nconfig: %+v\n\n", cfg)
+
+	log.Info("loaded user config from environment variable", slog.Any("config", cfg))
 	return cfg, nil
 }
 
 func FileExists(filepath string) bool {
-	fp := ReplaceHomeDirChar(filepath)
-	_, err := os.Stat(fp)
+	fp, err := ReplaceHomeDirChar(filepath)
+	if err != nil {
+		return false
+	}
+	_, err = os.Stat(fp)
+	if errors.Is(err, fs.ErrNotExist) {
+		return false
+	}
 
-	return errors.Is(err, fs.ErrNotExist)
+	return true
 }
 
 // getDefaultCfg returns the config of default config specified in the local file default.yaml
@@ -86,27 +107,27 @@ func getDefaultCfg() (Config, error) {
 	return *defaultCfg, nil
 }
 
-func GetConfigPath() string {
+func GetConfigPath() (string, error) {
 	// check for user specified config path
 	e := EnvVar{}
 	err := envconfig.Process("GOTEX_CONFIG_FILE_PATH", &e)
 	if err != nil {
-		fmt.Printf("no config env found, proceeding with default path: %s\n", defaultFilePath)
-		return defaultFilePath
+		return defaultFilePath, fmt.Errorf("no environment variable found")
 	}
 
 	// check that the user specified exists
-	if FileExists(e.ConfigFilePath) {
-		fmt.Printf("config file found at specified location %s, proceeding with user config\n", e.ConfigFilePath)
-		return e.ConfigFilePath
+	if !FileExists(e.ConfigFilePath) {
+		return defaultFilePath, fmt.Errorf("failed to load config from environment variable, attempted path: %s", e.ConfigFilePath)
 	}
 
-	fmt.Println("Could not find file path: ", e.ConfigFilePath)
-	return ""
+	return e.ConfigFilePath, nil
 }
 
 func LoadYAML(path string) (Config, error) {
-	fp := ReplaceHomeDirChar(path)
+	fp, err := ReplaceHomeDirChar(path)
+	if err != nil {
+		return Config{}, err
+	}
 	b, err := os.ReadFile(fp)
 	if err != nil {
 		return Config{}, err
@@ -124,18 +145,17 @@ func LoadConfig(b []byte) (Config, error) {
 	return cfg, nil
 }
 
-func ReplaceHomeDirChar(fp string) string {
+func ReplaceHomeDirChar(fp string) (string, error) {
 	if !strings.Contains(fp, "~") {
-		return fp
+		return fp, nil
 	}
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
-		fmt.Println("Error getting home directory:", err)
-		return ""
+		return "", fmt.Errorf("Error getting home directory: %w", err)
 	}
 	// Replace ~ with the home directory path
 	if fp[:2] == "~/" {
 		fp = filepath.Join(homeDir, fp[2:])
 	}
-	return fp
+	return fp, nil
 }

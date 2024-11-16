@@ -1,15 +1,40 @@
 package main
 
 import (
-	"sgrumley/gotex/internal/cli"
-
-	"sgrumley/gotex/pkg/finder"
+	"fmt"
+	"log/slog"
+	"os"
+	"sgrumley/gotex/internal/components-fp"
+	logger "sgrumley/gotex/pkg/logging"
 )
 
 func main() {
+	os.Exit(run())
+}
 
-	project := finder.InitProject()
-	// project.PrettyPrint()
+func run() int {
+	log, err := logger.New(
+		logger.WithLevel(slog.LevelDebug),
+		logger.WithSource(true),
+	)
+	if err != nil {
+		fmt.Println("error: ", err.Error())
+		return 1
+	}
 
-	cli.Run(project.TestNameOut())
+	app, err := components.New(log)
+	if err != nil {
+		fmt.Printf("failed to initialise project: %s", err.Error())
+		return 1
+	}
+	err = app.Start()
+	if err != nil {
+		// to file
+		log.Error("application crashed", slog.Any("error", err))
+		// to stdout
+		fmt.Printf("application crashed: %s", err.Error())
+		return 1
+	}
+
+	return 0
 }

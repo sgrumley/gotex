@@ -7,40 +7,56 @@ import (
 	"strings"
 )
 
-func ListTestFilesWithCWD() ([]*File, error) {
-	rootDir, err := FindGoProjectRoot()
+// func ListTestFilesWithCWD() ([]*File, error) {
+// 	rootDir, err := FindGoProjectRoot()
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	files, err := listTestFilesWithPath(rootDir)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	return files, nil
+// }
+
+// func listTestFilesWithPath(dirPath string) ([]*File, error) {
+// 	var files []*File
+
+// 	err := filepath.WalkDir(dirPath, func(path string, d os.DirEntry, err error) error {
+// 		if err != nil {
+// 			return err
+// 		}
+// 		if !d.IsDir() && strings.Contains(path, "_test.go") {
+// 			pathSplit := strings.Split(path, "/")
+// 			files = append(files, &File{
+// 				Name: pathSplit[len(pathSplit)-1],
+// 				Path: path,
+// 			})
+// 		}
+// 		return nil
+// 	})
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return files, nil
+// }
+
+func findTestFiles(path string) []string {
+	var testFiles []string
+
+	files, err := os.ReadDir(path)
 	if err != nil {
-		return nil, err
-	}
-
-	files, err := listTestFilesWithPath(rootDir)
-	if err != nil {
-		return nil, err
-	}
-
-	return files, nil
-}
-
-func listTestFilesWithPath(dirPath string) ([]*File, error) {
-	var files []*File
-
-	err := filepath.WalkDir(dirPath, func(path string, d os.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		if !d.IsDir() && strings.Contains(path, "_test.go") {
-			pathSplit := strings.Split(path, "/")
-			files = append(files, &File{
-				Name: pathSplit[len(pathSplit)-1],
-				Path: path,
-			})
-		}
 		return nil
-	})
-	if err != nil {
-		return nil, err
 	}
-	return files, nil
+
+	for _, file := range files {
+		if !file.IsDir() && strings.Contains(file.Name(), "_test.go") {
+			testFiles = append(testFiles, file.Name())
+		}
+	}
+	return testFiles
 }
 
 // TODO: add options so that config can determine if go.work is the root
@@ -64,5 +80,5 @@ func FindGoProjectRoot() (string, error) {
 		currentDir = parentDir
 	}
 
-	return "", fmt.Errorf("project root not found in any parent directories")
+	return "", fmt.Errorf("go.mod file not found in current directory or any parent directories")
 }

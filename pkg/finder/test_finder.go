@@ -5,10 +5,11 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"log/slog"
 	"strings"
 )
 
-func ListAll(file *File) error {
+func SearchFile(file *File, log *slog.Logger) error {
 	fset := token.NewFileSet()
 
 	// Parse the file
@@ -17,21 +18,29 @@ func ListAll(file *File) error {
 		return fmt.Errorf("failed to parse file %s: %v", file.Path, err)
 	}
 
-	// Walk the AST and find testcases (t.Run)
 	ast.Inspect(node, func(n ast.Node) bool {
 		// Check all call expressions (function calls)
 		if callExpr, ok := n.(*ast.CallExpr); ok {
-			// Check if the function being called is `t.Run`
+			// a selector expression is the syntax used to access fields or methods of a struct
+			// checking that the selector is `Run`, we can then check that the expression is `t`
 			if selExpr, ok := callExpr.Fun.(*ast.SelectorExpr); ok && selExpr.Sel.Name == "Run" {
+				if ex := exprToString(selExpr.X); ex != "t" {
+					log.Debug("here", slog.String("expression", ex))
+					return true
+				}
 				// Get the parent function (this is intended to be the test function containing the subtests)
 				fn := findEnclosingFunction(node, callExpr)
 				if fn == nil {
-					return true // Skip if no enclosing function found
+					return true
 				}
 
 				// Extract the subtest variable name (this should be something like tc.name where tc is the stuct and name is the attribute provided to t.Run(tc.name, ...))
-				subtestName := extractSubtestVariableName(callExpr.Args[0])
-				fmt.Println("	test case variable name found: ", subtestName)
+				subtestName := exprToString(callExpr.Args[0])
+				log.Debug("test case found",
+					slog.String("case name", subtestName),
+					slog.String("function name", fn.Name.Name),
+					slog.String("file name", file.Name),
+				)
 
 				// setting a default that I use, probably needs better error handling in general
 				// structName := "tc"
@@ -42,7 +51,7 @@ func ListAll(file *File) error {
 					// structName = subtestNameSplit[0]
 					caseName = subtestNameSplit[1]
 				} else {
-					fmt.Println("failed identifying struct.name, defaulting to tc.name")
+					log.Error("failed identifying struct.name, defaulting to tc.name", slog.String("name", subtestName))
 				}
 
 				// TODO: add the name of the struct back in for validation
@@ -51,31 +60,28 @@ func ListAll(file *File) error {
 				// Find all occurrences of `tc.name` in the function
 				cases := findValuesOfIndexedField(fn, caseName)
 				caseMap := make(map[string]*Case)
+				f := &Function{}
+
 				for i := range cases {
-					caseMap[cases[i].Name] = &cases[i]
+					cases[i].Parent = f
+					caseMap[cases[i].Name] = cases[i]
 				}
 
-				file.Functions[fn.Name.Name] = &Function{
-					Name:    fn.Name.Name,
-					Cases:   caseMap,
-					decl:    fn,
-					VarName: subtestName,
-				}
-				// file.Functions = append(file.Functions)
+				f.Name = fn.Name.Name
+				f.Cases = cases
+				f.CaseMap = caseMap
+				f.decl = fn
+				f.VarName = subtestName
+				f.Parent = file
+
+				file.FunctionMap[fn.Name.Name] = f
+				file.Functions = append(file.Functions, f)
 			}
 		}
 		return true
 	})
 
 	return nil
-}
-
-// extractSubtestName handles both string literals and dynamic subtest names
-func extractSubtestVariableName(expr ast.Expr) string {
-	if lit, ok := expr.(*ast.BasicLit); ok && lit.Kind == token.STRING {
-		return strings.Trim(lit.Value, "\"")
-	}
-	return formatExpr(expr) // Dynamic name
 }
 
 // findEnclosingFunction traverses the AST upwards to find the function that encloses the node
@@ -94,8 +100,8 @@ func findEnclosingFunction(node ast.Node, n ast.Node) *ast.FuncDecl {
 	return fn
 }
 
-func findValuesOfIndexedField(fn *ast.FuncDecl, fieldName string) []Case {
-	var cases []Case
+func findValuesOfIndexedField(fn *ast.FuncDecl, fieldName string) []*Case {
+	var cases []*Case
 
 	// findValuesOfIndexedField looks for the value of a field in an array or slice (e.g. tc[i].name)
 	ast.Inspect(fn.Body, func(n ast.Node) bool {
@@ -107,7 +113,7 @@ func findValuesOfIndexedField(fn *ast.FuncDecl, fieldName string) []Case {
 						// Extract the value assigned to the field (e.g. "TestA" for `name: "TestA"`)
 						nameValue := extractRHSValue(kvExpr.Value)
 						nameValueStripped := strings.ReplaceAll(nameValue, `"`, "")
-						cases = append(cases, Case{
+						cases = append(cases, &Case{
 							Name: nameValueStripped,
 						})
 					}
