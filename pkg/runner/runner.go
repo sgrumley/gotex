@@ -94,7 +94,7 @@ func GetCommand(typed testType, testName string) []string {
 	case TEST_TYPE_PROJECT:
 		return []string{"test", "./..."}
 	case TEST_TYPE_FILE:
-		return []string{"test", testName}
+		return []string{"test", "-run", testName}
 	case TEST_TYPE_FUNCTION:
 		return []string{"test", "-run", testName}
 	case TEST_TYPE_CASE:
