@@ -19,11 +19,10 @@ type Node interface {
 var _ Node = (*Project)(nil)
 
 type Project struct {
-	Config  config.Config
-	RootDir string
-	Files   []*File
-	FileMap map[string]*File
-	log     *slog.Logger
+	Config   config.Config
+	RootDir  string
+	Packages []*Package
+	log      *slog.Logger
 }
 
 func (p *Project) GetName() string {
@@ -34,14 +33,14 @@ func (p *Project) GetName() string {
 
 func (p *Project) GetChildren() []Node {
 	children := make([]Node, 0)
-	for _, child := range p.Files {
+	for _, child := range p.Packages {
 		children = append(children, child)
 	}
 	return children
 }
 
 func (p *Project) HasChildren() bool {
-	if len(p.Files) > 0 {
+	if len(p.Packages) > 0 {
 		return true
 	}
 
@@ -68,36 +67,30 @@ func InitProject(log *slog.Logger) (*Project, error) {
 		return nil, fmt.Errorf("failed to find project root: %s\n", err)
 	}
 
-	files, err := ListTestFilesWithCWD()
+	pkgs, err := FindPackages()
 	if err != nil {
-		return nil, fmt.Errorf("failed finding any test files: %s\n", err)
+		return nil, err
 	}
 
 	// PERF: this could be concurrent
-	for _, file := range files {
-		log.Info("searching file: ",
-			slog.String("file", file.Path),
-		)
-		file.Functions = make([]*Function, 0)
-		file.FunctionMap = make(map[string]*Function)
-		file.Parent = p
+	for i := range pkgs {
+		pkgs[i].Parent = p
+		for _, file := range pkgs[i].Files {
+			log.Info("searching file: ",
+				slog.String("file", file.Path),
+			)
+			file.Functions = make([]*Function, 0)
+			file.FunctionMap = make(map[string]*Function)
+			file.Parent = pkgs[i]
 
-		err := SearchFile(file, log)
-		if err != nil {
-			return nil, fmt.Errorf("failed finding tests: %s\n", err)
+			err := SearchFile(file, log)
+			if err != nil {
+				return nil, fmt.Errorf("failed finding tests: %s\n", err)
+			}
 		}
 	}
-
-	fileMap := make(map[string]*File)
-	fileList := make([]*File, 0)
-	for _, file := range files {
-		fileMap[file.Name] = file
-		fileList = append(fileList, file)
-	}
-
 	p.RootDir = projectRoot
-	p.Files = fileList
-	p.FileMap = fileMap
+	p.Packages = pkgs
 
 	log.Info("project starting data",
 		slog.String("root dir", p.RootDir),
@@ -105,17 +98,3 @@ func InitProject(log *slog.Logger) (*Project, error) {
 
 	return p, nil
 }
-
-// func (p *Project) TestNameOut() ([]string, map[string]string) {
-// 	tests := make([]string, 0)
-// 		// PERF: concurrent here
-// 		for _, fn := range f.Functions {
-// 			for _, c := range fn.Cases {
-// 				tc := fmt.Sprintf("%s/%s", fn.Name, c.Name)
-// 				tests = append(tests, tc)
-// 				testLocation[tc] = filepath.Dir(f.Path)
-// 			}
-// 		}
-// 	}
-// 	return tests, testLocation
-// }

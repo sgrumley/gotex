@@ -14,7 +14,7 @@ type File struct {
 	Path        string
 	Functions   []*Function
 	FunctionMap map[string]*Function
-	Parent      *Project
+	Parent      *Package
 }
 
 func (f *File) GetName() string {
@@ -40,7 +40,7 @@ func (f *File) HasChildren() bool {
 }
 
 func (f *File) RunTest() (string, error) {
-	project := f.Parent
+	project := f.Parent.Parent
 	path := filepath.Dir(f.Path)
 
 	return runner.RunTest(runner.TEST_TYPE_FILE, f.Name, path, project.Config)

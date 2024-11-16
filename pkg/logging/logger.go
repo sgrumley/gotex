@@ -91,6 +91,11 @@ func newLogFile(format Handler) (*os.File, error) {
 	defaultFolder := "~/.config/gotex"
 	defaultFile := "out.log"
 
+	defaultFolder, err := ReplaceHomeDirChar(defaultFolder)
+	if err != nil {
+		return nil, err
+	}
+
 	if err := os.MkdirAll(defaultFolder, os.ModePerm); err != nil {
 		return nil, fmt.Errorf("failed to create log directory: %v", err)
 	}
@@ -99,10 +104,7 @@ func newLogFile(format Handler) (*os.File, error) {
 		defaultFile = "log.json"
 	}
 
-	logFilePath, err := ReplaceHomeDirChar(filepath.Join(defaultFolder, defaultFile))
-	if err != nil {
-		return nil, err
-	}
+	logFilePath := filepath.Join(defaultFolder, defaultFile)
 
 	file, err := os.OpenFile(logFilePath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {

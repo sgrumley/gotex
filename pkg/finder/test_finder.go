@@ -84,14 +84,6 @@ func SearchFile(file *File, log *slog.Logger) error {
 	return nil
 }
 
-// extractSubtestName handles both string literals and dynamic subtest names
-func exprToString(expr ast.Expr) string {
-	if lit, ok := expr.(*ast.BasicLit); ok && lit.Kind == token.STRING {
-		return strings.Trim(lit.Value, "\"")
-	}
-	return formatExpr(expr) // Dynamic name
-}
-
 // findEnclosingFunction traverses the AST upwards to find the function that encloses the node
 func findEnclosingFunction(node ast.Node, n ast.Node) *ast.FuncDecl {
 	// Walk the AST to find the enclosing function

@@ -9,17 +9,15 @@ import (
 )
 
 var (
-	rootColor     = tcell.ColorRed
-	fileColor     = tcell.ColorBlue
-	functionColor = tcell.ColorPink
-	caseColor     = tcell.ColorGreen
-	unknownColor  = tcell.ColorYellow
+	rootColor    = tcell.ColorRed
+	unknownColor = tcell.ColorYellow
 )
 
 var (
-	LevelFile     = 1
-	LevelFunction = 2
-	LevelCase     = 3
+	LevelPackage  = 1
+	LevelFile     = 2
+	LevelFunction = 3
+	LevelCase     = 4
 )
 
 type TestTree struct {
@@ -146,8 +144,11 @@ func add(t *TUI, target *tview.TreeNode, n finder.Node) {
 
 		// node level styling
 		switch target.GetLevel() + 1 {
+		case LevelPackage:
+			node.SetText(" " + node.GetText())
+			node.SetColor(t.theme.Package)
 		case LevelFile:
-			node.SetText("  " + node.GetText())
+			node.SetText(" " + node.GetText())
 			node.SetColor(t.theme.File)
 		case LevelFunction:
 			node.SetText("󰡱 " + node.GetText())

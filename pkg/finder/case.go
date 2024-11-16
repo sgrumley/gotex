@@ -28,7 +28,8 @@ func (c *Case) HasChildren() bool {
 func (c *Case) RunTest() (string, error) {
 	function := c.Parent
 	file := function.Parent
-	project := file.Parent
+	pkg := file.Parent
+	project := pkg.Parent
 
 	caseName := fmt.Sprintf("%s/%s", function.Name, c.Name)
 	path := filepath.Dir(file.Path)

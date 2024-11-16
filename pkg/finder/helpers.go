@@ -3,7 +3,17 @@ package finder
 import (
 	"fmt"
 	"go/ast"
+	"go/token"
+	"strings"
 )
+
+// extractSubtestName handles both string literals and dynamic subtest names
+func exprToString(expr ast.Expr) string {
+	if lit, ok := expr.(*ast.BasicLit); ok && lit.Kind == token.STRING {
+		return strings.Trim(lit.Value, "\"")
+	}
+	return formatExpr(expr) // Dynamic name
+}
 
 // extractRHSValue returns a string representation of the right-hand side of an assignment
 func extractRHSValue(expr ast.Expr) string {

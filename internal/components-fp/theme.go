@@ -13,6 +13,7 @@ type Theme struct {
 	Border     tcell.Color
 	Text       tcell.Color
 	Project    tcell.Color
+	Package    tcell.Color
 	File       tcell.Color
 	Function   tcell.Color
 	Case       tcell.Color
@@ -27,10 +28,10 @@ func getDefaultThemes() map[string]Theme {
 			Border:     HexToColor("#b4befe"), // Lavender
 			Text:       HexToColor("#cdd6f4"),
 			Project:    HexToColor("#b4befe"),
-			Function:   HexToColor("#89b4fa"),
-			// Function: HexToColor("#b4befe"),
-			File: HexToColor("#f5e0dc"),
-			Case: HexToColor("#a6e3a1"),
+			Package:    HexToColor("#94e2d5"),
+			File:       HexToColor("#89b4fa"),
+			Function:   HexToColor("#cba6f7"),
+			Case:       HexToColor("#f5c2e7"),
 		},
 	}
 	return themes

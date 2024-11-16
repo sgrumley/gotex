@@ -84,6 +84,7 @@ type testType int
 
 const (
 	TEST_TYPE_PROJECT testType = iota
+	TEST_TYPE_PACKAGE
 	TEST_TYPE_FILE
 	TEST_TYPE_FUNCTION
 	TEST_TYPE_CASE
@@ -93,6 +94,8 @@ func GetCommand(typed testType, testName string) []string {
 	switch typed {
 	case TEST_TYPE_PROJECT:
 		return []string{"test", "./..."}
+	case TEST_TYPE_PACKAGE:
+		return []string{"test"}
 	case TEST_TYPE_FILE:
 		return []string{"test", "-run", testName}
 	case TEST_TYPE_FUNCTION:

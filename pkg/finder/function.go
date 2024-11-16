@@ -40,7 +40,8 @@ func (f *Function) HasChildren() bool {
 
 func (f *Function) RunTest() (string, error) {
 	file := f.Parent
-	project := file.Parent
+	pkg := file.Parent
+	project := pkg.Parent
 
 	path := filepath.Dir(file.Path)
 	return runner.RunTest(runner.TEST_TYPE_FUNCTION, f.Name, path, project.Config)
