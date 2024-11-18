@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"os"
 	"os/exec"
+
 	"sgrumley/gotex/pkg/config"
 )
 
@@ -107,8 +108,10 @@ func GetCommand(typed testType, testName string) []string {
 	}
 }
 
-// TODO: temporarily remove piped command in favor of integrating? import tparse??
-// TODO: spend some time to renable piping
+// TODO: spend some time to think about piping
+// TODO: create a formatted error
+// func eg(buf1, buf2, err) error
+// func eg2(buf1) string
 func RunTestPiped(cmdStr1 []string, cmdStr2 string, dir string) (*bytes.Buffer, error) {
 	var cmd1Output bytes.Buffer
 	var errBuf1 bytes.Buffer
@@ -123,7 +126,7 @@ func RunTestPiped(cmdStr1 []string, cmdStr2 string, dir string) (*bytes.Buffer, 
 	}
 
 	if err := cmd1.Wait(); err != nil {
-		return nil, fmt.Errorf("go test command failed: %w, stderr: %s", err, errBuf1.String())
+		// return nil, fmt.Errorf("go test command failed: %w, stderr: %s, stdout: %s", err, errBuf1.String(), cmd1Output.String())
 	}
 
 	// Create a pipe for the second command
@@ -147,10 +150,8 @@ func RunTestPiped(cmdStr1 []string, cmdStr2 string, dir string) (*bytes.Buffer, 
 
 	// Run the second command
 	if err := cmd2.Run(); err != nil {
-		errStr := errBuf2.String()
-		if errStr != "exit status 1" {
-			return nil, fmt.Errorf("piped command failed: %w, stderr: %s", err, errBuf2.String())
-		}
+		// NOTE: this will always happen if the tests fail..
+		return nil, fmt.Errorf("error: \n%w \nstderr: \n%s \nstdout: \n%s", err, errBuf2.String(), cmd2Output.String())
 	}
 
 	return &cmd2Output, nil

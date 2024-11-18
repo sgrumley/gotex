@@ -25,6 +25,8 @@ Nice to have:
   - copy 
 
 Bug:
+- need to investigate further into what classifies as an error in go test cmds
+  - the piping seems to be most noticibly broken
 - some ui impovement to change screen when rerunning test
   -> seems like returning the event is what cause the execution. This means there is no easy way to change the screen while the test runs.
 
