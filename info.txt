@@ -2,6 +2,7 @@ TODO:
 Once the project has required tasks and bugs completed -> clean code -> update pkg code to be an api -> write readme
 
 Required:
+- keybind 'A' to test all
 - search (this should have a map from a from search term to struct with a ref to the node and other meta data) 
   - fzf
 - smaller results panel below results that has meta data and logs?? -> there should be a toggle for this
@@ -10,10 +11,9 @@ Required:
   - pass / fail
   - config + location filepath 
   - logger output filepath
-- add an ignore list. for example testdata by default and configurable from there
-
 
 Nice to have: 
+- add the parent folder of the package to the name e.g with more than one main you can't tell which is which
 - a lot more options need to be read in from config
 - theming
 - Create/modify config in app (this should be stateless, modify yaml for persistent settings)
