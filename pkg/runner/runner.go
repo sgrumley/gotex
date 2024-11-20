@@ -45,10 +45,7 @@ func RunTest(testType testType, testName string, dir string, cfg config.Config) 
 	if err := cmd.Wait(); err != nil {
 		// NOTE: go test returns error if tests fail. This needs a correct solution
 		// some logic to determine if the output is exit 1. If so this does not mean an error within the command but could be that the test did not pass
-		errStr := errBuf.String()
-		if err.Error() != "exit status 1" {
-			return "", fmt.Errorf(errStr)
-		}
+		return "", fmt.Errorf("CMD1: \nerror: \n%w \nstderr: \n%s \nstdout: \n%s ", err, errBuf.String(), cmd.String())
 	}
 
 	log.Info("test run successfully", slog.String("name", testName))
@@ -125,7 +122,10 @@ func RunTestPiped(cmdStr1 []string, cmdStr2 string, dir string) (*bytes.Buffer, 
 		return nil, fmt.Errorf("failed to start command 1: %w", err)
 	}
 
+	var err1 error
 	if err := cmd1.Wait(); err != nil {
+		err1 = err
+		// NOTE: this is note worth exiting at this point
 		// return nil, fmt.Errorf("go test command failed: %w, stderr: %s, stdout: %s", err, errBuf1.String(), cmd1Output.String())
 	}
 
@@ -149,9 +149,9 @@ func RunTestPiped(cmdStr1 []string, cmdStr2 string, dir string) (*bytes.Buffer, 
 	cmd2.Stderr = &errBuf2
 
 	// Run the second command
-	if err := cmd2.Run(); err != nil {
+	if err2 := cmd2.Run(); err2 != nil {
 		// NOTE: this will always happen if the tests fail..
-		return nil, fmt.Errorf("error: \n%w \nstderr: \n%s \nstdout: \n%s", err, errBuf2.String(), cmd2Output.String())
+		return nil, fmt.Errorf("CMD1: \nerror: \n%w \nstderr: \n%s \nstdout: \n%s \nCMD2: \nerror: \n%w \nstderr: \n%s \nstdout: \n%s", err1, errBuf1.String(), cmd1Output.String(), err2, errBuf2.String(), cmd2Output.String())
 	}
 
 	return &cmd2Output, nil
