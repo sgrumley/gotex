@@ -3,6 +3,7 @@ package components
 import (
 	"log/slog"
 	"sgrumley/gotex/pkg/finder"
+	"sgrumley/gotex/pkg/runner"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -93,6 +94,16 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 			t.state.resources.data = data
 			t.state.testTree.Populate(t)
 			t.state.result.RenderResults("Project has successfully refreshed")
+		// run all
+		case 'A':
+			output, err := runner.RunTest(runner.TEST_TYPE_PROJECT, "", t.state.resources.data.RootDir, t.state.resources.data.Config)
+			if err != nil {
+				t.log.Error("failed running all tests", slog.Any("error", err))
+				t.state.result.RenderResults(err.Error())
+				return event
+			}
+			t.state.result.RenderResults(output)
+
 		// search
 		case '/':
 			// TODO: search

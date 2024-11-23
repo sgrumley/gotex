@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"os"
 	"os/exec"
-
 	"sgrumley/gotex/pkg/config"
 )
 
