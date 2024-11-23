@@ -5,6 +5,7 @@ import (
 	"go/build"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func FindPackages() ([]*Package, error) {
@@ -37,8 +38,12 @@ func FindPackages() ([]*Package, error) {
 				if len(filenames) == 0 {
 					return nil
 				}
+
+				paths := strings.Split(pkg.Dir, "/")
+				pkgName := fmt.Sprintf("%s/%s", paths[len(paths)-2], paths[len(paths)-1])
+
 				tmp := &Package{
-					Name: pkg.Name,
+					Name: pkgName,
 					Path: pkg.Dir,
 				}
 
