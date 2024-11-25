@@ -4,7 +4,10 @@ Once the project has required tasks and bugs completed -> clean code -> update p
 Required:
 - search (this should have a map from a from search term to struct with a ref to the node and other meta data) 
   - fzf
-- add the parent folder of the package to the name e.g with more than one main you can't tell which is which
+- readme
+- packagerise code 
+- clean code 
+  - keymaps should be function calls not inline
 
 Nice to have: 
 - smaller results panel below results that has meta data and logs?? -> there should be a toggle for this
@@ -24,6 +27,7 @@ Nice to have:
   - copy 
 
 Bug:
+- go test on a file with a failing test case does not run the test?? This is the same behaviour as running go test -run filename. Look at alternative ways
 - need to investigate further into what classifies as an error in go test cmds
   - the piping seems to be most noticibly broken
 - some ui impovement to change screen when rerunning test
