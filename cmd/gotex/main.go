@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"sgrumley/gotex/internal/components-fp"
+	"sgrumley/gotex/internal/components"
 	logger "sgrumley/gotex/pkg/logging"
 )
 

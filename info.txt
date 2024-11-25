@@ -6,10 +6,12 @@ Required:
   - fzf
 - readme
 - packagerise code 
+- add pop up config display (no edit for now)
 - clean code 
   - keymaps should be function calls not inline
 
 Nice to have: 
+- parsing of my own -> strip unused text -> color important parts (highlight filepath -> good for finding where a panic happened)
 - smaller results panel below results that has meta data and logs?? -> there should be a toggle for this
   - test name
   - file location
