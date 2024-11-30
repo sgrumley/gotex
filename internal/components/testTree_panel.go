@@ -62,6 +62,7 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 			}
 
 			t.state.result.RenderResults(output)
+			return nil
 		// rerun last test
 		case 'R':
 			// FIX: need a way to show the user that the test has been rerun/ is rerunning
@@ -83,6 +84,7 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 				return event
 			}
 			t.state.result.RenderResults(output)
+			return nil
 
 		// sync tests
 		case 's':
@@ -94,6 +96,7 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 			t.state.resources.data = data
 			t.state.testTree.Populate(t)
 			t.state.result.RenderResults("Project has successfully refreshed")
+			return nil
 		// run all
 		case 'A':
 			output, err := runner.RunTest(runner.TEST_TYPE_PROJECT, "", t.state.resources.data.RootDir, t.state.resources.data.Config)
@@ -103,20 +106,29 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 				return event
 			}
 			t.state.result.RenderResults(output)
+			return nil
 
 		// search
 		case '/':
-			// TODO: search
-
+			t.state.pages.ShowPage(searchPage)
+			t.app.SetFocus(t.state.search.input)
+			return nil
+			// t.app.SetFocus(t.state.search.input)
+			// tt.Search(t)
 		}
 		// keybinding for special keys
 		switch event.Key() {
 		case tcell.KeyCtrlU:
 			currentPosition, _ := t.state.result.GetScrollOffset()
 			t.state.result.ScrollTo(currentPosition-10, 0)
+			return nil
 		case tcell.KeyCtrlD:
 			currentPosition, _ := t.state.result.GetScrollOffset()
 			t.state.result.ScrollTo(currentPosition+10, 0)
+			return nil
+		case tcell.KeyEsc:
+			t.state.pages.SwitchToPage(homePage)
+			return nil
 		}
 		return event
 	})
@@ -173,4 +185,7 @@ func add(t *TUI, target *tview.TreeNode, n finder.Node) {
 
 		target.AddChild(node)
 	}
+}
+
+func (tt *TestTree) Search(t *TUI) {
 }

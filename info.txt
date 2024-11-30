@@ -1,7 +1,9 @@
 TODO: 
-Once the project has required tasks and bugs completed -> clean code -> update pkg code to be an api -> write readme
+Convert this text to github project
+Once the project has required tasks and bugs completed -> clean code -> update pkg code to be an api -> write readme -> clean git history -> gh versioning -> make public
 
 Required:
+- rethink state data
 - search (this should have a map from a from search term to struct with a ref to the node and other meta data) 
   - fzf
 - readme
