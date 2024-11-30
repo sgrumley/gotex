@@ -36,7 +36,7 @@ Test Location: ./test/go_test.go
 // TODO: key val data is probably better displayed as column or This row should be split into 2 columns
 func ConsoleTemplate() string {
 	return fmt.Sprintf(
-		"Test Name: %s\nCommand: %s\nStatus: %s\nCompleted at: %s\nLogger Filepath: %s\nTest Location: %s\n",
+		"THIS IS DUMMY DATA\nTest Name: %s\nCommand: %s\nStatus: %s\nCompleted at: %s\nLogger Filepath: %s\nTest Location: %s\n",
 		"success/valid_json",
 		"go test -run method/success",
 		"[green]Pass[-]",

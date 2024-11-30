@@ -11,13 +11,19 @@ type resources struct {
 	data *finder.Project
 }
 
+var (
+	homePage   = "home"
+	configPage = "config"
+)
+
 type state struct {
 	lastTest finder.Node
 	// navigate  *navigate
 	resources resources
 	result    *results
 	testTree  *TestTree
-	console   consoleData
+	console   *consoleData
+	pages     *tview.Pages
 }
 
 type consoleData struct {
@@ -38,7 +44,7 @@ func newState(log *slog.Logger) (*state, error) {
 		resources: resources{
 			data: data,
 		},
-		console: consoleData{
+		console: &consoleData{
 			active: false, // TODO: off by default??
 		},
 	}, nil
@@ -87,6 +93,9 @@ func (t *TUI) initPanels() {
 	SetAppStyling()
 	t.theme = SetTheme("catppuccin mocha")
 
+	// pages
+	pages := tview.NewPages()
+
 	// panels
 	help := newHelpPane(t)
 
@@ -105,22 +114,31 @@ func (t *TUI) initPanels() {
 	outputLayout := tview.NewFlex().
 		SetDirection(tview.FlexRow).
 		AddItem(results.TextView, 0, 8, false)
-	// NOTE: if on by default needs a bit of work
-	// AddItem(console.TextView, 8, 1, false)
+
 	t.state.console.flex = outputLayout
 
 	contentLayout := tview.NewFlex().
 		SetDirection(tview.FlexColumn).
 		AddItem(testTree.TreeView, 45, 1, true).
 		AddItem(outputLayout, 0, 6, false)
+
 	SetFlexStyling(t, contentLayout)
 
 	layout := tview.NewFlex().
 		SetDirection(tview.FlexRow).
 		AddItem(contentLayout, 0, 15, true).
 		AddItem(help, 2, 1, false)
+
 	SetFlexStyling(t, layout)
 
-	t.app.SetRoot(layout, true)
+	pages.AddPage(homePage, layout, true, true)
+
+	// initialising pages state here so that newConfigModal has access
+	t.state.pages = pages
+
+	configModal := newConfigModal(t)
+	pages.AddPage(configPage, configModal, true, false)
+
+	t.app.SetRoot(pages, true)
 	t.log.Info("app started successfully")
 }

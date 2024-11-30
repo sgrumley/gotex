@@ -63,7 +63,7 @@ func SetTreeStyling(t *TUI, tree *tview.TreeView) {
 	tree.SetTitleColor(t.theme.Border)
 	tree.SetBorderColor(t.theme.Border)
 	tree.SetBackgroundColor(t.theme.Background)
-	// tree.SetBorderStyle() TODO: rounded corner option
+	// tree.SetBorderStyle() // TODO: rounded corner option
 }
 
 func SetTextViewStyling(t *TUI, txt *tview.TextView) {
@@ -76,6 +76,18 @@ func SetTextViewStyling(t *TUI, txt *tview.TextView) {
 func SetFlexStyling(t *TUI, flex *tview.Flex) {
 	flex.SetBackgroundColor(t.theme.Background)
 	flex.SetBorderColor(t.theme.Border)
+}
+
+func SetModalStyling(t *TUI, modal *tview.Modal) {
+	modal.SetBackgroundColor(t.theme.Background)
+	modal.SetTitleColor(t.theme.Border)
+	modal.SetBorder(true)
+	modal.SetBorderColor(t.theme.Case)
+	// NOTE: not sure why only the modal needs this level of granularity
+	modal.SetBorderStyle(
+		tcell.StyleDefault.Foreground(t.theme.Border).
+			Background(t.theme.Background),
+	)
 }
 
 func HexToColor(hex string) tcell.Color {
