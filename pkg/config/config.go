@@ -79,11 +79,7 @@ func FileExists(filepath string) bool {
 		return false
 	}
 	_, err = os.Stat(fp)
-	if errors.Is(err, fs.ErrNotExist) {
-		return false
-	}
-
-	return true
+	return !errors.Is(err, fs.ErrNotExist)
 }
 
 // getDefaultCfg returns the config of default config specified in the local file default.yaml
@@ -160,7 +156,7 @@ func ReplaceHomeDirChar(fp string) (string, error) {
 	return fp, nil
 }
 
-// TODO: maybe use templating?? This can add the logic red if not green if is
+// deprecated
 func (c *Config) String() string {
 	return fmt.Sprintf(`
 		Config:

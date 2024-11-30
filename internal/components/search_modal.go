@@ -18,12 +18,18 @@ func newSearchModal(t *TUI) *searchModal {
 		SetLabel("Search test: ").
 		SetFieldWidth(40)
 
+	// TODO: fix theming
+	// input.SetAutocompleteStyles()
+
 	// TODO: integrate fzf
+	// custom autocompleteFunc -> setup an input handler that takes the keys input (channel) and feeds to an output func (requires gui)
 	input.SetAutocompleteFunc(func(currentText string) (entries []string) {
+		tests := t.state.resources.flattened.Names
 		if len(currentText) == 0 {
 			return
 		}
-		for _, test := range t.state.resources.flattened.Names {
+
+		for _, test := range tests {
 			if strings.HasPrefix(strings.ToLower(test), strings.ToLower(currentText)) {
 				entries = append(entries, test)
 			}
@@ -33,31 +39,47 @@ func newSearchModal(t *TUI) *searchModal {
 		}
 		return
 	})
-	input.SetDoneFunc(func(key tcell.Key) {
-		searchStr := t.state.search.input.GetText()
-		ref, exists := t.state.resources.flattened.NodeMap[searchStr]
-		if !exists {
-			t.log.Error("error", slog.String("search term not in tree", searchStr))
-			// TODO: this modal is not the one we intend to store
-			t.state.search.modal.SetBorderColor(tcell.ColorRed)
-			return
+	input.SetAutocompletedFunc(func(text string, index, source int) bool {
+		switch source {
+		case 0:
+			// navigate
+			return false
+		case 1:
+			// tab key
+			fallthrough
+		case 2:
+			// enter key
+			fallthrough
+		case 3:
+			// mouse click
+			searchStr := text
+			ref, exists := t.state.resources.flattened.NodeMap[searchStr]
+			if !exists {
+				t.log.Error("error", slog.String("search term not in tree", searchStr))
+				// TODO: this modal is not the one we intend to store
+				t.state.search.modal.SetBorderColor(tcell.ColorRed)
+				return false
+			}
+
+			found := search(t.state.testTree.TreeView, ref.GetName())
+			if !found {
+				t.log.Error("error", slog.String("search term not found", searchStr))
+				t.state.search.modal.SetBorderColor(tcell.ColorRed)
+				return false
+			}
+
+			t.state.search.modal.SetBorderColor(t.theme.Border)
+			t.log.Info("search",
+				slog.String("search term", searchStr),
+				slog.String("ref", ref.GetName()),
+				slog.Bool("found", found),
+			)
+
+			t.state.pages.SwitchToPage(homePage)
+			return true
+		default:
+			return false
 		}
-
-		found := search(t.state.testTree.TreeView, ref.GetName(), t)
-		if !found {
-			t.log.Error("error", slog.String("search term not found", searchStr))
-			t.state.search.modal.SetBorderColor(tcell.ColorRed)
-			return
-		}
-
-		t.state.search.modal.SetBorderColor(t.theme.Border)
-		t.log.Info("search",
-			slog.String("search term", searchStr),
-			slog.String("ref", ref.GetName()),
-			slog.Bool("found", found),
-		)
-
-		t.state.pages.SwitchToPage(homePage)
 	})
 
 	SetInputStyling(t, input)
@@ -66,6 +88,13 @@ func newSearchModal(t *TUI) *searchModal {
 	modal.SetBorder(true)
 	modal.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
+		case tcell.KeyCtrlJ:
+			tcell.NewEventKey(tcell.KeyDown, 'j', tcell.ModNone)
+			// nav down
+		case tcell.KeyCtrlK:
+			tcell.NewEventKey(tcell.KeyUp, 'k', tcell.ModNone)
+			// nav down
+
 		case tcell.KeyEsc:
 			t.state.pages.SwitchToPage(homePage)
 		}

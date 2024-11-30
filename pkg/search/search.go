@@ -1,4 +1,0 @@
-package search
-
-func Search() {
-}

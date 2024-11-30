@@ -50,7 +50,7 @@ func newState(log *slog.Logger) (*state, error) {
 			flattened: data.FlattenAllNodes(),
 		},
 		console: &consoleData{
-			active: false, // TODO: off by default??
+			active: false,
 		},
 	}, nil
 }

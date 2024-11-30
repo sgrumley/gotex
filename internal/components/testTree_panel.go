@@ -45,7 +45,11 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 
 		// keybinding for single keys
 		switch event.Rune() {
-		// run test
+		// tree navigation
+		case 'j':
+			return tcell.NewEventKey(tcell.KeyDown, 'j', tcell.ModNone)
+		case 'k':
+			return tcell.NewEventKey(tcell.KeyUp, 'k', tcell.ModNone)
 		case 'l':
 			node := t.state.testTree.GetCurrentNode()
 			if node == nil {
@@ -60,7 +64,7 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 				t.state.result.RenderResults("Error can't get node " + node.GetReference().(finder.Node).GetName())
 			}
 			node.CollapseAll()
-
+		// run test
 		case 'r':
 			t.state.result.RenderResults("Testing ....")
 			dataNode, ok := tt.GetCurrentNode().GetReference().(finder.Node)
@@ -79,29 +83,6 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 
 			t.state.result.RenderResults(output)
 			return nil
-		// rerun last test
-		case 'R':
-			// FIX: need a way to show the user that the test has been rerun/ is rerunning
-			// maybe a job for the meta console?
-			t.state.result.RenderResults("Rerunning test")
-			t.log.Error("this should not have run")
-
-			node := t.state.lastTest
-			if node == nil {
-				t.state.result.RenderResults("failed to run last test. Make sure you run a test before rerunning")
-				t.log.Error("attempted test rerun, but no test has previously been run")
-				return event
-			}
-
-			output, err := node.RunTest()
-			if err != nil {
-				t.log.Error("failed to re run valid test", slog.Any("error", err))
-				t.state.result.RenderResults(err.Error())
-				return event
-			}
-			t.state.result.RenderResults(output)
-			return nil
-
 		// sync tests
 		case 's':
 			// NOTE: this could happen on a timer or by watching the the test files for changes
@@ -201,7 +182,7 @@ func prefillTree(t *TUI, target *tview.TreeNode, n finder.Node, lvl int) {
 	}
 }
 
-func search(tree *tview.TreeView, searchString string, t *TUI) bool {
+func search(tree *tview.TreeView, searchString string) bool {
 	var matchedNode *tview.TreeNode
 	var searchAndExpand func(node *tview.TreeNode, parents []*tview.TreeNode) bool
 
