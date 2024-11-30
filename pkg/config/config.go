@@ -159,3 +159,17 @@ func ReplaceHomeDirChar(fp string) (string, error) {
 	}
 	return fp, nil
 }
+
+// TODO: maybe use templating?? This can add the logic red if not green if is
+func (c *Config) String() string {
+	return fmt.Sprintf(`
+		Config:
+			json: %t
+			timeout: %s
+			short: %t
+			verbose: %t
+			fail fast: %t
+			cover: %t
+			[green]pipe to[-]: %s
+		`, c.Json, c.Timeout, c.Short, c.Verbose, c.FailFast, c.Cover, c.PipeTo)
+}

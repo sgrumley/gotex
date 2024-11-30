@@ -8,16 +8,32 @@ import (
 func (t *TUI) setGlobalKeybinding(event *tcell.EventKey) {
 	t.app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Rune() {
+		// TODO: move j and k to testTree
 		case 'j':
 			return tcell.NewEventKey(tcell.KeyDown, 'j', tcell.ModNone)
 		case 'k':
 			return tcell.NewEventKey(tcell.KeyUp, 'k', tcell.ModNone)
 		case 'R':
 			// rerun last test
+
+			// TODO: run global instead of in testTree
 		case '/':
-			// call modal
+			// call search modal
 		case 'q':
 			t.app.Stop()
+		case 'C':
+			if t.state.console.active {
+				t.state.console.active = false
+				t.state.console.flex.RemoveItem(t.state.console.panel)
+			} else {
+				t.state.console.active = true
+				t.state.console.flex.AddItem(t.state.console.panel, 8, 1, false)
+			}
+		case 'c':
+			// SwitchToPage will hide all other pages
+			// t.state.pages.SwitchToPage(configPage)
+			t.state.pages.ShowPage(configPage)
+		// TODO: move below to testTree
 		case 'l':
 			// expand
 		case 'h':

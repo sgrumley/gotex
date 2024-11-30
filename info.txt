@@ -5,21 +5,20 @@ Required:
 - search (this should have a map from a from search term to struct with a ref to the node and other meta data) 
   - fzf
 - readme
-- packagerise code 
+- Runner needs a rethink
+  - smaller results panel below results that has meta data and logs
+  -> This is mostly done it just needs dynamic data (most of the meta data needs to be included in a response from runner)
+  - need to investigate further into what classifies as an error in go test cmds
+- packagerise code (api should probably have a different go mod so it can be imported indepentanly)
 - clean code 
   - keymaps should be function calls not inline
+- add pop up config display (Needs a form for runtime altering)
 
 Nice to have: 
-- smaller results panel below results that has meta data and logs?? -> there should be a toggle for this
-  - test name
-  - file location
-  - pass / fail
-  - config + location filepath 
-  - logger output filepath
+- parsing of my own -> strip unused text -> color important parts (highlight filepath -> good for finding where a panic happened)
 - a lot more options need to be read in from config
-- theming
+- theming (Is there tview themeing I can use instead)
 - Create/modify config in app (this should be stateless, modify yaml for persistent settings)
-- add config option to set how many levels you want displayed before filename -> this shouldn't be needed once packages are added
 - add results state to test in tree (tick or cross emoji??) -> this does not persist longer than the session
 - add switch focus to results 
   - search 
@@ -27,9 +26,8 @@ Nice to have:
   - copy 
 
 Bug:
+- There is a bug to do with how privimatives are listening for key presses. Global keys require to be pressed twice??
 - go test on a file with a failing test case does not run the test?? This is the same behaviour as running go test -run filename. Look at alternative ways
-- need to investigate further into what classifies as an error in go test cmds
-  - the piping seems to be most noticibly broken
 - some ui impovement to change screen when rerunning test
   -> seems like returning the event is what cause the execution. This means there is no easy way to change the screen while the test runs.
 
