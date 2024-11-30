@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"sgrumley/gotex/pkg/finder"
 	"sgrumley/gotex/pkg/runner"
+	"strings"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -45,6 +46,21 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 		// keybinding for single keys
 		switch event.Rune() {
 		// run test
+		case 'l':
+			node := t.state.testTree.GetCurrentNode()
+			if node == nil {
+				// TODO: this should print to the console..
+				t.state.result.RenderResults("Error can't get node " + node.GetReference().(finder.Node).GetName())
+			}
+			node.ExpandAll()
+		case 'h':
+			node := t.state.testTree.GetCurrentNode()
+			if node == nil {
+				// TODO: this should print to the console..
+				t.state.result.RenderResults("Error can't get node " + node.GetReference().(finder.Node).GetName())
+			}
+			node.CollapseAll()
+
 		case 'r':
 			t.state.result.RenderResults("Testing ....")
 			dataNode, ok := tt.GetCurrentNode().GetReference().(finder.Node)
@@ -113,8 +129,6 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 			t.state.pages.ShowPage(searchPage)
 			t.app.SetFocus(t.state.search.input)
 			return nil
-			// t.app.SetFocus(t.state.search.input)
-			// tt.Search(t)
 		}
 		// keybinding for special keys
 		switch event.Key() {
@@ -140,33 +154,32 @@ func (tt *TestTree) Populate(t *TUI) {
 	tt.SetRoot(root)
 	tt.SetCurrentNode(root)
 
-	add(t, root, data)
+	prefillTree(t, root, data, 0)
+	// allow level 1 to be expanded
+	for _, child := range root.GetChildren() {
+		child.CollapseAll()
+	}
 
 	tt.SetSelectedFunc(func(node *tview.TreeNode) {
-		reference := node.GetReference()
-		if reference == nil {
-			return // Selecting the root node does nothing.
+		if node.GetReference() == nil {
+			return
 		}
-		children := node.GetChildren()
-		if len(children) == 0 {
-			dataNode := reference.(finder.Node)
-			add(t, node, dataNode)
-		} else {
-			node.SetExpanded(!node.IsExpanded())
-		}
+
+		node.SetExpanded(!node.IsExpanded())
 	})
 }
 
-func add(t *TUI, target *tview.TreeNode, n finder.Node) {
+func prefillTree(t *TUI, target *tview.TreeNode, n finder.Node, lvl int) {
 	children := n.GetChildren()
 	for _, child := range children {
 		node := tview.NewTreeNode(child.GetName())
 		node.SetReference(child)
 		node.SetSelectable(true)
-		// node.SetSelectable(child.HasChildren()) // NOTE: this makes cases unselectable
 
 		// node level styling
-		switch target.GetLevel() + 1 {
+		// TODO: consider useing SetPrefixes: https://pkg.go.dev/github.com/rivo/tview#TreeView
+
+		switch lvl + 1 {
 		case LevelPackage:
 			node.SetText(" " + node.GetText())
 			node.SetColor(t.theme.Package)
@@ -184,8 +197,43 @@ func add(t *TUI, target *tview.TreeNode, n finder.Node) {
 		}
 
 		target.AddChild(node)
+		prefillTree(t, node, child, lvl+1)
 	}
 }
 
-func (tt *TestTree) Search(t *TUI) {
+func search(tree *tview.TreeView, searchString string, t *TUI) bool {
+	var matchedNode *tview.TreeNode
+	var searchAndExpand func(node *tview.TreeNode, parents []*tview.TreeNode) bool
+
+	searchAndExpand = func(node *tview.TreeNode, parents []*tview.TreeNode) bool {
+		if strings.Contains(strings.ToLower(node.GetText()), strings.ToLower(searchString)) {
+			// Expand all parent nodes
+			for _, parent := range parents {
+				parent.SetExpanded(true)
+			}
+			matchedNode = node
+			return true // Stop traversing
+		}
+
+		// Traverse children
+		for _, child := range node.GetChildren() {
+			if searchAndExpand(child, append(parents, node)) {
+				return true // Stop traversing
+			}
+		}
+
+		return false
+	}
+
+	// Start traversal from the root
+	root := tree.GetRoot()
+	if root != nil {
+		searchAndExpand(root, nil)
+	}
+
+	if matchedNode != nil {
+		tree.SetCurrentNode(matchedNode)
+	}
+
+	return true
 }

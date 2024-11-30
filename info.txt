@@ -22,12 +22,14 @@ Nice to have:
 - theming (Is there tview themeing I can use instead)
 - Create/modify config in app (this should be stateless, modify yaml for persistent settings)
 - add results state to test in tree (tick or cross emoji??) -> this does not persist longer than the session
+- add a helper modal that shows all keybindings
 - add switch focus to results 
   - search 
   - scroll
   - copy 
 
 Bug:
+- TODOs in code
 - There is a bug to do with how privimatives are listening for key presses. Global keys require to be pressed twice??
 - go test on a file with a failing test case does not run the test?? This is the same behaviour as running go test -run filename. Look at alternative ways
 - some ui impovement to change screen when rerunning test

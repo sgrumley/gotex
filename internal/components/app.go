@@ -9,6 +9,8 @@ import (
 
 type resources struct {
 	data *finder.Project
+	// this should become useful once I update the search names to append the parent node
+	flattened *finder.FlatProject
 }
 
 var (
@@ -44,7 +46,8 @@ func newState(log *slog.Logger) (*state, error) {
 
 	return &state{
 		resources: resources{
-			data: data,
+			data:      data,
+			flattened: data.FlattenAllNodes(),
 		},
 		console: &consoleData{
 			active: false, // TODO: off by default??

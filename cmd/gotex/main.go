@@ -15,7 +15,7 @@ func main() {
 func run() int {
 	log, err := logger.New(
 		logger.WithLevel(slog.LevelDebug),
-		logger.WithSource(true),
+		logger.WithSource(false),
 	)
 	if err != nil {
 		fmt.Println("error: ", err.Error())
