@@ -93,6 +93,9 @@ func SetInputStyling(t *TUI, input *tview.InputField) {
 	input.SetLabelColor(t.theme.Border)
 	input.SetFieldTextColor(t.theme.File)
 	input.SetBackgroundColor(t.theme.Background)
+	autoCmpStyleMain := tcell.StyleDefault.Background(t.theme.Background).Foreground(t.theme.Case)
+	autoCmpStyleSelected := tcell.StyleDefault.Background(t.theme.Case).Foreground(t.theme.Background)
+	input.SetAutocompleteStyles(t.theme.Background, autoCmpStyleMain, autoCmpStyleSelected)
 }
 
 func SetModalStyling(t *TUI, modal *tview.Modal) {

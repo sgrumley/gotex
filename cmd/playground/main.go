@@ -1,118 +1,129 @@
 package main
 
+// NOTE: this is an ongoing WIP for improving the search feature
 import (
-	"fmt"
+	"strings"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
-func createInputModal(app *tview.Application, pages *tview.Pages) (*tview.Flex, *tview.InputField) {
-	// Define custom colors
-	backgroundColor := tcell.ColorPink
-	backgroundColor1 := tcell.ColorDarkGreen
-	borderColor := tcell.ColorWhite
+func createInputWithSuggestionsUI() *tview.Flex {
+	suggestions := []string{"apple", "application", "apricot", "Banana", "Cherry", "Date", "Elderberry"}
+	currentSuggestionIndex := -1
+	currentEntries := []string{}
 
-	// Create a text input field with custom colors
-	input := tview.NewInputField()
-	input.SetLabel("Enter your name: ")
-	input.SetFieldWidth(20)
-	input.SetLabelColor(tcell.ColorWhite)
-	input.SetFieldTextColor(tcell.ColorWhite)
-	input.SetBackgroundColor(backgroundColor1)
+	// Create input field
+	inputField := tview.NewInputField()
+	inputField.SetLabel("Fruits: ").
+		SetFieldWidth(20)
 
-	// Create a modal-like container with custom background
-	modal := tview.NewFlex()
-	modal.SetDirection(tview.FlexColumn)
-	modal.SetBorder(true)
-	modal.SetBorderColor(borderColor)
-	modal.SetBackgroundColor(backgroundColor1)
-	modal.SetTitleColor(tcell.ColorWhite)
-	modal.SetTitle("Input Modal")
+	// Create list for suggestions
+	suggestionList := tview.NewList()
+	suggestionList.SetBorder(true).
+		SetTitle("Suggestions")
 
-	// Create text view
-	titleView := tview.NewTextView()
-	titleView.SetTextColor(tcell.ColorWhite)
-	titleView.SetBackgroundColor(backgroundColor1)
-	titleView.SetText("Welcome to Input Modal")
+	// Create flex container
+	flex := tview.NewFlex().SetDirection(tview.FlexRow)
+	flex.AddItem(inputField, 3, 1, true)
+	flex.AddItem(suggestionList, 10, 1, false)
 
-	// Create submit button
-	submitButton := tview.NewButton("Submit")
-	submitButton.SetSelectedFunc(func() {
-		name := input.GetText()
-		if name != "" {
-			pages.HidePage("inputModal")
-			fmt.Printf("Hello, %s!\n", name)
+	inputField.SetAutocompleteFunc(func(currentText string) (entries []string) {
+		if len(currentText) == 0 {
+			suggestionList.Clear()
+			return
 		}
+
+		// Filter suggestions
+		entries = []string{}
+		for _, test := range suggestions {
+			if strings.HasPrefix(strings.ToLower(test), strings.ToLower(currentText)) {
+				entries = append(entries, test)
+			}
+		}
+
+		// Update suggestion list
+		suggestionList.Clear()
+		for i, entry := range entries {
+			index := i
+			suggestionList.AddItem(entry, "", 0, func() {
+				inputField.SetText(entries[index])
+			})
+		}
+
+		currentEntries = entries
+		currentSuggestionIndex = -1
+
+		if len(entries) <= 1 {
+			entries = nil
+		}
+		return entries
 	})
-	submitButton.SetLabelColor(tcell.ColorWhite)
-	submitButton.SetBackgroundColor(backgroundColor)
 
-	// Create a flex to arrange content inside the modal
-	modalContent := tview.NewFlex()
-	modalContent.SetDirection(tview.FlexRow)
-	modalContent.SetBackgroundColor(backgroundColor)
-	modalContent.AddItem(titleView, 3, 1, false)
-	modalContent.AddItem(input, 3, 1, true)
-	modalContent.AddItem(submitButton, 3, 1, false)
+	inputField.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		// Handle suggestion navigation when suggestions exist
+		if len(currentEntries) > 0 {
+			switch event.Key() {
+			case tcell.KeyDown:
+				fallthrough
+			case tcell.KeyCtrlJ:
+				// Move to next suggestion
+				currentSuggestionIndex++
+				if currentSuggestionIndex >= len(currentEntries) {
+					currentSuggestionIndex = 0
+				}
+				inputField.SetText(currentEntries[currentSuggestionIndex])
+				suggestionList.SetCurrentItem(currentSuggestionIndex)
+				return nil
 
-	// Add the content to the modal
-	modal.AddItem(modalContent, 0, 1, true)
+			case tcell.KeyUp:
+				fallthrough
+			case tcell.KeyCtrlK:
+				// Move to previous suggestion
+				currentSuggestionIndex--
+				if currentSuggestionIndex < 0 {
+					currentSuggestionIndex = len(currentEntries) - 1
+				}
+				inputField.SetText(currentEntries[currentSuggestionIndex])
+				suggestionList.SetCurrentItem(currentSuggestionIndex)
+				return nil
 
-	// Create a centered container for the modal
-	centeredModal := tview.NewFlex()
-	centeredModal.SetBackgroundColor(backgroundColor)
-	centeredModal.AddItem(nil, 0, 1, false)
-	centeredModal.AddItem(
-		func() *tview.Flex {
-			rowFlex := tview.NewFlex()
-			rowFlex.SetDirection(tview.FlexRow)
-			rowFlex.SetBackgroundColor(backgroundColor)
-			rowFlex.AddItem(nil, 0, 1, false)
-			rowFlex.AddItem(modal, 0, 1, true)
-			rowFlex.AddItem(nil, 0, 1, false)
-			return rowFlex
-		}(), 0, 3, true,
-	)
-	centeredModal.AddItem(nil, 0, 1, false)
+			case tcell.KeyTab:
+				// Allow switching focus between input and suggestion list
+				app.SetFocus(suggestionList)
+				return nil
+			}
+		}
+		return event
+	})
 
-	return centeredModal, input
-}
-
-func main() {
-	// Create the main application
-	app := tview.NewApplication()
-
-	// Create pages
-	pages := tview.NewPages()
-
-	// Your fullscreen page
-	fullscreen := tview.NewFlex()
-	fullscreen.AddItem(tview.NewTextView().SetText("Main Screen"), 0, 1, false)
-
-	// Create input modal
-	inputModal, inputField := createInputModal(app, pages)
-
-	// Add pages
-	pages.AddPage("fullscreen", fullscreen, true, true)
-	pages.AddPage("inputModal", inputModal, true, false)
-
-	// Optional: Add a keybinding to show the modal
-	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		if event.Key() == tcell.KeyCtrlI {
-			pages.ShowPage("inputModal")
+	// Add handler to suggestion list to update input when item is selected
+	suggestionList.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyEnter:
+			// When Enter is pressed on suggestion list, update input
+			_, suggestion := suggestionList.GetItemText(suggestionList.GetCurrentItem())
+			inputField.SetText(suggestion)
 			app.SetFocus(inputField)
 			return nil
-		}
-		if event.Key() == tcell.KeyEsc {
-			pages.HidePage("inputModal")
+		case tcell.KeyTab:
+			// Allow switching back to input field
+			app.SetFocus(inputField)
 			return nil
 		}
 		return event
 	})
 
-	// Run the application
-	if err := app.SetRoot(pages, true).EnableMouse(true).Run(); err != nil {
+	return flex
+}
+
+var app *tview.Application
+
+func main() {
+	app = tview.NewApplication()
+	flex := createInputWithSuggestionsUI()
+
+	if err := app.SetRoot(flex, true).EnableMouse(true).Run(); err != nil {
 		panic(err)
 	}
 }

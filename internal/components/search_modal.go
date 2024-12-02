@@ -1,6 +1,7 @@
 package components
 
 import (
+	"fmt"
 	"log/slog"
 	"strings"
 
@@ -11,15 +12,13 @@ import (
 type searchModal struct {
 	modal *tview.Flex
 	input *tview.InputField
+	text  *tview.TextView
 }
 
 func newSearchModal(t *TUI) *searchModal {
 	input := tview.NewInputField().
 		SetLabel("Search test: ").
 		SetFieldWidth(40)
-
-	// TODO: fix theming
-	// input.SetAutocompleteStyles()
 
 	// TODO: integrate fzf
 	// custom autocompleteFunc -> setup an input handler that takes the keys input (channel) and feeds to an output func (requires gui)
@@ -56,8 +55,7 @@ func newSearchModal(t *TUI) *searchModal {
 			ref, exists := t.state.resources.flattened.NodeMap[searchStr]
 			if !exists {
 				t.log.Error("error", slog.String("search term not in tree", searchStr))
-				// TODO: this modal is not the one we intend to store
-				t.state.search.modal.SetBorderColor(tcell.ColorRed)
+				t.state.search.text.SetText("search term does not exist in test tree: " + searchStr)
 				return false
 			}
 
@@ -81,34 +79,51 @@ func newSearchModal(t *TUI) *searchModal {
 			return false
 		}
 	})
+	// SetDoneFunc only executes if a field has not been autoselected, if this is hit it means that the user is searching for something that we know does not exist
+	input.SetDoneFunc(func(key tcell.Key) {
+		searchStr := t.state.search.input.GetText()
+		errMsg := fmt.Sprintf("[red]Search term \"%s\" does not exist in the test tree.[-] \nPlease try again or press \"s\" from the main page to resync the files ", searchStr)
+		t.state.search.text.SetText(errMsg)
+	})
+
+	textView := tview.NewTextView()
+	textView.SetTextColor(t.theme.Text)
+	textView.SetBackgroundColor(t.theme.Background)
+	textView.SetDynamicColors(true)
+	textView.SetText("Search for any test in the test tree")
 
 	SetInputStyling(t, input)
-	// TODO: nuffily keymaps
-	modal := NewModal(t, input)
+	modal := NewModal(t, input, textView)
 	modal.SetBorder(true)
 	modal.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
-		case tcell.KeyCtrlJ:
-			tcell.NewEventKey(tcell.KeyDown, 'j', tcell.ModNone)
-			// nav down
-		case tcell.KeyCtrlK:
-			tcell.NewEventKey(tcell.KeyUp, 'k', tcell.ModNone)
-			// nav down
+		// NOTE: looks like navigation here will require wrapping or reimplementing the inputfield type
+		// or making a custom type
+
+		// case tcell.KeyCtrlJ:
+		// tcell.NewEventKey(tcell.KeyDown, 'j', tcell.ModNone)
+		// nav down
+		// case tcell.KeyCtrlK:
+		// tcell.NewEventKey(tcell.KeyUp, 'k', tcell.ModNone)
+		// nav down
 
 		case tcell.KeyEsc:
+			t.state.search.input.SetText("")
+			t.state.search.text.SetText("Search for any test in the test tree")
+			t.setGlobalKeybinding(event)
 			t.state.pages.SwitchToPage(homePage)
 		}
 		return event
 	})
 	return &searchModal{
 		input: input,
+		text:  textView,
 		modal: modal,
 	}
 }
 
 // NOTE: tview.Modal does not support embedding, this will use a flex to replicate the feature
-func NewModal(t *TUI, input *tview.InputField) *tview.Flex {
-	// Create a modal-like container
+func NewModal(t *TUI, input *tview.InputField, textView *tview.TextView) *tview.Flex {
 	modal := tview.NewFlex().
 		SetDirection(tview.FlexColumn)
 	modal.SetBorder(true).
@@ -116,18 +131,11 @@ func NewModal(t *TUI, input *tview.InputField) *tview.Flex {
 
 	SetFlexStyling(t, modal)
 
-	textView := tview.NewTextView()
-	textView.SetTextColor(tcell.ColorWhite)
-	textView.SetBackgroundColor(t.theme.Background)
-	textView.SetText("Welcome to Input Modal, this is dummy text for now")
-
-	// Create a flex to arrange content inside the modal
 	modalContent := tview.NewFlex().
 		SetDirection(tview.FlexRow).
 		AddItem(textView, 3, 1, true).
 		AddItem(input, 3, 1, true)
 
-	// Add the content to the modal
 	modal.AddItem(modalContent, 0, 1, true)
 
 	temp := tview.NewFlex().
@@ -138,7 +146,6 @@ func NewModal(t *TUI, input *tview.InputField) *tview.Flex {
 
 	temp.SetBackgroundColor(t.theme.Background)
 
-	// Create a centered container for the modal
 	centeredModal := tview.NewFlex().
 		AddItem(nil, 0, 1, false).
 		AddItem(temp, 0, 3, true).

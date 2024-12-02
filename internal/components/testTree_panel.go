@@ -107,6 +107,15 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 
 		// search
 		case '/':
+			t.app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+				switch event.Rune() {
+				case 'c':
+					// NOTE: this is an example of when to return the event rather than nil, as it will be passed through and still count as text input
+					return event
+				}
+				return event
+			})
+
 			t.state.pages.ShowPage(searchPage)
 			t.app.SetFocus(t.state.search.input)
 			return nil
