@@ -123,7 +123,7 @@ func (t *TUI) initPanels() {
 
 	// layouts
 	outputLayout := tview.NewFlex().
-		SetDirection(tview.FlexRow).
+		SetDirection(tview.FlexColumn).
 		AddItem(results.TextView, 0, 8, false)
 
 	t.state.ui.console.flex = outputLayout
@@ -131,7 +131,7 @@ func (t *TUI) initPanels() {
 	contentLayout := tview.NewFlex().
 		SetDirection(tview.FlexColumn).
 		AddItem(testTree.TreeView, 45, 1, true).
-		AddItem(outputLayout, 0, 6, false)
+		AddItem(outputLayout, 0, 10, false)
 
 	SetFlexStyling(t, contentLayout)
 

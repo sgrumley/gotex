@@ -81,7 +81,8 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 				return event
 			}
 
-			t.state.ui.result.RenderResults(output)
+			t.state.ui.result.RenderResults(output.Result)
+			t.state.ui.console.panel.UpdateMeta(t, output)
 			return nil
 		// sync tests
 		case 's':
@@ -96,13 +97,14 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 			return nil
 		// run all
 		case 'A':
-			output, err := runner.RunTest(runner.TEST_TYPE_PROJECT, "", t.state.data.project.RootDir, t.state.data.project.Config)
+			output, err := runner.RunTest(runner.TestTypeProject, "", t.state.data.project.RootDir, t.state.data.project.Config)
 			if err != nil {
 				t.log.Error("failed running all tests", slog.Any("error", err))
 				t.state.ui.result.RenderResults(err.Error())
 				return event
 			}
-			t.state.ui.result.RenderResults(output)
+			t.state.ui.result.RenderResults(output.Result)
+			t.state.ui.console.panel.UpdateMeta(t, output)
 			return nil
 
 		// search

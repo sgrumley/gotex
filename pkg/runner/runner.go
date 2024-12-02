@@ -7,29 +7,64 @@ import (
 	"os"
 	"os/exec"
 	"sgrumley/gotex/pkg/config"
+	"strings"
 )
 
-func RunTest(testType testType, testName string, dir string, cfg config.Config) (string, error) {
-	// TODO: look into how the default logger works
+type TestType int
+
+const (
+	TestTypeProject TestType = iota
+	TestTypePackage
+	TestTypeFile
+	TestTypeFunction
+	TestTypeCase
+)
+
+type Response struct {
+	TestName        string
+	TestType        TestType
+	TestDir         string
+	CommandExecuted string
+	Result          string
+	Output          string
+	Error           string
+	ExitStatus      int
+	External        bool
+	ExternalOutput  string
+	ExternalError   string
+}
+
+func RunTest(testType TestType, testName string, dir string, cfg config.Config) (*Response, error) {
+	// TODO: how does default work?
 	log := slog.Default()
-	buf := new(bytes.Buffer)
-	errBuf := new(bytes.Buffer)
 	cmdStr := GetCommand(testType, testName)
 	cmdStr = applyConfig(cfg, cmdStr)
 
+	if cfg.PipeTo != "" {
+		res, err := RunTestPiped(cmdStr, cfg.PipeTo, dir)
+		if err != nil {
+			log.Error("failed to run piped command", slog.Any("error", err))
+			return nil, err
+		}
+		res.TestName = testName
+		res.TestType = testType
+		res.TestDir = dir
+		res.CommandExecuted = argsToString(cmdStr) + " | " + cfg.PipeTo
+		return res, nil
+	}
+
+	buf := &bytes.Buffer{}
+	errBuf := &bytes.Buffer{}
 	cmd := exec.Command("go", cmdStr...)
 	cmd.Dir = dir
 	cmd.Stdout = buf
 	cmd.Stderr = errBuf
 
-	if cfg.PipeTo != "" {
-		res, err := RunTestPiped(cmdStr, cfg.PipeTo, dir)
-		if err != nil {
-			slog.Error("failed to run piped command", slog.Any("error", err))
-			return "", err
-		}
-
-		return res.String(), nil
+	res := &Response{
+		TestName:        testName,
+		TestType:        testType,
+		CommandExecuted: argsToString(cmdStr),
+		TestDir:         dir,
 	}
 
 	log.Info("os command executed",
@@ -37,18 +72,30 @@ func RunTest(testType testType, testName string, dir string, cfg config.Config) 
 		slog.String("dir", cmd.Dir),
 		slog.Any("type", testType),
 	)
-	if err := cmd.Start(); err != nil {
-		return "", fmt.Errorf("failed to start command: %w", err)
-	}
 
-	if err := cmd.Wait(); err != nil {
-		// NOTE: go test returns error if tests fail. This needs a correct solution
-		// some logic to determine if the output is exit 1. If so this does not mean an error within the command but could be that the test did not pass
-		return "", fmt.Errorf("CMD1: \nerror: \n%w \nstderr: \n%s \nstdout: \n%s ", err, errBuf.String(), cmd.String())
+	if err := cmd.Run(); err != nil {
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			if exitErr.ExitCode() == 1 {
+				// This should mean that the tests failed (not an actual error)
+				res.Output = buf.String()
+				res.Error = errBuf.String()
+				res.ExitStatus = exitErr.ExitCode()
+				return res, nil
+			}
+		} else {
+			// Actual execution error e.g. command not found
+			res.Output = buf.String()
+			res.Error = errBuf.String()
+			return res, err
+		}
 	}
 
 	log.Info("test run successfully", slog.String("name", testName))
-	return buf.String(), nil
+	res.Output = buf.String()
+	res.Result = buf.String()
+	res.Error = errBuf.String()
+	res.ExitStatus = 0
+	return res, nil
 }
 
 func applyConfig(cfg config.Config, cmd []string) []string {
@@ -77,81 +124,82 @@ func applyConfig(cfg config.Config, cmd []string) []string {
 	return args
 }
 
-type testType int
-
-const (
-	TEST_TYPE_PROJECT testType = iota
-	TEST_TYPE_PACKAGE
-	TEST_TYPE_FILE
-	TEST_TYPE_FUNCTION
-	TEST_TYPE_CASE
-)
-
-func GetCommand(typed testType, testName string) []string {
+func GetCommand(typed TestType, testName string) []string {
 	switch typed {
-	case TEST_TYPE_PROJECT:
+	case TestTypeProject:
 		return []string{"test", "./..."}
-	case TEST_TYPE_PACKAGE:
+	case TestTypePackage:
 		return []string{"test"}
-	case TEST_TYPE_FILE:
-		return []string{"test", "-run", testName}
-	case TEST_TYPE_FUNCTION:
-		return []string{"test", "-run", testName}
-	case TEST_TYPE_CASE:
+	case TestTypeFile, TestTypeFunction, TestTypeCase:
 		return []string{"test", "-run", testName}
 	default:
 		return []string{}
 	}
 }
 
-// TODO: spend some time to think about piping
-// TODO: create a formatted error
-// func eg(buf1, buf2, err) error
-// func eg2(buf1) string
-func RunTestPiped(cmdStr1 []string, cmdStr2 string, dir string) (*bytes.Buffer, error) {
-	var cmd1Output bytes.Buffer
-	var errBuf1 bytes.Buffer
+func RunTestPiped(goTestCmdStr []string, externalCmdStr string, dir string) (*Response, error) {
+	var goTestOutput bytes.Buffer
+	var goTestErrBuf bytes.Buffer
 
-	cmd1 := exec.Command("go", cmdStr1...)
-	cmd1.Stdout = &cmd1Output
-	cmd1.Stderr = &errBuf1
-	cmd1.Dir = dir
-
-	if err := cmd1.Start(); err != nil {
-		return nil, fmt.Errorf("failed to start command 1: %w", err)
+	goTestCmd := exec.Command("go", goTestCmdStr...)
+	goTestCmd.Stdout = &goTestOutput
+	goTestCmd.Stderr = &goTestErrBuf
+	goTestCmd.Dir = dir
+	res := &Response{
+		External: true,
 	}
 
-	var err1 error
-	if err := cmd1.Wait(); err != nil {
-		err1 = err
-		// NOTE: this is note worth exiting at this point
-		// return nil, fmt.Errorf("go test command failed: %w, stderr: %s, stdout: %s", err, errBuf1.String(), cmd1Output.String())
+	if err := goTestCmd.Start(); err != nil {
+		res.Output = goTestOutput.String()
+		res.Error = goTestErrBuf.String()
+		return res, fmt.Errorf("failed to start command 1: %w", err)
 	}
 
-	// Create a pipe for the second command
+	if err := goTestCmd.Wait(); err != nil {
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			if exitErr.ExitCode() != 1 {
+				// if it is an exit status code 1, continue to pipe the failed tests
+				res.Output = goTestOutput.String()
+				res.Error = goTestErrBuf.String()
+				res.ExitStatus = exitErr.ExitCode()
+				return res, err
+			}
+		}
+	}
+
+	// piping to external program
 	r, w, err := os.Pipe()
 	if err != nil {
-		return nil, fmt.Errorf("failed to create pipe: %w", err)
+		return res, fmt.Errorf("failed to create pipe: %w", err)
 	}
 	defer r.Close()
 
 	go func() {
-		_, _ = w.Write(cmd1Output.Bytes())
+		_, _ = w.Write(goTestOutput.Bytes())
 		w.Close()
 	}()
 
-	var cmd2Output bytes.Buffer
-	var errBuf2 bytes.Buffer
-	cmd2 := exec.Command(cmdStr2)
-	cmd2.Stdin = r
-	cmd2.Stdout = &cmd2Output
-	cmd2.Stderr = &errBuf2
+	var externalCmdOutput bytes.Buffer
+	var externalErrBuf bytes.Buffer
+	externalCmd := exec.Command(externalCmdStr)
+	externalCmd.Stdin = r
+	externalCmd.Stdout = &externalCmdOutput
+	externalCmd.Stderr = &externalErrBuf
 
-	// Run the second command
-	if err2 := cmd2.Run(); err2 != nil {
-		// NOTE: this will always happen if the tests fail..
-		return nil, fmt.Errorf("CMD1: \nerror: \n%w \nstderr: \n%s \nstdout: \n%s \nCMD2: \nerror: \n%w \nstderr: \n%s \nstdout: \n%s", err1, errBuf1.String(), cmd1Output.String(), err2, errBuf2.String(), cmd2Output.String())
+	if err := externalCmd.Run(); err != nil {
+		res.Output = goTestOutput.String()
+		res.Error = goTestErrBuf.String()
+		res.ExternalOutput = externalCmdOutput.String()
+		res.ExternalError = externalErrBuf.String()
+		return res, err
 	}
+	res.ExternalOutput = externalCmdOutput.String()
+	res.ExternalError = externalErrBuf.String()
+	res.Result = externalCmdOutput.String()
 
-	return &cmd2Output, nil
+	return res, nil
+}
+
+func argsToString(args []string) string {
+	return "go " + strings.Join(args, " ")
 }

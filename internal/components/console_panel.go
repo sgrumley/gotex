@@ -1,7 +1,8 @@
 package components
 
 import (
-	"fmt"
+	"sgrumley/gotex/pkg/ansi"
+	"sgrumley/gotex/pkg/runner"
 
 	"github.com/rivo/tview"
 )
@@ -16,7 +17,8 @@ func newConsolePane(t *TUI) *console {
 	}
 
 	res.SetBorder(true).SetTitle("Console")
-	res.RenderConsole(t, ConsoleTemplate())
+	res.SetTextAlign(tview.AlignLeft)
+	res.RenderConsole(t, "[green]Run[-] a test to see the meta data")
 	res.SetDynamicColors(true)
 	SetTextViewStyling(t, res.TextView)
 	res.SetWrap(true)
@@ -33,23 +35,40 @@ Logger Filepath: ~/.config/gotex/log.json
 Test Location: ./test/go_test.go
 */
 
-// TODO: key val data is probably better displayed as column or This row should be split into 2 columns
-func ConsoleTemplate() string {
-	return fmt.Sprintf(
-		"THIS IS DUMMY DATA\nTest Name: %s\nCommand: %s\nStatus: %s\nCompleted at: %s\nLogger Filepath: %s\nTest Location: %s\n",
-		"success/valid_json",
-		"go test -run method/success",
-		"[green]Pass[-]",
-		"10:14",
-		"~/.config/gotex/log.json",
-		"./test/go_test.go",
-	)
-}
-
-func (r *console) RenderConsole(t *TUI, msg string) {
-	r.Clear()
+func (c *console) RenderConsole(t *TUI, msg string) {
+	c.Clear()
 	t.state.ui.console.currentMessage = msg
 	msg = tview.TranslateANSI(msg)
-	r.SetDynamicColors(true)
-	r.SetText(msg)
+	c.SetDynamicColors(true)
+	c.SetText(msg)
+}
+
+func (c *console) UpdateMeta(t *TUI, meta *runner.Response) {
+	// HACK: text is janky if not new lined
+	if meta.Output != "" {
+		meta.Output = "\n" + meta.Output
+	}
+	if meta.Error != "" {
+		meta.Error = "\n" + meta.Error
+	}
+	if meta.ExternalOutput != "" {
+		meta.ExternalOutput = "\n" + meta.ExternalOutput
+	}
+	if meta.ExternalError != "" {
+		meta.ExternalError = "\n" + meta.ExternalError
+	}
+	data := ansi.Data{
+		Fields: []ansi.Field{
+			ansi.CreateField("Name", meta.TestName),
+			ansi.CreateField("Command Executed", meta.CommandExecuted),
+			ansi.CreateField("Execution Filepath", meta.TestDir),
+			ansi.CreateField("Type (1=project,2=package,3=file,4=function,5=case)", meta.TestType),
+			ansi.CreateField("Piped to external", meta.External),
+			ansi.CreateField("Output", meta.Output),
+			ansi.CreateField("Error", meta.Error),
+			ansi.CreateField("External Output", meta.ExternalOutput),
+			ansi.CreateField("External Error", meta.ExternalError),
+		},
+	}
+	c.RenderConsole(t, ansi.OutputKeyVal(data))
 }

@@ -28,10 +28,12 @@ func (t *TUI) setGlobalKeybinding(_ *tcell.EventKey) {
 			output, err := node.RunTest()
 			if err != nil {
 				t.log.Error("failed to re run valid test", slog.Any("error", err))
+				t.state.ui.console.panel.UpdateMeta(t, output)
 				t.state.ui.result.RenderResults(err.Error())
 				return event
 			}
-			t.state.ui.result.RenderResults(output)
+			t.state.ui.result.RenderResults(output.Result)
+			t.state.ui.console.panel.UpdateMeta(t, output)
 			return nil
 
 		case 'q':
@@ -43,7 +45,7 @@ func (t *TUI) setGlobalKeybinding(_ *tcell.EventKey) {
 				return nil
 			} else {
 				t.state.ui.console.active = true
-				t.state.ui.console.flex.AddItem(t.state.ui.console.panel, 8, 1, false)
+				t.state.ui.console.flex.AddItem(t.state.ui.console.panel, 0, 10, false)
 				return nil
 			}
 		case 'c':

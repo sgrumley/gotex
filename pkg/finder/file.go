@@ -39,9 +39,9 @@ func (f *File) HasChildren() bool {
 	return false
 }
 
-func (f *File) RunTest() (string, error) {
+func (f *File) RunTest() (*runner.Response, error) {
 	project := f.Parent.Parent
 	path := filepath.Dir(f.Path)
 
-	return runner.RunTest(runner.TEST_TYPE_FILE, f.Name, path, project.Config)
+	return runner.RunTest(runner.TestTypeFile, f.Name, path, project.Config)
 }

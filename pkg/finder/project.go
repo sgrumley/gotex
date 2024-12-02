@@ -13,7 +13,7 @@ type Node interface {
 	GetName() string
 	GetChildren() []Node
 	HasChildren() bool
-	RunTest() (string, error)
+	RunTest() (*runner.Response, error)
 }
 
 var _ Node = (*Project)(nil)
@@ -80,9 +80,9 @@ func (p *Project) HasChildren() bool {
 	return false
 }
 
-func (p *Project) RunTest() (string, error) {
+func (p *Project) RunTest() (*runner.Response, error) {
 	path := filepath.Dir(p.RootDir)
-	return runner.RunTest(runner.TEST_TYPE_PROJECT, "", path, p.Config)
+	return runner.RunTest(runner.TestTypeProject, "", path, p.Config)
 }
 
 func InitProject(log *slog.Logger) (*Project, error) {

@@ -25,7 +25,7 @@ func (c *Case) HasChildren() bool {
 	return false
 }
 
-func (c *Case) RunTest() (string, error) {
+func (c *Case) RunTest() (*runner.Response, error) {
 	function := c.Parent
 	file := function.Parent
 	pkg := file.Parent
@@ -33,5 +33,5 @@ func (c *Case) RunTest() (string, error) {
 
 	caseName := fmt.Sprintf("%s/%s", function.Name, c.Name)
 	path := filepath.Dir(file.Path)
-	return runner.RunTest(runner.TEST_TYPE_CASE, caseName, path, project.Config)
+	return runner.RunTest(runner.TestTypeCase, caseName, path, project.Config)
 }

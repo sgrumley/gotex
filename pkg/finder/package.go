@@ -31,8 +31,8 @@ func (p *Package) HasChildren() bool {
 	return false
 }
 
-func (p *Package) RunTest() (string, error) {
+func (p *Package) RunTest() (*runner.Response, error) {
 	project := p.Parent
 
-	return runner.RunTest(runner.TEST_TYPE_PACKAGE, p.Name, p.Path, project.Config)
+	return runner.RunTest(runner.TestTypePackage, p.Name, p.Path, project.Config)
 }

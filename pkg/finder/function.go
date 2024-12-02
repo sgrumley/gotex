@@ -38,11 +38,11 @@ func (f *Function) HasChildren() bool {
 	return false
 }
 
-func (f *Function) RunTest() (string, error) {
+func (f *Function) RunTest() (*runner.Response, error) {
 	file := f.Parent
 	pkg := file.Parent
 	project := pkg.Parent
 
 	path := filepath.Dir(file.Path)
-	return runner.RunTest(runner.TEST_TYPE_FUNCTION, f.Name, path, project.Config)
+	return runner.RunTest(runner.TestTypeFunction, f.Name, path, project.Config)
 }
