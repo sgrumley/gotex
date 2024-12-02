@@ -10,6 +10,7 @@ import (
 type Theme struct {
 	Name       string
 	Background tcell.Color
+	Surface    tcell.Color
 	Border     tcell.Color
 	Text       tcell.Color
 	Project    tcell.Color
@@ -32,6 +33,7 @@ func getDefaultThemes() map[string]Theme {
 			File:       HexToColor("#89b4fa"),
 			Function:   HexToColor("#cba6f7"),
 			Case:       HexToColor("#f5c2e7"),
+			Surface:    HexToColor("#303446"),
 		},
 	}
 	return themes
@@ -76,6 +78,24 @@ func SetTextViewStyling(t *TUI, txt *tview.TextView) {
 func SetFlexStyling(t *TUI, flex *tview.Flex) {
 	flex.SetBackgroundColor(t.theme.Background)
 	flex.SetBorderColor(t.theme.Border)
+	flex.SetTitleColor(t.theme.Border)
+}
+
+func SetBoxStyling(t *TUI, box *tview.Box) {
+	box.SetBackgroundColor(t.theme.Background)
+	box.SetBorder(true)
+	box.SetBorderColor(t.theme.Border)
+	box.SetTitleColor(t.theme.Border)
+}
+
+func SetInputStyling(t *TUI, input *tview.InputField) {
+	input.SetFieldBackgroundColor(t.theme.Background)
+	input.SetLabelColor(t.theme.Border)
+	input.SetFieldTextColor(t.theme.File)
+	input.SetBackgroundColor(t.theme.Background)
+	autoCmpStyleMain := tcell.StyleDefault.Background(t.theme.Background).Foreground(t.theme.Case)
+	autoCmpStyleSelected := tcell.StyleDefault.Background(t.theme.Case).Foreground(t.theme.Background)
+	input.SetAutocompleteStyles(t.theme.Background, autoCmpStyleMain, autoCmpStyleSelected)
 }
 
 func SetModalStyling(t *TUI, modal *tview.Modal) {
@@ -96,13 +116,4 @@ func HexToColor(hex string) tcell.Color {
 		return tcell.ColorDefault
 	}
 	return tcell.NewHexColor(int32(color))
-}
-
-var catppuccin = map[string]tcell.Color{
-	"background": HexToColor("#1E1E2E"),
-	"surface0":   HexToColor("#302D41"),
-	"text":       HexToColor("#D9E0EE"),
-	"green":      HexToColor("#ABE9B3"),
-	"blue":       HexToColor("#89B4FA"),
-	"pink":       HexToColor("#F5C2E7"),
 }

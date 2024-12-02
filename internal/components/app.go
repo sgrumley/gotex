@@ -9,11 +9,14 @@ import (
 
 type resources struct {
 	data *finder.Project
+	// this should become useful once I update the search names to append the parent node
+	flattened *finder.FlatProject
 }
 
 var (
 	homePage   = "home"
 	configPage = "config"
+	searchPage = "search"
 )
 
 type state struct {
@@ -24,6 +27,7 @@ type state struct {
 	testTree  *TestTree
 	console   *consoleData
 	pages     *tview.Pages
+	search    *searchModal
 }
 
 type consoleData struct {
@@ -42,10 +46,11 @@ func newState(log *slog.Logger) (*state, error) {
 
 	return &state{
 		resources: resources{
-			data: data,
+			data:      data,
+			flattened: data.FlattenAllNodes(),
 		},
 		console: &consoleData{
-			active: false, // TODO: off by default??
+			active: false,
 		},
 	}, nil
 }
@@ -103,6 +108,9 @@ func (t *TUI) initPanels() {
 	console := newConsolePane(t)
 	t.state.console.panel = console
 
+	search := newSearchModal(t)
+	t.state.search = search
+
 	testTree := newTestTree(t)
 	t.app.SetFocus(testTree)
 	t.state.testTree = testTree
@@ -138,6 +146,7 @@ func (t *TUI) initPanels() {
 
 	configModal := newConfigModal(t)
 	pages.AddPage(configPage, configModal, true, false)
+	pages.AddPage(searchPage, search.modal, true, false)
 
 	t.app.SetRoot(pages, true)
 	t.log.Info("app started successfully")

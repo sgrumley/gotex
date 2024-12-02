@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"sgrumley/gotex/pkg/finder"
 	"sgrumley/gotex/pkg/runner"
+	"strings"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -44,6 +45,25 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 
 		// keybinding for single keys
 		switch event.Rune() {
+		// tree navigation
+		case 'j':
+			return tcell.NewEventKey(tcell.KeyDown, 'j', tcell.ModNone)
+		case 'k':
+			return tcell.NewEventKey(tcell.KeyUp, 'k', tcell.ModNone)
+		case 'l':
+			node := t.state.testTree.GetCurrentNode()
+			if node == nil {
+				// TODO: this should print to the console..
+				t.state.result.RenderResults("Error can't get node " + node.GetReference().(finder.Node).GetName())
+			}
+			node.ExpandAll()
+		case 'h':
+			node := t.state.testTree.GetCurrentNode()
+			if node == nil {
+				// TODO: this should print to the console..
+				t.state.result.RenderResults("Error can't get node " + node.GetReference().(finder.Node).GetName())
+			}
+			node.CollapseAll()
 		// run test
 		case 'r':
 			t.state.result.RenderResults("Testing ....")
@@ -62,28 +82,7 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 			}
 
 			t.state.result.RenderResults(output)
-		// rerun last test
-		case 'R':
-			// FIX: need a way to show the user that the test has been rerun/ is rerunning
-			// maybe a job for the meta console?
-			t.state.result.RenderResults("Rerunning test")
-			t.log.Error("this should not have run")
-
-			node := t.state.lastTest
-			if node == nil {
-				t.state.result.RenderResults("failed to run last test. Make sure you run a test before rerunning")
-				t.log.Error("attempted test rerun, but no test has previously been run")
-				return event
-			}
-
-			output, err := node.RunTest()
-			if err != nil {
-				t.log.Error("failed to re run valid test", slog.Any("error", err))
-				t.state.result.RenderResults(err.Error())
-				return event
-			}
-			t.state.result.RenderResults(output)
-
+			return nil
 		// sync tests
 		case 's':
 			// NOTE: this could happen on a timer or by watching the the test files for changes
@@ -94,6 +93,7 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 			t.state.resources.data = data
 			t.state.testTree.Populate(t)
 			t.state.result.RenderResults("Project has successfully refreshed")
+			return nil
 		// run all
 		case 'A':
 			output, err := runner.RunTest(runner.TEST_TYPE_PROJECT, "", t.state.resources.data.RootDir, t.state.resources.data.Config)
@@ -103,20 +103,36 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 				return event
 			}
 			t.state.result.RenderResults(output)
+			return nil
 
 		// search
 		case '/':
-			// TODO: search
+			t.app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+				switch event.Rune() {
+				case 'c':
+					// NOTE: this is an example of when to return the event rather than nil, as it will be passed through and still count as text input
+					return event
+				}
+				return event
+			})
 
+			t.state.pages.ShowPage(searchPage)
+			t.app.SetFocus(t.state.search.input)
+			return nil
 		}
 		// keybinding for special keys
 		switch event.Key() {
 		case tcell.KeyCtrlU:
 			currentPosition, _ := t.state.result.GetScrollOffset()
 			t.state.result.ScrollTo(currentPosition-10, 0)
+			return nil
 		case tcell.KeyCtrlD:
 			currentPosition, _ := t.state.result.GetScrollOffset()
 			t.state.result.ScrollTo(currentPosition+10, 0)
+			return nil
+		case tcell.KeyEsc:
+			t.state.pages.SwitchToPage(homePage)
+			return nil
 		}
 		return event
 	})
@@ -128,33 +144,32 @@ func (tt *TestTree) Populate(t *TUI) {
 	tt.SetRoot(root)
 	tt.SetCurrentNode(root)
 
-	add(t, root, data)
+	prefillTree(t, root, data, 0)
+	// allow level 1 to be expanded
+	for _, child := range root.GetChildren() {
+		child.CollapseAll()
+	}
 
 	tt.SetSelectedFunc(func(node *tview.TreeNode) {
-		reference := node.GetReference()
-		if reference == nil {
-			return // Selecting the root node does nothing.
+		if node.GetReference() == nil {
+			return
 		}
-		children := node.GetChildren()
-		if len(children) == 0 {
-			dataNode := reference.(finder.Node)
-			add(t, node, dataNode)
-		} else {
-			node.SetExpanded(!node.IsExpanded())
-		}
+
+		node.SetExpanded(!node.IsExpanded())
 	})
 }
 
-func add(t *TUI, target *tview.TreeNode, n finder.Node) {
+func prefillTree(t *TUI, target *tview.TreeNode, n finder.Node, lvl int) {
 	children := n.GetChildren()
 	for _, child := range children {
 		node := tview.NewTreeNode(child.GetName())
 		node.SetReference(child)
 		node.SetSelectable(true)
-		// node.SetSelectable(child.HasChildren()) // NOTE: this makes cases unselectable
 
 		// node level styling
-		switch target.GetLevel() + 1 {
+		// TODO: consider useing SetPrefixes: https://pkg.go.dev/github.com/rivo/tview#TreeView
+
+		switch lvl + 1 {
 		case LevelPackage:
 			node.SetText(" " + node.GetText())
 			node.SetColor(t.theme.Package)
@@ -172,5 +187,43 @@ func add(t *TUI, target *tview.TreeNode, n finder.Node) {
 		}
 
 		target.AddChild(node)
+		prefillTree(t, node, child, lvl+1)
 	}
+}
+
+func search(tree *tview.TreeView, searchString string) bool {
+	var matchedNode *tview.TreeNode
+	var searchAndExpand func(node *tview.TreeNode, parents []*tview.TreeNode) bool
+
+	searchAndExpand = func(node *tview.TreeNode, parents []*tview.TreeNode) bool {
+		if strings.Contains(strings.ToLower(node.GetText()), strings.ToLower(searchString)) {
+			// Expand all parent nodes
+			for _, parent := range parents {
+				parent.SetExpanded(true)
+			}
+			matchedNode = node
+			return true // Stop traversing
+		}
+
+		// Traverse children
+		for _, child := range node.GetChildren() {
+			if searchAndExpand(child, append(parents, node)) {
+				return true // Stop traversing
+			}
+		}
+
+		return false
+	}
+
+	// Start traversal from the root
+	root := tree.GetRoot()
+	if root != nil {
+		searchAndExpand(root, nil)
+	}
+
+	if matchedNode != nil {
+		tree.SetCurrentNode(matchedNode)
+	}
+
+	return true
 }

@@ -25,6 +25,39 @@ type Project struct {
 	log      *slog.Logger
 }
 
+type FlatProject struct {
+	NodeMap map[string]Node
+	Names   []string
+}
+
+// TODO: update to recursive with nodes interface funcs
+func (p *Project) FlattenAllNodes() *FlatProject {
+	nodes := make(map[string]Node)
+	names := make([]string, 0)
+
+	// TODO: update to append names e.g. pkg/file/func/case
+	for _, pkg := range p.Packages {
+		nodes[pkg.GetName()] = pkg
+		names = append(names, pkg.GetName())
+		for _, file := range pkg.Files {
+			nodes[file.GetName()] = file
+			names = append(names, file.GetName())
+			for _, function := range file.Functions {
+				nodes[function.GetName()] = function
+				names = append(names, function.GetName())
+				for _, c := range function.Cases {
+					nodes[c.GetName()] = c
+					names = append(names, c.GetName())
+				}
+			}
+		}
+	}
+	return &FlatProject{
+		Names:   names,
+		NodeMap: nodes,
+	}
+}
+
 func (p *Project) GetName() string {
 	paths := strings.Split(p.RootDir, "/")
 
