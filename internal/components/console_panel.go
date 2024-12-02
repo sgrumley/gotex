@@ -48,7 +48,7 @@ func ConsoleTemplate() string {
 
 func (r *console) RenderConsole(t *TUI, msg string) {
 	r.Clear()
-	t.state.console.currentMessage = msg
+	t.state.ui.console.currentMessage = msg
 	msg = tview.TranslateANSI(msg)
 	r.SetDynamicColors(true)
 	r.SetText(msg)

@@ -23,7 +23,7 @@ func newSearchModal(t *TUI) *searchModal {
 	// TODO: integrate fzf
 	// custom autocompleteFunc -> setup an input handler that takes the keys input (channel) and feeds to an output func (requires gui)
 	input.SetAutocompleteFunc(func(currentText string) (entries []string) {
-		tests := t.state.resources.flattened.Names
+		tests := t.state.data.flattened.Names
 		if len(currentText) == 0 {
 			return
 		}
@@ -52,28 +52,28 @@ func newSearchModal(t *TUI) *searchModal {
 		case 3:
 			// mouse click
 			searchStr := text
-			ref, exists := t.state.resources.flattened.NodeMap[searchStr]
+			ref, exists := t.state.data.flattened.NodeMap[searchStr]
 			if !exists {
 				t.log.Error("error", slog.String("search term not in tree", searchStr))
-				t.state.search.text.SetText("search term does not exist in test tree: " + searchStr)
+				t.state.ui.search.text.SetText("search term does not exist in test tree: " + searchStr)
 				return false
 			}
 
-			found := search(t.state.testTree.TreeView, ref.GetName())
+			found := search(t.state.ui.testTree.TreeView, ref.GetName())
 			if !found {
 				t.log.Error("error", slog.String("search term not found", searchStr))
-				t.state.search.modal.SetBorderColor(tcell.ColorRed)
+				t.state.ui.search.modal.SetBorderColor(tcell.ColorRed)
 				return false
 			}
 
-			t.state.search.modal.SetBorderColor(t.theme.Border)
+			t.state.ui.search.modal.SetBorderColor(t.theme.Border)
 			t.log.Info("search",
 				slog.String("search term", searchStr),
 				slog.String("ref", ref.GetName()),
 				slog.Bool("found", found),
 			)
 
-			t.state.pages.SwitchToPage(homePage)
+			t.state.ui.pages.SwitchToPage(homePage)
 			return true
 		default:
 			return false
@@ -81,9 +81,9 @@ func newSearchModal(t *TUI) *searchModal {
 	})
 	// SetDoneFunc only executes if a field has not been autoselected, if this is hit it means that the user is searching for something that we know does not exist
 	input.SetDoneFunc(func(key tcell.Key) {
-		searchStr := t.state.search.input.GetText()
+		searchStr := t.state.ui.search.input.GetText()
 		errMsg := fmt.Sprintf("[red]Search term \"%s\" does not exist in the test tree.[-] \nPlease try again or press \"s\" from the main page to resync the files ", searchStr)
-		t.state.search.text.SetText(errMsg)
+		t.state.ui.search.text.SetText(errMsg)
 	})
 
 	textView := tview.NewTextView()
@@ -108,10 +108,10 @@ func newSearchModal(t *TUI) *searchModal {
 		// nav down
 
 		case tcell.KeyEsc:
-			t.state.search.input.SetText("")
-			t.state.search.text.SetText("Search for any test in the test tree")
+			t.state.ui.search.input.SetText("")
+			t.state.ui.search.text.SetText("Search for any test in the test tree")
 			t.setGlobalKeybinding(event)
-			t.state.pages.SwitchToPage(homePage)
+			t.state.ui.pages.SwitchToPage(homePage)
 		}
 		return event
 	})

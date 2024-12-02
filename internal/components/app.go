@@ -7,12 +7,6 @@ import (
 	"github.com/rivo/tview"
 )
 
-type resources struct {
-	data *finder.Project
-	// this should become useful once I update the search names to append the parent node
-	flattened *finder.FlatProject
-}
-
 var (
 	homePage   = "home"
 	configPage = "config"
@@ -20,14 +14,23 @@ var (
 )
 
 type state struct {
+	ui   UI
+	data Data
+}
+
+type UI struct {
+	result   *results
+	testTree *TestTree
+	console  *consoleData
+	pages    *tview.Pages
+	search   *searchModal
+}
+
+type Data struct {
+	project   *finder.Project
+	flattened *finder.FlatProject // this should become useful once I update the search names to append the parent node
+
 	lastTest finder.Node
-	// navigate  *navigate
-	resources resources
-	result    *results
-	testTree  *TestTree
-	console   *consoleData
-	pages     *tview.Pages
-	search    *searchModal
 }
 
 type consoleData struct {
@@ -45,12 +48,12 @@ func newState(log *slog.Logger) (*state, error) {
 	}
 
 	return &state{
-		resources: resources{
-			data:      data,
+		data: Data{
+			project:   data,
 			flattened: data.FlattenAllNodes(),
 		},
-		console: &consoleData{
-			active: false,
+		ui: UI{
+			console: &consoleData{},
 		},
 	}, nil
 }
@@ -106,24 +109,24 @@ func (t *TUI) initPanels() {
 
 	// TODO: this should have a struct of all printed fields in the state and this is kept up to date and the console should render on open
 	console := newConsolePane(t)
-	t.state.console.panel = console
+	t.state.ui.console.panel = console
 
 	search := newSearchModal(t)
-	t.state.search = search
+	t.state.ui.search = search
 
 	testTree := newTestTree(t)
 	t.app.SetFocus(testTree)
-	t.state.testTree = testTree
+	t.state.ui.testTree = testTree
 
 	results := newResultsPane(t)
-	t.state.result = results
+	t.state.ui.result = results
 
 	// layouts
 	outputLayout := tview.NewFlex().
 		SetDirection(tview.FlexRow).
 		AddItem(results.TextView, 0, 8, false)
 
-	t.state.console.flex = outputLayout
+	t.state.ui.console.flex = outputLayout
 
 	contentLayout := tview.NewFlex().
 		SetDirection(tview.FlexColumn).
@@ -142,7 +145,7 @@ func (t *TUI) initPanels() {
 	pages.AddPage(homePage, layout, true, true)
 
 	// initialising pages state here so that newConfigModal has access
-	t.state.pages = pages
+	t.state.ui.pages = pages
 
 	configModal := newConfigModal(t)
 	pages.AddPage(configPage, configModal, true, false)

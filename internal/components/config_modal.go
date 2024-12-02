@@ -24,7 +24,7 @@ func newConfigModal(t *TUI) *ConfigModal {
 	cfgModal.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyEsc:
-			t.state.pages.SwitchToPage(homePage)
+			t.state.ui.pages.SwitchToPage(homePage)
 		}
 		return event
 	})
@@ -35,13 +35,13 @@ func newConfigModal(t *TUI) *ConfigModal {
 func (m *ConfigModal) Render(t *TUI) {
 	data := ansi.Data{
 		Fields: []ansi.Field{
-			ansi.CreateField("PipeTo", t.state.resources.data.Config.PipeTo),
-			ansi.CreateField("Timeout", t.state.resources.data.Config.Timeout),
-			ansi.CreateField("Json", t.state.resources.data.Config.Json),
-			ansi.CreateField("Short", t.state.resources.data.Config.Short),
-			ansi.CreateField("Verbose", t.state.resources.data.Config.Verbose),
-			ansi.CreateField("FailFast", t.state.resources.data.Config.FailFast),
-			ansi.CreateField("Cover", t.state.resources.data.Config.Cover),
+			ansi.CreateField("PipeTo", t.state.data.project.Config.PipeTo),
+			ansi.CreateField("Timeout", t.state.data.project.Config.Timeout),
+			ansi.CreateField("Json", t.state.data.project.Config.Json),
+			ansi.CreateField("Short", t.state.data.project.Config.Short),
+			ansi.CreateField("Verbose", t.state.data.project.Config.Verbose),
+			ansi.CreateField("FailFast", t.state.data.project.Config.FailFast),
+			ansi.CreateField("Cover", t.state.data.project.Config.Cover),
 		},
 	}
 	m.SetText(ansi.OutputKeyVal(data))

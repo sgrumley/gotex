@@ -16,6 +16,8 @@ Required:
 - add pop up config display (Needs a form for runtime altering)
 
 Nice to have: 
+- remove theming to try native themeing
+- create reusable components e.g. fuzzy search, textStyling ...
 - parsing of my own -> strip unused text -> color important parts (highlight filepath -> good for finding where a panic happened)
 - a lot more options need to be read in from config
 - theming (Is there tview themeing I can use instead)

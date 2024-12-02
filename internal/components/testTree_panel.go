@@ -51,58 +51,58 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 		case 'k':
 			return tcell.NewEventKey(tcell.KeyUp, 'k', tcell.ModNone)
 		case 'l':
-			node := t.state.testTree.GetCurrentNode()
+			node := t.state.ui.testTree.GetCurrentNode()
 			if node == nil {
 				// TODO: this should print to the console..
-				t.state.result.RenderResults("Error can't get node " + node.GetReference().(finder.Node).GetName())
+				t.state.ui.result.RenderResults("Error can't get node " + node.GetReference().(finder.Node).GetName())
 			}
 			node.ExpandAll()
 		case 'h':
-			node := t.state.testTree.GetCurrentNode()
+			node := t.state.ui.testTree.GetCurrentNode()
 			if node == nil {
 				// TODO: this should print to the console..
-				t.state.result.RenderResults("Error can't get node " + node.GetReference().(finder.Node).GetName())
+				t.state.ui.result.RenderResults("Error can't get node " + node.GetReference().(finder.Node).GetName())
 			}
 			node.CollapseAll()
 		// run test
 		case 'r':
-			t.state.result.RenderResults("Testing ....")
+			t.state.ui.result.RenderResults("Testing ....")
 			dataNode, ok := tt.GetCurrentNode().GetReference().(finder.Node)
 			if !ok {
 				t.log.Error("reference to current node is not a testable type")
-				t.state.result.RenderResults("Error selected node is not a test")
+				t.state.ui.result.RenderResults("Error selected node is not a test")
 				return event
 			}
-			t.state.lastTest = dataNode
+			t.state.data.lastTest = dataNode
 			output, err := dataNode.RunTest()
 			if err != nil {
 				t.log.Error("failed running test", slog.Any("error", err), slog.Any("output", output))
-				t.state.result.RenderResults(err.Error())
+				t.state.ui.result.RenderResults(err.Error())
 				return event
 			}
 
-			t.state.result.RenderResults(output)
+			t.state.ui.result.RenderResults(output)
 			return nil
 		// sync tests
 		case 's':
 			// NOTE: this could happen on a timer or by watching the the test files for changes
 			data, err := finder.InitProject(t.log)
 			if err != nil {
-				t.state.result.RenderResults(err.Error())
+				t.state.ui.result.RenderResults(err.Error())
 			}
-			t.state.resources.data = data
-			t.state.testTree.Populate(t)
-			t.state.result.RenderResults("Project has successfully refreshed")
+			t.state.data.project = data
+			t.state.ui.testTree.Populate(t)
+			t.state.ui.result.RenderResults("Project has successfully refreshed")
 			return nil
 		// run all
 		case 'A':
-			output, err := runner.RunTest(runner.TEST_TYPE_PROJECT, "", t.state.resources.data.RootDir, t.state.resources.data.Config)
+			output, err := runner.RunTest(runner.TEST_TYPE_PROJECT, "", t.state.data.project.RootDir, t.state.data.project.Config)
 			if err != nil {
 				t.log.Error("failed running all tests", slog.Any("error", err))
-				t.state.result.RenderResults(err.Error())
+				t.state.ui.result.RenderResults(err.Error())
 				return event
 			}
-			t.state.result.RenderResults(output)
+			t.state.ui.result.RenderResults(output)
 			return nil
 
 		// search
@@ -116,22 +116,22 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 				return event
 			})
 
-			t.state.pages.ShowPage(searchPage)
-			t.app.SetFocus(t.state.search.input)
+			t.state.ui.pages.ShowPage(searchPage)
+			t.app.SetFocus(t.state.ui.search.input)
 			return nil
 		}
 		// keybinding for special keys
 		switch event.Key() {
 		case tcell.KeyCtrlU:
-			currentPosition, _ := t.state.result.GetScrollOffset()
-			t.state.result.ScrollTo(currentPosition-10, 0)
+			currentPosition, _ := t.state.ui.result.GetScrollOffset()
+			t.state.ui.result.ScrollTo(currentPosition-10, 0)
 			return nil
 		case tcell.KeyCtrlD:
-			currentPosition, _ := t.state.result.GetScrollOffset()
-			t.state.result.ScrollTo(currentPosition+10, 0)
+			currentPosition, _ := t.state.ui.result.GetScrollOffset()
+			t.state.ui.result.ScrollTo(currentPosition+10, 0)
 			return nil
 		case tcell.KeyEsc:
-			t.state.pages.SwitchToPage(homePage)
+			t.state.ui.pages.SwitchToPage(homePage)
 			return nil
 		}
 		return event
@@ -139,7 +139,7 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 }
 
 func (tt *TestTree) Populate(t *TUI) {
-	data := t.state.resources.data
+	data := t.state.data.project
 	root := tview.NewTreeNode(data.GetName()).SetColor(rootColor)
 	tt.SetRoot(root)
 	tt.SetCurrentNode(root)

@@ -15,12 +15,12 @@ func (t *TUI) setGlobalKeybinding(_ *tcell.EventKey) {
 		case 'R':
 			// rerun last test
 			// kept as a global to allow user in other interfaces e.g. config
-			t.state.result.RenderResults("Rerunning test")
+			t.state.ui.result.RenderResults("Rerunning test")
 			t.log.Error("this should not have run")
 
-			node := t.state.lastTest
+			node := t.state.data.lastTest
 			if node == nil {
-				t.state.result.RenderResults("failed to run last test. Make sure you run a test before rerunning")
+				t.state.ui.result.RenderResults("failed to run last test. Make sure you run a test before rerunning")
 				t.log.Error("attempted test rerun, but no test has previously been run")
 				return event
 			}
@@ -28,28 +28,28 @@ func (t *TUI) setGlobalKeybinding(_ *tcell.EventKey) {
 			output, err := node.RunTest()
 			if err != nil {
 				t.log.Error("failed to re run valid test", slog.Any("error", err))
-				t.state.result.RenderResults(err.Error())
+				t.state.ui.result.RenderResults(err.Error())
 				return event
 			}
-			t.state.result.RenderResults(output)
+			t.state.ui.result.RenderResults(output)
 			return nil
 
 		case 'q':
 			t.app.Stop()
 		case 'C':
-			if t.state.console.active {
-				t.state.console.active = false
-				t.state.console.flex.RemoveItem(t.state.console.panel)
+			if t.state.ui.console.active {
+				t.state.ui.console.active = false
+				t.state.ui.console.flex.RemoveItem(t.state.ui.console.panel)
 				return nil
 			} else {
-				t.state.console.active = true
-				t.state.console.flex.AddItem(t.state.console.panel, 8, 1, false)
+				t.state.ui.console.active = true
+				t.state.ui.console.flex.AddItem(t.state.ui.console.panel, 8, 1, false)
 				return nil
 			}
 		case 'c':
 			// SwitchToPage will hide all other pages
 			// t.state.pages.SwitchToPage(configPage)
-			t.state.pages.ShowPage(configPage)
+			t.state.ui.pages.ShowPage(configPage)
 			return nil
 		}
 		return event
