@@ -6,9 +6,8 @@ import (
 	"log/slog"
 	"os"
 	"os/exec"
-	"strings"
-
 	"sgrumley/gotex/pkg/config"
+	"strings"
 )
 
 type TestType int
@@ -164,6 +163,7 @@ func RunTestPiped(goTestCmdStr []string, externalCmdStr string, dir string) (*Re
 		if exitErr, ok := err.(*exec.ExitError); ok {
 			if exitErr.ExitCode() != 1 {
 				// if it is an exit status code 1, continue to pipe the failed tests
+				res.Result = goTestErrBuf.String()
 				res.Output = goTestOutput.String()
 				res.Error = goTestErrBuf.String()
 				res.ExitStatus = exitErr.ExitCode()
@@ -196,6 +196,7 @@ func RunTestPiped(goTestCmdStr []string, externalCmdStr string, dir string) (*Re
 		res.Error = goTestErrBuf.String()
 		res.ExternalOutput = externalCmdOutput.String()
 		res.ExternalError = externalErrBuf.String()
+		res.Result = externalCmdOutput.String()
 		return res, err
 	}
 	res.ExternalOutput = externalCmdOutput.String()
