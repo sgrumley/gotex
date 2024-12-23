@@ -6,8 +6,9 @@ import (
 	"log/slog"
 	"os"
 	"os/exec"
-	"sgrumley/gotex/pkg/config"
 	"strings"
+
+	"sgrumley/gotex/pkg/config"
 )
 
 type TestType int
@@ -43,8 +44,12 @@ func RunTest(testType TestType, testName string, dir string, cfg config.Config) 
 	if cfg.PipeTo != "" {
 		res, err := RunTestPiped(cmdStr, cfg.PipeTo, dir)
 		if err != nil {
+			res.TestName = testName
+			res.TestType = testType
+			res.TestDir = dir
+			res.CommandExecuted = argsToString(cmdStr) + " | " + cfg.PipeTo
 			log.Error("failed to run piped command", slog.Any("error", err))
-			return nil, err
+			return res, err
 		}
 		res.TestName = testName
 		res.TestType = testType

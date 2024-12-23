@@ -2,12 +2,13 @@ package components
 
 import (
 	"log/slog"
-	"sgrumley/gotex/pkg/finder"
-	"sgrumley/gotex/pkg/runner"
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+
+	"sgrumley/gotex/pkg/finder"
+	"sgrumley/gotex/pkg/runner"
 )
 
 var (
@@ -78,6 +79,7 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 			if err != nil {
 				t.log.Error("failed running test", slog.Any("error", err), slog.Any("output", output))
 				t.state.ui.result.RenderResults(err.Error())
+				t.state.ui.console.panel.UpdateMeta(t, output)
 				return event
 			}
 
@@ -100,6 +102,7 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 			output, err := runner.RunTest(runner.TestTypeProject, "", t.state.data.project.RootDir, t.state.data.project.Config)
 			if err != nil {
 				t.log.Error("failed running all tests", slog.Any("error", err))
+				t.state.ui.console.panel.UpdateMeta(t, output)
 				t.state.ui.result.RenderResults(err.Error())
 				return event
 			}
