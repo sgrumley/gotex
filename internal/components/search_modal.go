@@ -3,10 +3,11 @@ package components
 import (
 	"fmt"
 	"log/slog"
-	"strings"
 
 	"github.com/gdamore/tcell/v2"
+	"github.com/lithammer/fuzzysearch/fuzzy"
 	"github.com/rivo/tview"
+	// "github.com/sahilm/fuzzy"
 )
 
 type searchModal struct {
@@ -21,6 +22,7 @@ func newSearchModal(t *TUI) *searchModal {
 		SetFieldWidth(40)
 
 	// TODO: integrate fzf
+	// https://github.com/lithammer/fuzzysearch
 	// custom autocompleteFunc -> setup an input handler that takes the keys input (channel) and feeds to an output func (requires gui)
 	input.SetAutocompleteFunc(func(currentText string) (entries []string) {
 		tests := t.state.data.flattened.Names
@@ -28,11 +30,12 @@ func newSearchModal(t *TUI) *searchModal {
 			return
 		}
 
-		for _, test := range tests {
-			if strings.HasPrefix(strings.ToLower(test), strings.ToLower(currentText)) {
-				entries = append(entries, test)
-			}
-		}
+		entries = fuzzy.Find(currentText, tests)
+		// for _, test := range tests {
+		// 	if strings.HasPrefix(strings.ToLower(test), strings.ToLower(currentText)) {
+		// 		entries = append(entries, test)
+		// 	}
+		// }
 		if len(entries) <= 1 {
 			entries = nil
 		}

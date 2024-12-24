@@ -66,24 +66,28 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 			node.CollapseAll()
 		// run test
 		case 'r':
-			t.state.ui.result.RenderResults("Testing ....")
+			t.state.ui.result.RenderResults("Test is running")
 			dataNode, ok := tt.GetCurrentNode().GetReference().(finder.Node)
 			if !ok {
 				t.log.Error("reference to current node is not a testable type")
 				t.state.ui.result.RenderResults("Error selected node is not a test")
 				return event
 			}
-			t.state.data.lastTest = dataNode
-			output, err := dataNode.RunTest()
-			if err != nil {
-				t.log.Error("failed running test", slog.Any("error", err), slog.Any("output", output))
+
+			go func() {
+				t.state.data.lastTest = dataNode
+				output, err := dataNode.RunTest()
+				if err != nil {
+					t.log.Error("failed running test", slog.Any("error", err), slog.Any("output", output))
+					t.state.ui.result.RenderResults(output.Result)
+					t.state.ui.console.panel.UpdateMeta(t, output)
+					return
+				}
+
 				t.state.ui.result.RenderResults(output.Result)
 				t.state.ui.console.panel.UpdateMeta(t, output)
-				return event
-			}
+			}()
 
-			t.state.ui.result.RenderResults(output.Result)
-			t.state.ui.console.panel.UpdateMeta(t, output)
 			return nil
 		// sync tests
 		case 's':
@@ -98,15 +102,19 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 			return nil
 		// run all
 		case 'A':
-			output, err := runner.RunTest(runner.TestTypeProject, "", t.state.data.project.RootDir, t.state.data.project.Config)
-			if err != nil {
-				t.log.Error("failed running all tests", slog.Any("error", err))
+			t.state.ui.result.RenderResults("Test is running")
+
+			go func() {
+				output, err := runner.RunTest(runner.TestTypeProject, "", t.state.data.project.RootDir, t.state.data.project.Config)
+				if err != nil {
+					t.log.Error("failed running all tests", slog.Any("error", err))
+					t.state.ui.console.panel.UpdateMeta(t, output)
+					t.state.ui.result.RenderResults(err.Error())
+					return
+				}
+				t.state.ui.result.RenderResults(output.Result)
 				t.state.ui.console.panel.UpdateMeta(t, output)
-				t.state.ui.result.RenderResults(err.Error())
-				return event
-			}
-			t.state.ui.result.RenderResults(output.Result)
-			t.state.ui.console.panel.UpdateMeta(t, output)
+			}()
 			return nil
 
 		// search
