@@ -5,6 +5,8 @@
   </p>
 </div>
 
+![Gotex Screenshot][img/screenshot-gotex.png]
+
 # gotex
 
 A Terminal User Interface (TUI) for discovering and executing Go tests with ease. Gotex provides an intuitive interface to navigate, filter and run your Go test suite from the terminal.
