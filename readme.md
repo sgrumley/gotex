@@ -5,7 +5,7 @@
   </p>
 </div>
 
-![Gotex Screenshot][img/screenshot-gotex.png]
+![Gotex Screenshot](img/screenshot-gotex.png)
 
 # gotex
 
