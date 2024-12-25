@@ -1,8 +1,6 @@
 TODO: 
 Convert this text to github project
 
-1. Page system
-2. move config to my modal and table
 5. Config form for runtime adjusting (use table with three columns?)
 6. Readme
 7. Move to public
@@ -14,14 +12,14 @@ Required:
 - test file fix
 
 Nice to have: 
+- File test (needs a deep dive, seems like easiest way is to run all tests in the file instead of including all deps in test cmd)
 - create reusable components 
   -> search (an input field just for searching with keymap flexibility)
-  -> page system (including modals and components) -> this should include altering keymaps at the bottom depending on focused page
+  -> page system / page structure (how should each page interact? home page? panels within a page?, keybind display)
 
 - parsing of my own -> strip unused text -> color important parts (highlight filepath -> good for finding where a panic happened)
 
-- more options need to be read in from config
-  -> theme 
+- custom themes
 
 - add results state to test in tree (tick or cross emoji??) -> this does not persist longer than the session
 

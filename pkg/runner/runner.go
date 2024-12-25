@@ -135,7 +135,8 @@ func GetCommand(typed TestType, testName string) []string {
 	case TestTypePackage:
 		return []string{"test"}
 	case TestTypeFile, TestTypeFunction, TestTypeCase:
-		return []string{"test", "-run", testName}
+		regName := fmt.Sprintf("^%s$", testName)
+		return []string{"test", "-run", regName}
 	default:
 		return []string{}
 	}
