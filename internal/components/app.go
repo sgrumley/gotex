@@ -24,6 +24,7 @@ type UI struct {
 	console  *consoleData
 	pages    *tview.Pages
 	search   *searchModal
+	config   *ConfigModal
 }
 
 type Data struct {
@@ -114,6 +115,9 @@ func (t *TUI) initPanels() {
 	search := newSearchModal(t)
 	t.state.ui.search = search
 
+	config := newConfigModal(t)
+	t.state.ui.config = config
+
 	testTree := newTestTree(t)
 	t.app.SetFocus(testTree)
 	t.state.ui.testTree = testTree
@@ -143,8 +147,7 @@ func (t *TUI) initPanels() {
 	// initialising pages state here so that newConfigModal has access
 	t.state.ui.pages = pages
 
-	configModal := newConfigModal(t)
-	pages.AddPage(configPage, configModal, true, false)
+	pages.AddPage(configPage, config.modal, true, false)
 	pages.AddPage(searchPage, search.modal, true, false)
 
 	t.app.SetRoot(pages, true)

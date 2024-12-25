@@ -8,61 +8,75 @@ import (
 )
 
 type ConfigModal struct {
-	*tview.Modal
+	modal   *tview.Flex
+	content *tview.Table
 }
 
 func newConfigModal(t *TUI) *ConfigModal {
-	cfgModal := &ConfigModal{
-		tview.NewModal(),
-	}
+	cfg := &ConfigModal{}
+	tab := tview.NewTable()
+	cfg.content = tab
+	cfg.Render(t, tab)
 
-	cfgModal.SetBorder(true)
-	cfgModal.setKeybindings(t)
-	// TODO: turn modal into a form for setting runtime config
-	// use letters to jump to field??
-	cfgModal.SetTitle("Current Config")
-	cfgModal.Render(t)
+	// HACK: The table won't center well within it's flex, offset using 2,2,1 proportions
+	modalContent := tview.NewFlex().
+		SetDirection(tview.FlexColumn).
+		AddItem(nil, 0, 2, false).
+		AddItem(tab, 0, 2, true).
+		AddItem(nil, 0, 1, false)
 
-	return cfgModal
+	modal := NewModal("Config", modalContent)
+	modal.SetBorder(true)
+	cfg.modal = modal
+
+	return cfg
 }
 
-func (m *ConfigModal) setKeybindings(t *TUI) {
-	m.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+func (m *ConfigModal) Render(t *TUI, tab *tview.Table) {
+	h1 := tview.NewTableCell("Config")
+	h1.SetAttributes(tcell.AttrBold | tcell.AttrUnderline)
+	tab.SetCell(0, 0, h1)
+
+	h2 := tview.NewTableCell("Value")
+	h2.SetAttributes(tcell.AttrBold | tcell.AttrUnderline)
+	tab.SetCell(0, 1, h2)
+
+	newRow(tab, "JSON:", t.state.data.project.Config.Json, 1)
+	newRow(tab, "Timeout:", t.state.data.project.Config.Timeout, 2)
+	newRow(tab, "Verbose:", t.state.data.project.Config.Verbose, 3)
+	newRow(tab, "Cover:", t.state.data.project.Config.Cover, 4)
+	newRow(tab, "Short:", t.state.data.project.Config.Short, 5)
+	newRow(tab, "Fail Fast:", t.state.data.project.Config.FailFast, 6)
+	newRow(tab, "Piped Command:", t.state.data.project.Config.PipeTo, 7)
+}
+
+func newRow(tab *tview.Table, key string, val interface{}, rowInd int) {
+	cell1 := tview.NewTableCell(key)
+	// cell1.SetAlign(tview.AlignCenter)
+	// cell1.SetExpansion(1)
+	tab.SetCell(rowInd, 0, cell1)
+
+	cell2 := tview.NewTableCell(ansi.SimpleString(val))
+	// cell2.SetExpansion(1)
+	// cell2.SetAlign(tview.AlignCenter)
+	tab.SetCell(rowInd, 1, cell2)
+}
+
+// Consider how to close
+func (c *ConfigModal) setKeybindings(t *TUI) {
+	c.modal.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyEsc:
+			// TODO: this should toggle
 			t.state.ui.pages.SwitchToPage(homePage)
 		}
 
-		// TODO: needs updating with page system
 		switch event.Rune() {
 		case 'c':
-			name, _ := t.state.ui.pages.GetFrontPage()
-			if name == homePage {
-				t.state.ui.pages.ShowPage(configPage)
-				return nil
-			} else {
-				t.state.ui.pages.SwitchToPage(homePage)
-			}
-			// if name == configPage {
-			// 	t.state.ui.pages.SwitchToPage(homePage)
-			// }
+			// TODO: this should toggle
+			t.state.ui.pages.ShowPage(configPage)
+			return nil
 		}
-
-		return nil
+		return event
 	})
-}
-
-func (m *ConfigModal) Render(t *TUI) {
-	data := ansi.Data{
-		Fields: []ansi.Field{
-			ansi.CreateField("PipeTo", t.state.data.project.Config.PipeTo),
-			ansi.CreateField("Timeout", t.state.data.project.Config.Timeout),
-			ansi.CreateField("Json", t.state.data.project.Config.Json),
-			ansi.CreateField("Short", t.state.data.project.Config.Short),
-			ansi.CreateField("Verbose", t.state.data.project.Config.Verbose),
-			ansi.CreateField("FailFast", t.state.data.project.Config.FailFast),
-			ansi.CreateField("Cover", t.state.data.project.Config.Cover),
-		},
-	}
-	m.SetText(ansi.OutputKeyVal(data))
 }

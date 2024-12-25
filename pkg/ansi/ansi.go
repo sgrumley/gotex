@@ -66,3 +66,8 @@ func CreateField(name string, value interface{}) Field {
 		Color:        color,
 	}
 }
+
+func SimpleString(value interface{}) string {
+	field := CreateField("", value)
+	return fmt.Sprintf("[%s]%s[-]", field.Color, field.DisplayValue)
+}
