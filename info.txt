@@ -1,11 +1,7 @@
 TODO: 
 Convert this text to github project
 
-Get jesse to look over 1 and 1.5
-
-1. Fuzzy search + themeing 
-1.5. Display a screen while test is running
-2. Console needs to be able to hide information or scroll
+1. search themeing (new component) 
 3. Themes -> catppuccin but using the native theme wrapped
 4. Move keymap code into functions
 5. Config form for runtime adjusting

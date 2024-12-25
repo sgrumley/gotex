@@ -4,6 +4,7 @@ import (
 	"sgrumley/gotex/pkg/ansi"
 	"sgrumley/gotex/pkg/runner"
 
+	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
@@ -16,14 +17,34 @@ func newConsolePane(t *TUI) *console {
 		TextView: tview.NewTextView(),
 	}
 
+	res.setKeybinding(t)
 	res.SetBorder(true).SetTitle("Console")
 	res.SetTextAlign(tview.AlignLeft)
 	res.RenderConsole(t, "[green]Run[-] a test to see the meta data")
 	res.SetDynamicColors(true)
-	SetTextViewStyling(t, res.TextView)
 	res.SetWrap(true)
 
 	return res
+}
+
+func (c *console) setKeybinding(t *TUI) {
+	c.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		// keybinding for special keys
+		switch event.Key() {
+		case tcell.KeyCtrlU:
+			currentPosition, _ := t.state.ui.console.panel.GetScrollOffset()
+			t.state.ui.console.panel.ScrollTo(currentPosition-10, 0)
+			return nil
+		case tcell.KeyCtrlD:
+			currentPosition, _ := t.state.ui.console.panel.GetScrollOffset()
+			t.state.ui.console.panel.ScrollTo(currentPosition+10, 0)
+			return nil
+		case tcell.KeyEsc:
+			toggleConsole(t)
+			return nil
+		}
+		return event
+	})
 }
 
 /*
@@ -71,4 +92,16 @@ func (c *console) UpdateMeta(t *TUI, meta *runner.Response) {
 		},
 	}
 	c.RenderConsole(t, ansi.OutputKeyVal(data))
+}
+
+func toggleConsole(t *TUI) {
+	if t.state.ui.console.active {
+		t.state.ui.console.active = false
+		t.state.ui.console.flex.RemoveItem(t.state.ui.console.panel)
+		t.app.SetFocus(t.state.ui.testTree)
+	} else {
+		t.state.ui.console.active = true
+		t.state.ui.console.flex.AddItem(t.state.ui.console.panel, 0, 10, false)
+		t.app.SetFocus(t.state.ui.console.panel)
+	}
 }

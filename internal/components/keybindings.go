@@ -10,8 +10,6 @@ func (t *TUI) setGlobalKeybinding(_ *tcell.EventKey) {
 	t.app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Rune() {
 		// TODO: move all binds into functions
-		// FIX: need a way to show the user that the test has been rerun/ is rerunning
-		// maybe a job for the meta console?
 		case 'R':
 			// rerun last test
 			// kept as a global to allow user in other interfaces e.g. config
@@ -39,15 +37,8 @@ func (t *TUI) setGlobalKeybinding(_ *tcell.EventKey) {
 		case 'q':
 			t.app.Stop()
 		case 'C':
-			if t.state.ui.console.active {
-				t.state.ui.console.active = false
-				t.state.ui.console.flex.RemoveItem(t.state.ui.console.panel)
-				return nil
-			} else {
-				t.state.ui.console.active = true
-				t.state.ui.console.flex.AddItem(t.state.ui.console.panel, 0, 10, false)
-				return nil
-			}
+			toggleConsole(t)
+			return nil
 		case 'c':
 			// SwitchToPage will hide all other pages
 			// t.state.pages.SwitchToPage(configPage)

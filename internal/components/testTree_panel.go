@@ -33,7 +33,7 @@ func newTestTree(t *TUI) *TestTree {
 
 	tt.setKeybinding(t)
 	tt.SetTitle("Tests")
-	SetTreeStyling(t, tt.TreeView)
+	tt.SetBorder(true)
 	tt.Populate(t)
 
 	return tt

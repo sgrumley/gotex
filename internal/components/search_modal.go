@@ -21,9 +21,6 @@ func newSearchModal(t *TUI) *searchModal {
 		SetLabel("Search test: ").
 		SetFieldWidth(40)
 
-	// TODO: integrate fzf
-	// https://github.com/lithammer/fuzzysearch
-	// custom autocompleteFunc -> setup an input handler that takes the keys input (channel) and feeds to an output func (requires gui)
 	input.SetAutocompleteFunc(func(currentText string) (entries []string) {
 		tests := t.state.data.flattened.Names
 		if len(currentText) == 0 {
@@ -31,11 +28,6 @@ func newSearchModal(t *TUI) *searchModal {
 		}
 
 		entries = fuzzy.Find(currentText, tests)
-		// for _, test := range tests {
-		// 	if strings.HasPrefix(strings.ToLower(test), strings.ToLower(currentText)) {
-		// 		entries = append(entries, test)
-		// 	}
-		// }
 		if len(entries) <= 1 {
 			entries = nil
 		}
@@ -69,13 +61,14 @@ func newSearchModal(t *TUI) *searchModal {
 				return false
 			}
 
-			t.state.ui.search.modal.SetBorderColor(t.theme.Border)
+			// t.state.ui.search.modal.SetBorderColor(t.theme.Border)
 			t.log.Info("search",
 				slog.String("search term", searchStr),
 				slog.String("ref", ref.GetName()),
 				slog.Bool("found", found),
 			)
 
+			t.state.ui.search.input.SetText("")
 			t.state.ui.pages.SwitchToPage(homePage)
 			return true
 		default:
@@ -90,8 +83,8 @@ func newSearchModal(t *TUI) *searchModal {
 	})
 
 	textView := tview.NewTextView()
-	textView.SetTextColor(t.theme.Text)
-	textView.SetBackgroundColor(t.theme.Background)
+	// textView.SetTextColor(t.theme.Text)
+	// textView.SetBackgroundColor(t.theme.Background)
 	textView.SetDynamicColors(true)
 	textView.SetText("Search for any test in the test tree")
 
@@ -111,9 +104,9 @@ func newSearchModal(t *TUI) *searchModal {
 		// nav down
 
 		case tcell.KeyEsc:
+			t.setGlobalKeybinding(event)
 			t.state.ui.search.input.SetText("")
 			t.state.ui.search.text.SetText("Search for any test in the test tree")
-			t.setGlobalKeybinding(event)
 			t.state.ui.pages.SwitchToPage(homePage)
 		}
 		return event
@@ -132,8 +125,6 @@ func NewModal(t *TUI, input *tview.InputField, textView *tview.TextView) *tview.
 	modal.SetBorder(true).
 		SetTitle("Search")
 
-	SetFlexStyling(t, modal)
-
 	modalContent := tview.NewFlex().
 		SetDirection(tview.FlexRow).
 		AddItem(textView, 3, 1, true).
@@ -146,8 +137,6 @@ func NewModal(t *TUI, input *tview.InputField, textView *tview.TextView) *tview.
 		AddItem(nil, 0, 1, false).
 		AddItem(modal, 0, 1, true).
 		AddItem(nil, 0, 1, false)
-
-	temp.SetBackgroundColor(t.theme.Background)
 
 	centeredModal := tview.NewFlex().
 		AddItem(nil, 0, 1, false).

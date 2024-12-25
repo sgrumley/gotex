@@ -100,6 +100,7 @@ func (t *TUI) initPanels() {
 
 	SetAppStyling()
 	t.theme = SetTheme("catppuccin mocha")
+	tview.Styles = t.theme.Theme
 
 	// pages
 	pages := tview.NewPages()
@@ -107,7 +108,6 @@ func (t *TUI) initPanels() {
 	// panels
 	help := newHelpPane(t)
 
-	// TODO: this should have a struct of all printed fields in the state and this is kept up to date and the console should render on open
 	console := newConsolePane(t)
 	t.state.ui.console.panel = console
 
@@ -133,14 +133,10 @@ func (t *TUI) initPanels() {
 		AddItem(testTree.TreeView, 45, 1, true).
 		AddItem(outputLayout, 0, 10, false)
 
-	SetFlexStyling(t, contentLayout)
-
 	layout := tview.NewFlex().
 		SetDirection(tview.FlexRow).
 		AddItem(contentLayout, 0, 15, true).
 		AddItem(help, 2, 1, false)
-
-	SetFlexStyling(t, layout)
 
 	pages.AddPage(homePage, layout, true, true)
 

@@ -16,20 +16,39 @@ func newConfigModal(t *TUI) *ConfigModal {
 		tview.NewModal(),
 	}
 
-	SetModalStyling(t, cfgModal.Modal)
+	cfgModal.SetBorder(true)
+	cfgModal.setKeybindings(t)
 	// TODO: turn modal into a form for setting runtime config
 	// use letters to jump to field??
 	cfgModal.SetTitle("Current Config")
 	cfgModal.Render(t)
-	cfgModal.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+
+	return cfgModal
+}
+
+func (m *ConfigModal) setKeybindings(t *TUI) {
+	m.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyEsc:
 			t.state.ui.pages.SwitchToPage(homePage)
 		}
-		return event
-	})
 
-	return cfgModal
+		switch event.Rune() {
+		case 'c':
+			name, _ := t.state.ui.pages.GetFrontPage()
+			if name == homePage {
+				t.state.ui.pages.ShowPage(configPage)
+				return nil
+			} else {
+				t.state.ui.pages.SwitchToPage(homePage)
+			}
+			// if name == configPage {
+			// 	t.state.ui.pages.SwitchToPage(homePage)
+			// }
+		}
+
+		return nil
+	})
 }
 
 func (m *ConfigModal) Render(t *TUI) {

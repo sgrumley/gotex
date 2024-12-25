@@ -16,7 +16,6 @@ func newResultsPane(t *TUI) *results {
 	res.SetBorder(true).SetTitle("Results")
 	res.RenderResults("[green]Run[-] a test to see results...")
 	res.SetDynamicColors(true)
-	SetTextViewStyling(t, res.TextView)
 	res.SetWrap(true)
 	res.SetChangedFunc(func() {
 		// this is required to allow a test is running screen before results
