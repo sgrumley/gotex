@@ -1,31 +1,38 @@
 TODO: 
 Convert this text to github project
 
-1. search themeing (new component) 
-3. Themes -> catppuccin but using the native theme wrapped
-4. Move keymap code into functions
-5. Config form for runtime adjusting
+1. Page system
+2. move config to my modal and table
+5. Config form for runtime adjusting (use table with three columns?)
 6. Readme
 7. Move to public
 8. Version
 
 Required:
 - search should fuzzy find fzf + ctrl jk for nav + themed suggestions
-- readme
 - add pop up config display (Needs a form for runtime altering)
+- test file fix
 
 Nice to have: 
-- remove theming to try native themeing -> (wrap native themeing)
-- create reusable components e.g. fuzzy search, textStyling ... (fix search styling)
+- create reusable components 
+  -> search (an input field just for searching with keymap flexibility)
+  -> page system (including modals and components) -> this should include altering keymaps at the bottom depending on focused page
+
 - parsing of my own -> strip unused text -> color important parts (highlight filepath -> good for finding where a panic happened)
-- a lot more options need to be read in from config
-- Create/modify config in app (this should be stateless, modify yaml for persistent settings)
+
+- more options need to be read in from config
+  -> theme 
+
 - add results state to test in tree (tick or cross emoji??) -> this does not persist longer than the session
+
 - add a helper modal that shows all keybindings
+
 - add switch focus to results 
   - search 
   - scroll
   - copy 
+
+- optimize with concurrency
 
 Bug:
 - If you have three tests named -> TestAdd, TestAddSuccess and TestAddFail. Running TestAdd will run all of them. Specific regex needed
@@ -34,11 +41,5 @@ Bug:
 - TODOs in code
 - There is a bug to do with how privimatives are listening for key presses. Global keys require to be pressed twice??
 - go test on a file with a failing test case does not run the test?? This is the same behaviour as running go test -run filename. Look at alternative ways
-- some ui impovement to change screen when rerunning test
-  -> seems like returning the event is what cause the execution. This means there is no easy way to change the screen while the test runs.
 
-Notes
-- Check if it might make more sence to call go test package instead of using os.exec
-- check if a tparse integration works better than piping (piping can be made nicer later)
-- optimize with concurrency
 

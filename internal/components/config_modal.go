@@ -33,6 +33,7 @@ func (m *ConfigModal) setKeybindings(t *TUI) {
 			t.state.ui.pages.SwitchToPage(homePage)
 		}
 
+		// TODO: needs updating with page system
 		switch event.Rune() {
 		case 'c':
 			name, _ := t.state.ui.pages.GetFrontPage()

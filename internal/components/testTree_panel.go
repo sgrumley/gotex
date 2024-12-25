@@ -1,9 +1,7 @@
 package components
 
 import (
-	"log/slog"
 	"sgrumley/gotex/pkg/finder"
-	"sgrumley/gotex/pkg/runner"
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
@@ -53,76 +51,34 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 		case 'l':
 			node := t.state.ui.testTree.GetCurrentNode()
 			if node == nil {
-				// TODO: this should print to the console..
 				t.state.ui.result.RenderResults("Error can't get node " + node.GetReference().(finder.Node).GetName())
 			}
 			node.ExpandAll()
 		case 'h':
 			node := t.state.ui.testTree.GetCurrentNode()
 			if node == nil {
-				// TODO: this should print to the console..
 				t.state.ui.result.RenderResults("Error can't get node " + node.GetReference().(finder.Node).GetName())
 			}
 			node.CollapseAll()
-		// run test
+
 		case 'r':
-			t.state.ui.result.RenderResults("Test is running")
-			dataNode, ok := tt.GetCurrentNode().GetReference().(finder.Node)
-			if !ok {
-				t.log.Error("reference to current node is not a testable type")
-				t.state.ui.result.RenderResults("Error selected node is not a test")
-				return event
-			}
-
-			go func() {
-				t.state.data.lastTest = dataNode
-				output, err := dataNode.RunTest()
-				if err != nil {
-					t.log.Error("failed running test", slog.Any("error", err), slog.Any("output", output))
-					t.state.ui.result.RenderResults(output.Result)
-					t.state.ui.console.panel.UpdateMeta(t, output)
-					return
-				}
-
-				t.state.ui.result.RenderResults(output.Result)
-				t.state.ui.console.panel.UpdateMeta(t, output)
-			}()
-
+			RunTest(t)
 			return nil
-		// sync tests
 		case 's':
-			// NOTE: this could happen on a timer or by watching the the test files for changes
-			data, err := finder.InitProject(t.log)
-			if err != nil {
-				t.state.ui.result.RenderResults(err.Error())
-			}
-			t.state.data.project = data
-			t.state.ui.testTree.Populate(t)
-			t.state.ui.result.RenderResults("Project has successfully refreshed")
+			SyncProject(t)
 			return nil
-		// run all
 		case 'A':
-			t.state.ui.result.RenderResults("Test is running")
-
-			go func() {
-				output, err := runner.RunTest(runner.TestTypeProject, "", t.state.data.project.RootDir, t.state.data.project.Config)
-				if err != nil {
-					t.log.Error("failed running all tests", slog.Any("error", err))
-					t.state.ui.console.panel.UpdateMeta(t, output)
-					t.state.ui.result.RenderResults(err.Error())
-					return
-				}
-				t.state.ui.result.RenderResults(output.Result)
-				t.state.ui.console.panel.UpdateMeta(t, output)
-			}()
+			RunAllTests(t)
 			return nil
 
 		// search
 		case '/':
+			// TODO: update with page system
+			// NOTE: this is an example of when to return the event rather than nil, as it will be passed through and still count as text input
+			// upon close setGlobalKeybinding() is called to undo this
 			t.app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 				switch event.Rune() {
 				case 'c':
-					// NOTE: this is an example of when to return the event rather than nil, as it will be passed through and still count as text input
 					return event
 				}
 				return event
@@ -132,6 +88,7 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 			t.app.SetFocus(t.state.ui.search.input)
 			return nil
 		}
+
 		// keybinding for special keys
 		switch event.Key() {
 		case tcell.KeyCtrlU:
