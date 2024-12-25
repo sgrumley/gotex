@@ -1,34 +1,15 @@
-TODO: 
-
-5. Config form for runtime adjusting (use table with three columns?)
-
-Required:
-- search should fuzzy find fzf + ctrl jk for nav + themed suggestions
-- add pop up config display (Needs a form for runtime altering)
-- test file fix
-
-Nice to have: 
-- File test (needs a deep dive, seems like easiest way is to run all tests in the file instead of including all deps in test cmd)
-- create reusable components 
-  -> search (an input field just for searching with keymap flexibility)
-  -> page system / page structure (how should each page interact? home page? panels within a page?, keybind display)
-
-- parsing of my own -> strip unused text -> color important parts (highlight filepath -> good for finding where a panic happened)
-
-- custom themes
-
-- add results state to test in tree (tick or cross emoji??) -> this does not persist longer than the session
-
-- add a helper modal that shows all keybindings
-
-- add switch focus to results 
+- Adjust config temporarily
+- Custom themes
+- Add results state to test in tree (tick or cross emoji??)
+- Add a helper modal that shows all keybindings (for current panel)
+- Add focus to results 
   - search 
   - scroll
   - copy 
-
-- optimize with concurrency
+- Optimize with concurrency
 
 Bug:
+- File test (needs a deep dive, seems like easiest way is to run all tests in the file instead of including all deps in test cmd)
 - If struct has implicit initialisation test cases won't show up, is there a solution to this?
 - Create multiple different types of tests and get them working
 - There is a bug to do with how privimatives are listening for key presses. Global keys require to be pressed twice??

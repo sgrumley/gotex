@@ -75,6 +75,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-- Inspired by similar TUI tools like [gotests](https://github.com/cweill/gotests)
 - Built with [tview](https://github.com/rivo/tview)
 
