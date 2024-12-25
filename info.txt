@@ -1,10 +1,6 @@
 TODO: 
-Convert this text to github project
 
 5. Config form for runtime adjusting (use table with three columns?)
-6. Readme
-7. Move to public
-8. Version
 
 Required:
 - search should fuzzy find fzf + ctrl jk for nav + themed suggestions
@@ -33,10 +29,8 @@ Nice to have:
 - optimize with concurrency
 
 Bug:
-- If you have three tests named -> TestAdd, TestAddSuccess and TestAddFail. Running TestAdd will run all of them. Specific regex needed
 - If struct has implicit initialisation test cases won't show up, is there a solution to this?
 - Create multiple different types of tests and get them working
-- TODOs in code
 - There is a bug to do with how privimatives are listening for key presses. Global keys require to be pressed twice??
 - go test on a file with a failing test case does not run the test?? This is the same behaviour as running go test -run filename. Look at alternative ways
 
