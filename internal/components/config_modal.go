@@ -10,13 +10,11 @@ import (
 type ConfigModal struct {
 	modal   *tview.Flex
 	content *tview.Table
+	active  bool
 }
 
 func newConfigModal(t *TUI) *ConfigModal {
-	cfg := &ConfigModal{}
 	tab := tview.NewTable()
-	cfg.content = tab
-	cfg.Render(t, tab)
 
 	// HACK: The table won't center well within it's flex, offset using 2,2,1 proportions
 	modalContent := tview.NewFlex().
@@ -27,7 +25,14 @@ func newConfigModal(t *TUI) *ConfigModal {
 
 	modal := NewModal("Config", modalContent)
 	modal.SetBorder(true)
-	cfg.modal = modal
+
+	cfg := &ConfigModal{
+		content: tab,
+		modal:   modal,
+		active:  false,
+	}
+	cfg.Render(t, tab)
+	cfg.setKeybindings(t)
 
 	return cfg
 }
@@ -52,31 +57,38 @@ func (m *ConfigModal) Render(t *TUI, tab *tview.Table) {
 
 func newRow(tab *tview.Table, key string, val interface{}, rowInd int) {
 	cell1 := tview.NewTableCell(key)
-	// cell1.SetAlign(tview.AlignCenter)
-	// cell1.SetExpansion(1)
 	tab.SetCell(rowInd, 0, cell1)
 
 	cell2 := tview.NewTableCell(ansi.SimpleString(val))
-	// cell2.SetExpansion(1)
-	// cell2.SetAlign(tview.AlignCenter)
 	tab.SetCell(rowInd, 1, cell2)
 }
 
-// Consider how to close
 func (c *ConfigModal) setKeybindings(t *TUI) {
 	c.modal.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyEsc:
-			// TODO: this should toggle
-			t.state.ui.pages.SwitchToPage(homePage)
+			toggleConfig(t)
+			return nil
 		}
 
 		switch event.Rune() {
 		case 'c':
-			// TODO: this should toggle
-			t.state.ui.pages.ShowPage(configPage)
+			toggleConfig(t)
 			return nil
 		}
 		return event
 	})
+}
+
+func toggleConfig(t *TUI) {
+	if t.state.ui.config.active {
+		t.state.ui.pages.SwitchToPage(homePage)
+		t.app.SetFocus(t.state.ui.testTree.TreeView)
+		t.state.ui.config.active = false
+		return
+	}
+
+	t.state.ui.pages.ShowPage(configPage)
+	t.app.SetFocus(t.state.ui.config.modal)
+	t.state.ui.config.active = true
 }

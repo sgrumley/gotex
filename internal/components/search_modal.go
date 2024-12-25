@@ -11,9 +11,10 @@ import (
 )
 
 type searchModal struct {
-	modal *tview.Flex
-	input *tview.InputField
-	text  *tview.TextView
+	modal  *tview.Flex
+	input  *tview.InputField
+	text   *tview.TextView
+	active bool
 }
 
 func newSearchModal(t *TUI) *searchModal {
@@ -38,7 +39,20 @@ func newSearchModal(t *TUI) *searchModal {
 	SetInputStyling(t, input)
 	modal := NewModal("Search", modalContent)
 	modal.SetBorder(true)
-	modal.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+
+	sm := &searchModal{
+		input:  input,
+		text:   textView,
+		modal:  modal,
+		active: false,
+	}
+
+	sm.setKeybindings(t)
+	return sm
+}
+
+func (s *searchModal) setKeybindings(t *TUI) {
+	s.modal.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		// NOTE: looks like navigation here will require wrapping or reimplementing the inputfield type
 		// or making a custom type
@@ -51,18 +65,27 @@ func newSearchModal(t *TUI) *searchModal {
 		// nav down
 
 		case tcell.KeyEsc:
-			t.setGlobalKeybinding(event)
-			t.state.ui.search.input.SetText("")
-			t.state.ui.search.text.SetText("Search for any test in the test tree")
-			t.state.ui.pages.SwitchToPage(homePage)
+			toggleSearch(t)
+			return nil
 		}
 		return event
 	})
-	return &searchModal{
-		input: input,
-		text:  textView,
-		modal: modal,
+}
+
+func toggleSearch(t *TUI) {
+	if t.state.ui.search.active {
+		t.state.ui.pages.SwitchToPage(homePage)
+		t.app.SetFocus(t.state.ui.testTree.TreeView)
+		t.state.ui.search.active = false
+
+		t.state.ui.search.text.SetText("Search for any test in the test tree")
+		t.state.ui.search.input.SetText("")
+		return
 	}
+
+	t.state.ui.pages.ShowPage(searchPage)
+	t.app.SetFocus(t.state.ui.search.modal)
+	t.state.ui.search.active = true
 }
 
 func fuzzyFindTest(t *TUI) func(currentText string) (entries []string) {
@@ -73,7 +96,7 @@ func fuzzyFindTest(t *TUI) func(currentText string) (entries []string) {
 		}
 
 		entries = fuzzy.Find(currentText, tests)
-		if len(entries) <= 1 {
+		if len(entries) < 1 {
 			entries = nil
 		}
 		return

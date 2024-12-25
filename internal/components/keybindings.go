@@ -17,7 +17,7 @@ func (t *TUI) setGlobalKeybinding(_ *tcell.EventKey) {
 			toggleConsole(t)
 			return nil
 		case 'c':
-			t.state.ui.pages.ShowPage(configPage)
+			toggleConfig(t)
 			return nil
 		}
 		return event
