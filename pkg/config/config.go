@@ -23,7 +23,7 @@ var (
 )
 
 type EnvVar struct {
-	ConfigFilePath string `envconfig:"GOTEX_CONFIG_FILE_PATH"` //  default:"~/.config/gotex/config.yaml"`
+	ConfigFilePath string `envconfig:"GOTEX_CONFIG_FILE_PATH"`
 }
 
 type Config struct {
@@ -53,7 +53,7 @@ func GetConfig(log *slog.Logger) (Config, error) {
 			slog.String("cause", err.Error()),
 			slog.Any("default config", cfg),
 		)
-		return cfg, err
+		return cfg, nil
 	}
 
 	cfg, err := LoadYAML(filepath)
@@ -107,7 +107,7 @@ func GetConfigPath() (string, error) {
 	// check for user specified config path
 	e := EnvVar{}
 	err := envconfig.Process("GOTEX_CONFIG_FILE_PATH", &e)
-	if err != nil {
+	if err != nil || e.ConfigFilePath == "" {
 		return defaultFilePath, fmt.Errorf("no environment variable found")
 	}
 
