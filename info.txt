@@ -14,5 +14,8 @@ Bug:
 - Create multiple different types of tests and get them working
 - There is a bug to do with how privimatives are listening for key presses. Global keys require to be pressed twice??
 - go test on a file with a failing test case does not run the test?? This is the same behaviour as running go test -run filename. Look at alternative ways
-
+- multiple calls of t.Run("eg"...) will needs to be accounted for -> registering as a test case?? 
+- pkgs should be structured as done in the file tree. e.g. a nested package should be a child node in the test tree
+- dynamic tree pane width or the ability to scroll horizontally
+- G and gg -> top and bottom
 
