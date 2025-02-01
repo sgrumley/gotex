@@ -29,7 +29,8 @@ func run() int {
 
 	root, err := scanner.FindGoProjectRoot()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("No go project found, navigate to a repository with a go.mod file and try again")
+		// log.Fatal(err)
 	}
 
 	ctx := context.Background()

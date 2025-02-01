@@ -1,3 +1,10 @@
+
+This Branch:
+1. Add GenerateTree()
+2. Opt to use this or perform the logic on the gui side
+3. Make sure sizing can be changed for tree panel
+
+
 - Adjust config temporarily
 - Custom themes
 - Add results state to test in tree (tick or cross emoji??)
@@ -17,10 +24,8 @@
 Bug:
 # - go test on a file with a failing test case does not run the test?? This is the same behaviour as running go test -run filename. Look at alternative ways
 - add tmux support to readme -> COLORTERM=truecolor
-- Go install requires mod name update 
-- better error for not in project directory
 - add dynamic sizing for tree??
-- fzf case sensitive should be insenseitive
+- fzf case sensitive should be insenseitive -> clean input
 - H should close current level and select one above
 - gg + G page scroll
 - config pane is transparent
