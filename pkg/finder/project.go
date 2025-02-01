@@ -1,4 +1,4 @@
-package models
+package finder
 
 import (
 	"fmt"
@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/sgrumley/gotex/pkg/config"
-	"github.com/sgrumley/gotex/pkg/finder"
 	"github.com/sgrumley/gotex/pkg/runner"
 )
 
@@ -24,8 +23,8 @@ type Project struct {
 	Config   config.Config
 	RootDir  string
 	Packages []*Package
-	Tree     *Tree
-	log      *slog.Logger
+	// Tree     *Tree
+	log *slog.Logger
 }
 
 type FlatProject struct {
@@ -88,29 +87,15 @@ func (p *Project) RunTest() (*runner.Response, error) {
 	return runner.RunTest(runner.TestTypeProject, "", path, p.Config)
 }
 
-func NewProject(log *slog.Logger, cfg config.Config, root string) (*Project, error) {
-	pkgs, err := FindPackages(root)
-	if err != nil {
-		return nil, err
+func NewProject(log *slog.Logger, cfg config.Config, root string) *Project {
+	return &Project{
+		Config: cfg,
+		log:    log,
 	}
-
-	p := &Project{
-		Config:   cfg,
-		log:      log,
-		RootDir:  root,
-		Packages: pkgs,
-	}
-
-	err = p.PopulateFromPackages(pkgs)
-	if err != nil {
-		return nil, fmt.Errorf("Error building tree: %v\n", err)
-	}
-
-	return p, nil
 }
 
-// func (p *Project) Populate() {
-// }
+func (p *Project) Populate() {
+}
 
 func InitProject(log *slog.Logger) (*Project, error) {
 	cfg, err := config.GetConfig(log)
@@ -119,38 +104,38 @@ func InitProject(log *slog.Logger) (*Project, error) {
 	}
 
 	p := &Project{
-		log:    log,
 		Config: cfg,
+		log:    log,
 	}
-	projectRoot, err := finder.FindGoProjectRoot()
+	projectRoot, err := FindGoProjectRoot()
 	if err != nil {
 		return nil, fmt.Errorf("failed to find project root: %s\n", err)
 	}
 
-	_, err = finder.FindPackages()
+	pkgs, err := FindPackages()
 	if err != nil {
 		return nil, err
 	}
 
 	// PERF: this could be concurrent
-	// for i := range pkgs {
-	// 	pkgs[i].Parent = p
-	// 	for _, file := range pkgs[i].Files {
-	// 		log.Info("searching file: ",
-	// 			slog.String("file", file.Path),
-	// 		)
-	// 		file.Functions = make([]*Function, 0)
-	// 		file.FunctionMap = make(map[string]*Function)
-	// 		file.Parent = pkgs[i]
-	//
-	// 		err := finder.SearchFile(file, log)
-	// 		if err != nil {
-	// 			return nil, fmt.Errorf("failed finding tests: %s\n", err)
-	// 		}
-	// 	}
-	// }
+	for i := range pkgs {
+		pkgs[i].Parent = p
+		for _, file := range pkgs[i].Files {
+			log.Info("searching file: ",
+				slog.String("file", file.Path),
+			)
+			file.Functions = make([]*Function, 0)
+			file.FunctionMap = make(map[string]*Function)
+			file.Parent = pkgs[i]
+
+			err := SearchFile(file, log)
+			if err != nil {
+				return nil, fmt.Errorf("failed finding tests: %s\n", err)
+			}
+		}
+	}
 	p.RootDir = projectRoot
-	// p.Packages = pkgs
+	p.Packages = pkgs
 
 	log.Info("project starting data",
 		slog.String("root dir", p.RootDir),

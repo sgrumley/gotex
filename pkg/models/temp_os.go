@@ -1,4 +1,4 @@
-package finder
+package models
 
 import (
 	"fmt"
@@ -8,21 +8,17 @@ import (
 	"strings"
 )
 
-func FindPackages() ([]*Package, error) {
+func FindPackages(rootDir string) ([]*Package, error) {
 	// TODO: make this read from cfg
 	blacklist := map[string]struct{}{
 		"node_modules": {},
 		".git":         {},
 		"vendor":       {},
 	}
-	rootDir, err := FindGoProjectRoot()
-	if err != nil {
-		return nil, err
-	}
 
 	var packages []*Package
 
-	err = filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -33,7 +29,6 @@ func FindPackages() ([]*Package, error) {
 			}
 			pkg, err := build.ImportDir(path, 0)
 			if err == nil && len(pkg.GoFiles) > 0 {
-
 				filenames := findTestFiles(path)
 				if len(filenames) == 0 {
 					return nil
@@ -67,4 +62,20 @@ func FindPackages() ([]*Package, error) {
 	}
 
 	return packages, nil
+}
+
+func findTestFiles(path string) []string {
+	var testFiles []string
+
+	files, err := os.ReadDir(path)
+	if err != nil {
+		return nil
+	}
+
+	for _, file := range files {
+		if !file.IsDir() && strings.Contains(file.Name(), "_test.go") {
+			testFiles = append(testFiles, file.Name())
+		}
+	}
+	return testFiles
 }

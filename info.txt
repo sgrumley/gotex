@@ -18,6 +18,7 @@ Bug:
 - add tmux support to readme -> COLORTERM=truecolor
 - Go install requires mod name update 
 - better error for not in project directory
+- add dynamic sizing for tree??
 - fzf case sensitive should be insenseitive
 - H should close current level and select one above
 - gg + G page scroll

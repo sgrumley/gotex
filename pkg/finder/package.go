@@ -1,10 +1,6 @@
-package models
+package finder
 
-import (
-	"strings"
-
-	"github.com/sgrumley/gotex/pkg/runner"
-)
+import "github.com/sgrumley/gotex/pkg/runner"
 
 var _ Node = (*Package)(nil)
 
@@ -17,8 +13,7 @@ type Package struct {
 }
 
 func (p *Package) GetName() string {
-	namePath := strings.Split(p.Name, "/")
-	return namePath[len(namePath)-1]
+	return p.Name
 }
 
 func (p *Package) GetChildren() []Node {
