@@ -12,6 +12,7 @@
 - Create multiple different types of tests and get them working -> t.Run("static", ...)
 - If struct has implicit initialisation test cases won't show up, is there a solution to this?
 - take config logic and make it a seperate project with clearer code and reusablity
+- log by context
 
 Bug:
 # - go test on a file with a failing test case does not run the test?? This is the same behaviour as running go test -run filename. Look at alternative ways
