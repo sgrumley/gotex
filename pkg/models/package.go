@@ -1,6 +1,6 @@
-package finder
+package models
 
-import "sgrumley/gotex/pkg/runner"
+import "github.com/sgrumley/gotex/pkg/runner"
 
 var _ Node = (*Package)(nil)
 

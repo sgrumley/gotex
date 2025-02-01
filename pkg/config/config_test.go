@@ -4,8 +4,9 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
-	"sgrumley/gotex/pkg/config"
 	"testing"
+
+	"github.com/sgrumley/gotex/pkg/config"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

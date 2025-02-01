@@ -1,9 +1,10 @@
-package finder
+package models
 
 import (
 	"fmt"
 	"path/filepath"
-	"sgrumley/gotex/pkg/runner"
+
+	"github.com/sgrumley/gotex/pkg/runner"
 )
 
 var _ Node = (*Case)(nil)

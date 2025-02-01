@@ -1,8 +1,8 @@
 package components
 
 import (
-	"sgrumley/gotex/pkg/ansi"
-	"sgrumley/gotex/pkg/runner"
+	"github.com/sgrumley/gotex/pkg/ansi"
+	"github.com/sgrumley/gotex/pkg/runner"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"

@@ -6,8 +6,9 @@ import (
 	"log/slog"
 	"os"
 	"os/exec"
-	"sgrumley/gotex/pkg/config"
 	"strings"
+
+	"github.com/sgrumley/gotex/pkg/config"
 )
 
 type TestType int

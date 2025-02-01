@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func FindPackages() ([]*Package, error) {
+func FindPackages() ([]*models.Package, error) {
 	// TODO: make this read from cfg
 	blacklist := map[string]struct{}{
 		"node_modules": {},
@@ -20,7 +20,7 @@ func FindPackages() ([]*Package, error) {
 		return nil, err
 	}
 
-	var packages []*Package
+	var packages []*models.Package
 
 	err = filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {

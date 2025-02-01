@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"sgrumley/gotex/internal/components"
-	logger "sgrumley/gotex/pkg/logging"
+
+	logger "github.com/sgrumley/gotex/pkg/logging"
+
+	"github.com/sgrumley/gotex/internal/components"
 )
 
 func main() {

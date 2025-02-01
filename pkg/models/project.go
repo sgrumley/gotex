@@ -1,12 +1,13 @@
-package finder
+package models
 
 import (
 	"fmt"
 	"log/slog"
 	"path/filepath"
-	"sgrumley/gotex/pkg/config"
-	"sgrumley/gotex/pkg/runner"
 	"strings"
+
+	"github.com/sgrumley/gotex/pkg/config"
+	"github.com/sgrumley/gotex/pkg/runner"
 )
 
 type Node interface {

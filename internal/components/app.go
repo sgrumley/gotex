@@ -2,7 +2,8 @@ package components
 
 import (
 	"log/slog"
-	"sgrumley/gotex/pkg/finder"
+
+	"github.com/sgrumley/gotex/pkg/finder"
 
 	"github.com/rivo/tview"
 )

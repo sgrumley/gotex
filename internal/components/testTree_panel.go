@@ -1,8 +1,9 @@
 package components
 
 import (
-	"sgrumley/gotex/pkg/finder"
 	"strings"
+
+	"github.com/sgrumley/gotex/pkg/finder"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"

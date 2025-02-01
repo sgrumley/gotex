@@ -1,4 +1,4 @@
-module sgrumley/gotex
+module github.com/sgrumley/gotex
 
 go 1.21.4
 

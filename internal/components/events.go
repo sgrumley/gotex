@@ -3,8 +3,9 @@ package components
 import (
 	"fmt"
 	"log/slog"
-	"sgrumley/gotex/pkg/finder"
-	"sgrumley/gotex/pkg/runner"
+
+	"github.com/sgrumley/gotex/pkg/finder"
+	"github.com/sgrumley/gotex/pkg/runner"
 )
 
 func SyncProject(t *TUI) {
