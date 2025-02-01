@@ -1,9 +1,10 @@
 package components
 
 import (
+	"context"
 	"strings"
 
-	"github.com/sgrumley/gotex/pkg/finder"
+	"github.com/sgrumley/gotex/pkgv2/models"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -52,13 +53,13 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 		case 'l':
 			node := t.state.ui.testTree.GetCurrentNode()
 			if node == nil {
-				t.state.ui.result.RenderResults("Error can't get node " + node.GetReference().(finder.Node).GetName())
+				t.state.ui.result.RenderResults("Error can't get node " + node.GetReference().(models.Node).GetName())
 			}
 			node.ExpandAll()
 		case 'h':
 			node := t.state.ui.testTree.GetCurrentNode()
 			if node == nil {
-				t.state.ui.result.RenderResults("Error can't get node " + node.GetReference().(finder.Node).GetName())
+				t.state.ui.result.RenderResults("Error can't get node " + node.GetReference().(models.Node).GetName())
 			}
 			node.CollapseAll()
 
@@ -66,7 +67,7 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 			RunTest(t)
 			return nil
 		case 's':
-			SyncProject(t)
+			SyncProject(context.Background(), t)
 			return nil
 		case 'A':
 			RunAllTests(t)
@@ -129,7 +130,7 @@ func (tt *TestTree) Populate(t *TUI) {
 	})
 }
 
-func prefillTree(t *TUI, target *tview.TreeNode, n finder.Node, lvl int) {
+func prefillTree(t *TUI, target *tview.TreeNode, n models.Node, lvl int) {
 	children := n.GetChildren()
 	for _, child := range children {
 		node := tview.NewTreeNode(child.GetName())

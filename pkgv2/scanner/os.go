@@ -34,7 +34,7 @@ func FindGoProjectRoot() (string, error) {
 	return "", fmt.Errorf("go.mod file not found in current directory or any parent directories")
 }
 
-func FindPackages(rootDir string) ([]*models.Package, error) {
+func FindPackagesAndTestFiles(rootDir string, p *models.Project) ([]*models.Package, error) {
 	// TODO: make this read from cfg
 	blacklist := map[string]struct{}{
 		"node_modules": {},
@@ -64,16 +64,18 @@ func FindPackages(rootDir string) ([]*models.Package, error) {
 				pkgName := fmt.Sprintf("%s/%s", paths[len(paths)-2], paths[len(paths)-1])
 
 				tmp := &models.Package{
-					Name: pkgName,
-					Path: pkg.Dir,
+					Name:   pkgName,
+					Path:   pkg.Dir,
+					Parent: p,
 				}
 
 				files := make([]*models.File, 0)
 				for i := range filenames {
 					files = append(files, &models.File{
-						Name:   filenames[i],
-						Path:   fmt.Sprintf("%s/%s", pkg.Dir, filenames[i]),
-						Parent: tmp,
+						Name:        filenames[i],
+						Path:        fmt.Sprintf("%s/%s", pkg.Dir, filenames[i]),
+						Parent:      tmp,
+						FunctionMap: make(map[string]*models.Function),
 					})
 				}
 				tmp.Files = files

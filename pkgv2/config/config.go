@@ -1,11 +1,11 @@
 package config
 
 import (
+	"context"
 	"embed"
 	"errors"
 	"fmt"
 	"io/fs"
-	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -42,17 +42,17 @@ type Config struct {
 - else use the default yaml file in this folder
 */
 
-func GetConfig(log *slog.Logger) (Config, error) {
+func GetConfig(ctx context.Context) (Config, error) {
 	filepath, err := GetConfigPath()
 	if err != nil {
 		cfg, errDefault := getDefaultCfg()
 		if errDefault != nil {
 			return Config{}, errDefault
 		}
-		log.Warn("failed to find user specified config, using default",
-			slog.String("cause", err.Error()),
-			slog.Any("default config", cfg),
-		)
+		// log.Warn("failed to find user specified config, using default",
+		// 	slog.String("cause", err.Error()),
+		// 	slog.Any("default config", cfg),
+		// )
 		return cfg, nil
 	}
 
@@ -62,14 +62,14 @@ func GetConfig(log *slog.Logger) (Config, error) {
 		if errDefault != nil {
 			return Config{}, errDefault
 		}
-		log.Error("invalid config file",
-			slog.Any("error", fmt.Errorf("failed to load config at path: %s with error: %w", filepath, err)),
-			slog.Any("default config", cfg),
-		)
+		// log.Error("invalid config file",
+		// 	slog.Any("error", fmt.Errorf("failed to load config at path: %s with error: %w", filepath, err)),
+		// 	slog.Any("default config", cfg),
+		// )
 		return cfg, err
 	}
 
-	log.Info("loaded user config from environment variable", slog.Any("config", cfg))
+	// log.Info("loaded user config from environment variable", slog.Any("config", cfg))
 	return cfg, nil
 }
 

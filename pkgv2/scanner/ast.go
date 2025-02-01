@@ -3,31 +3,9 @@ package scanner
 import (
 	"fmt"
 	"go/ast"
-	"go/parser"
 	"go/token"
-	"log/slog"
 	"strings"
-
-	"github.com/sgrumley/gotex/pkgv2/models"
 )
-
-// SearchFile analyzes a Go file for test functions and their test cases
-func SearchFile(file *models.File, log *slog.Logger, fileNode *models.NodeTree) error {
-	fset := token.NewFileSet()
-	node, err := parser.ParseFile(fset, file.Path, nil, parser.AllErrors)
-	if err != nil {
-		return fmt.Errorf("failed to parse file %s: %w", file.Path, err)
-	}
-
-	ast.Inspect(node, func(n ast.Node) bool {
-		if callExpr, ok := n.(*ast.CallExpr); ok {
-			processTestFunction(file, node, callExpr, log, fileNode)
-		}
-		return true
-	})
-
-	return nil
-}
 
 // isTestRunCall assumes all test functions contain a call to t.Run()
 // NOTE: This will break if t.Run() is not used
@@ -48,9 +26,8 @@ func isTestRunCall(callExpr *ast.CallExpr) (*ast.SelectorExpr, bool) {
 }
 
 // findEnclosingFunction traverses the AST upwards to find the function that encloses the node
-// TODO: this is disgusting and needs cleaning
 func findEnclosingFunction(node ast.Node, n ast.Node) *ast.FuncDecl {
-	// Walk the AST to find the enclosing function
+	// Walk the AST to find the wrapping function
 	var fn *ast.FuncDecl
 	ast.Inspect(node, func(x ast.Node) bool {
 		if f, ok := x.(*ast.FuncDecl); ok {
@@ -61,35 +38,11 @@ func findEnclosingFunction(node ast.Node, n ast.Node) *ast.FuncDecl {
 		}
 		return true
 	})
+
 	return fn
 }
 
-// TODO: this is disgusting and needs cleaning
-func findValuesOfIndexedField(fn *ast.FuncDecl, fieldName string) []*models.Case {
-	var cases []*models.Case
-
-	// findValuesOfIndexedField looks for the value of a field in an array or slice (e.g. tc[i].name)
-	ast.Inspect(fn.Body, func(n ast.Node) bool {
-		// We're looking for composite literals (array/slice initialization) or assignments
-		if compLit, ok := n.(*ast.CompositeLit); ok {
-			for _, elt := range compLit.Elts {
-				if kvExpr, ok := elt.(*ast.KeyValueExpr); ok {
-					if ident, ok := kvExpr.Key.(*ast.Ident); ok && ident.Name == fieldName {
-						// Extract the value assigned to the field (e.g. "TestA" for `name: "TestA"`)
-						nameValue := extractRHSValue(kvExpr.Value)
-						nameValueStripped := strings.ReplaceAll(nameValue, `"`, "")
-						cases = append(cases, &models.Case{
-							Name: nameValueStripped,
-						})
-					}
-				}
-			}
-		}
-		return true
-	})
-
-	return cases
-}
+// HELPERS
 
 // exprToString converts an AST expression into a string
 func exprToString(expr ast.Expr) string {

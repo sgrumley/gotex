@@ -1,9 +1,12 @@
 package components
 
 import (
+	"context"
 	"log/slog"
 
-	"github.com/sgrumley/gotex/pkg/finder"
+	"github.com/sgrumley/gotex/pkgv2/config"
+	"github.com/sgrumley/gotex/pkgv2/models"
+	"github.com/sgrumley/gotex/pkgv2/scanner"
 
 	"github.com/rivo/tview"
 )
@@ -29,10 +32,10 @@ type UI struct {
 }
 
 type Data struct {
-	project   *finder.Project
-	flattened *finder.FlatProject // this should become useful once I update the search names to append the parent node
+	project   *models.Project
+	flattened *models.FlatProject // this should become useful once I update the search names to append the parent node
 
-	lastTest finder.Node
+	lastTest models.Node
 }
 
 type consoleData struct {
@@ -42,10 +45,10 @@ type consoleData struct {
 	flex           *tview.Flex
 }
 
-func newState(log *slog.Logger) (*state, error) {
-	data, err := finder.InitProject(log)
+func newState(ctx context.Context, cfg config.Config, root string) (*state, error) {
+	data, err := scanner.Scan(ctx, cfg, root)
 	if err != nil {
-		log.Error("failed to initialise project", slog.Any("error", err))
+		// log.Error("failed to initialise project", slog.Any("error", err))
 		return nil, err
 	}
 
@@ -67,15 +70,15 @@ type TUI struct {
 	log   *slog.Logger
 }
 
-func New(log *slog.Logger) (*TUI, error) {
-	data, err := newState(log)
+func New(ctx context.Context, cfg config.Config, root string) (*TUI, error) {
+	data, err := newState(ctx, cfg, root)
 	if err != nil {
 		return nil, err
 	}
 	return &TUI{
 		app:   tview.NewApplication(),
 		state: data,
-		log:   log,
+		// log:   log,
 	}, nil
 }
 
@@ -152,5 +155,5 @@ func (t *TUI) initPanels() {
 	pages.AddPage(searchPage, search.modal, true, false)
 
 	t.app.SetRoot(pages, true)
-	t.log.Info("app started successfully")
+	// t.log.Info("app started successfully")
 }

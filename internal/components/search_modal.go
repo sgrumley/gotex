@@ -2,12 +2,10 @@ package components
 
 import (
 	"fmt"
-	"log/slog"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/lithammer/fuzzysearch/fuzzy"
 	"github.com/rivo/tview"
-	// "github.com/sahilm/fuzzy"
 )
 
 type searchModal struct {
@@ -120,24 +118,24 @@ func selectTest(t *TUI) func(text string, index, source int) bool {
 			searchStr := text
 			ref, exists := t.state.data.flattened.NodeMap[searchStr]
 			if !exists {
-				t.log.Error("error", slog.String("search term not in tree", searchStr))
+				// t.log.Error("error", slog.String("search term not in tree", searchStr))
 				t.state.ui.search.text.SetText("search term does not exist in test tree: " + searchStr)
 				return false
 			}
 
 			found := search(t.state.ui.testTree.TreeView, ref.GetName())
 			if !found {
-				t.log.Error("error", slog.String("search term not found", searchStr))
+				// t.log.Error("error", slog.String("search term not found", searchStr))
 				t.state.ui.search.modal.SetBorderColor(tcell.ColorRed)
 				return false
 			}
 
 			// t.state.ui.search.modal.SetBorderColor(t.theme.Border)
-			t.log.Info("search",
-				slog.String("search term", searchStr),
-				slog.String("ref", ref.GetName()),
-				slog.Bool("found", found),
-			)
+			// t.log.Info("search",
+			// 	slog.String("search term", searchStr),
+			// 	slog.String("ref", ref.GetName()),
+			// 	slog.Bool("found", found),
+			// )
 
 			t.state.ui.search.input.SetText("")
 			t.state.ui.pages.SwitchToPage(homePage)

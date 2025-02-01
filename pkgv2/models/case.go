@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"go/ast"
 	"path/filepath"
 
 	"github.com/sgrumley/gotex/pkgv2/runner"
@@ -10,8 +11,9 @@ import (
 var _ Node = (*Case)(nil)
 
 type Case struct {
-	Name   string
-	Parent *Function
+	Name     string
+	Parent   *Function
+	Location *ast.KeyValueExpr // the key value of the test case name
 }
 
 func (c *Case) GetName() string {

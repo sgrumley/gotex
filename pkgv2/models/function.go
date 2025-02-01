@@ -15,8 +15,9 @@ type Function struct {
 	CaseMap map[string]*Case
 	Parent  *File
 	// meta data that may be helpful
-	VarName string
-	Decl    *ast.FuncDecl
+	VarName          string
+	TestFunctionNode *ast.FuncDecl // reference to the function AST node
+	RunCallNode      *ast.CallExpr // reference to the function call `t.Run()`
 }
 
 func (f *Function) GetName() string {
@@ -32,11 +33,7 @@ func (f *Function) GetChildren() []Node {
 }
 
 func (f *Function) HasChildren() bool {
-	if len(f.Cases) > 0 {
-		return true
-	}
-
-	return false
+	return len(f.Cases) > 0
 }
 
 func (f *Function) RunTest() (*runner.Response, error) {
