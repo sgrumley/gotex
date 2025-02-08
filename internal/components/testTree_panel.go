@@ -10,17 +10,15 @@ import (
 	"github.com/rivo/tview"
 )
 
-var (
-	rootColor    = tcell.ColorRed
-	unknownColor = tcell.ColorYellow
-)
+// rootColor    = tcell.ColorRed
+var unknownColor = tcell.ColorYellow
 
-var (
-	LevelPackage  = 1
-	LevelFile     = 2
-	LevelFunction = 3
-	LevelCase     = 4
-)
+// var (
+// 	LevelPackage  = 1
+// 	LevelFile     = 2
+// 	LevelFunction = 3
+// 	LevelCase     = 4
+// )
 
 type TestTree struct {
 	*tview.TreeView
@@ -133,7 +131,7 @@ func convertNode(t *TUI, node *models.NodeTree) *tview.TreeNode {
 
 	// Create the tview node
 	viewNode := tview.NewTreeNode(node.Data.GetName())
-	viewNode.SetReference(node) // Store the original node as reference
+	viewNode.SetReference(node.Data)
 	viewNode.SetSelectable(true)
 	nodeStyling(t, viewNode, node)
 

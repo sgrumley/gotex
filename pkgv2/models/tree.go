@@ -7,15 +7,6 @@ import (
 	"strings"
 )
 
-type DirectoryContent struct {
-	Name string
-	Path string
-}
-
-func (d DirectoryContent) GetName() string {
-	return d.Name
-}
-
 // NOTE: This tree should hold the structure of the data extracted from the project with the levels preserved as the file tree paths
 // This should probably replace the project struct
 // while implementing this, adding concurrency for branches would be nice
@@ -32,10 +23,10 @@ const (
 	NODE_TYPE_CASE      NodeType = "CASE"
 )
 
-type Content interface {
-	GetName() string
-	// GetData() will return the needed from within the concrete type
-}
+// type Content interface {
+// 	GetName() string
+// 	// GetData() will return the needed from within the concrete type
+// }
 
 type Tree struct {
 	RootNode    *NodeTree
@@ -44,7 +35,7 @@ type Tree struct {
 
 type NodeTree struct {
 	Level    int
-	Data     Content
+	Data     Node
 	Type     NodeType
 	Children []*NodeTree
 	Parent   *NodeTree
@@ -124,7 +115,7 @@ func processPackage(p *Project, pkg *Package, tree *Tree, dirNodes map[string]*N
 	parentNode.Children = append(parentNode.Children, pkgNode)
 
 	for _, file := range pkg.Files {
-		if err := processFile(file, pkg, pkgNode); err != nil {
+		if err := processFile(file, pkgNode); err != nil {
 			return fmt.Errorf("error processing file %s: %w", file.Path, err)
 		}
 	}
@@ -150,7 +141,7 @@ func createDirectoryNodes(rootPath string, components []string, rootNode *NodeTr
 
 		newDirNode := &NodeTree{
 			Level: level,
-			Data: DirectoryContent{
+			Data: &DirectoryContent{
 				Name: component,
 				Path: currentPath,
 			},
@@ -166,7 +157,7 @@ func createDirectoryNodes(rootPath string, components []string, rootNode *NodeTr
 	return parentNode, maxLevel
 }
 
-func processFile(file *File, pkg *Package, pkgNode *NodeTree) error {
+func processFile(file *File, pkgNode *NodeTree) error {
 	fileNode := &NodeTree{
 		Level:  pkgNode.Level + 1,
 		Data:   file,

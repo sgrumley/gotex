@@ -40,10 +40,6 @@ func (f *File) HasChildren() bool {
 }
 
 func (f *File) RunTest() (*runner.Response, error) {
-	// project := f.Parent.Parent
-	// path := filepath.Dir(f.Path)
-	//
-	// return runner.RunTest(runner.TestTypeFile, f.Name, path, project.Config)
 	return &runner.Response{
 		TestType:       runner.TestTypeFile,
 		Result:         "Test file not supported",
