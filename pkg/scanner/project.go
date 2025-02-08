@@ -8,8 +8,8 @@ import (
 	"go/token"
 	"strings"
 
-	"github.com/sgrumley/gotex/pkgv2/config"
-	"github.com/sgrumley/gotex/pkgv2/models"
+	"github.com/sgrumley/gotex/pkg/config"
+	"github.com/sgrumley/gotex/pkg/models"
 )
 
 func Scan(ctx context.Context, cfg config.Config, root string) (*models.Project, error) {

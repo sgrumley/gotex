@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/sgrumley/gotex/pkgv2/config"
-	"github.com/sgrumley/gotex/pkgv2/runner"
+	"github.com/sgrumley/gotex/pkg/config"
+	"github.com/sgrumley/gotex/pkg/runner"
 )
 
 type Node interface {

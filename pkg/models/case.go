@@ -5,7 +5,7 @@ import (
 	"go/ast"
 	"path/filepath"
 
-	"github.com/sgrumley/gotex/pkgv2/runner"
+	"github.com/sgrumley/gotex/pkg/runner"
 )
 
 var _ Node = (*Case)(nil)

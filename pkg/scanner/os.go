@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/sgrumley/gotex/pkgv2/models"
+	"github.com/sgrumley/gotex/pkg/models"
 )
 
 // TODO: add options so that config can determine if go.work is the root

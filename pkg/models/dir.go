@@ -1,6 +1,6 @@
 package models
 
-import "github.com/sgrumley/gotex/pkgv2/runner"
+import "github.com/sgrumley/gotex/pkg/runner"
 
 var _ Node = (*DirectoryContent)(nil)
 

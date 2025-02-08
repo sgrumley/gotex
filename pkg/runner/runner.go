@@ -8,7 +8,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/sgrumley/gotex/pkgv2/config"
+	"github.com/sgrumley/gotex/pkg/config"
 )
 
 type TestType int

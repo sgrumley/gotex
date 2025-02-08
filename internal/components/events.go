@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/sgrumley/gotex/pkgv2/models"
-	"github.com/sgrumley/gotex/pkgv2/runner"
-	"github.com/sgrumley/gotex/pkgv2/scanner"
+	"github.com/sgrumley/gotex/pkg/models"
+	"github.com/sgrumley/gotex/pkg/runner"
+	"github.com/sgrumley/gotex/pkg/scanner"
 )
 
 func SyncProject(ctx context.Context, t *TUI) {

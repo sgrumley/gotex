@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/sgrumley/gotex/pkgv2/models"
+	"github.com/sgrumley/gotex/pkg/models"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"

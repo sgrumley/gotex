@@ -6,8 +6,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/sgrumley/gotex/pkgv2/config"
-	"github.com/sgrumley/gotex/pkgv2/scanner"
+	"github.com/sgrumley/gotex/pkg/config"
+	"github.com/sgrumley/gotex/pkg/scanner"
 
 	"github.com/sgrumley/gotex/internal/components"
 )

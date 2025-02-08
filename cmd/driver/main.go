@@ -4,9 +4,9 @@ import (
 	"context"
 	"log"
 
-	"github.com/sgrumley/gotex/pkgv2/config"
-	"github.com/sgrumley/gotex/pkgv2/models"
-	"github.com/sgrumley/gotex/pkgv2/scanner"
+	"github.com/sgrumley/gotex/pkg/config"
+	"github.com/sgrumley/gotex/pkg/models"
+	"github.com/sgrumley/gotex/pkg/scanner"
 )
 
 func main() {
