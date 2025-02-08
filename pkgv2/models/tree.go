@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"log"
+	"path/filepath"
 	"strings"
 )
 
@@ -50,6 +51,9 @@ type NodeTree struct {
 }
 
 func (t *Tree) Traverse(f func(*NodeTree) error) error {
+	if t == nil {
+		return fmt.Errorf("nil node when traversing")
+	}
 	if t.RootNode == nil {
 		return nil
 	}
@@ -57,6 +61,9 @@ func (t *Tree) Traverse(f func(*NodeTree) error) error {
 }
 
 func traverse(node *NodeTree, f func(*NodeTree) error) error {
+	if node == nil {
+		return fmt.Errorf("nil node when traversing")
+	}
 	if err := f(node); err != nil {
 		return err
 	}
@@ -79,6 +86,135 @@ func NewTree(p *Project) *Tree {
 			Type:  NODE_TYPE_PROJECT,
 		},
 	}
+}
+
+func GenerateTree(p *Project) error {
+	tree := NewTree(p)
+	dirNodes := make(map[string]*NodeTree)
+	dirNodes[p.GetName()] = tree.RootNode
+
+	for _, pkg := range p.Packages {
+		if err := processPackage(p, pkg, tree, dirNodes); err != nil {
+			return fmt.Errorf("failed generating tree: %w", err)
+		}
+	}
+	p.Tree = tree
+
+	return nil
+}
+
+func processPackage(p *Project, pkg *Package, tree *Tree, dirNodes map[string]*NodeTree) error {
+	relPath, err := filepath.Rel(p.RootDir, pkg.Path)
+	if err != nil {
+		return fmt.Errorf("error getting relative path: %w", err)
+	}
+	components := strings.Split(filepath.Clean(relPath), string(filepath.Separator))
+
+	parentNode, level := createDirectoryNodes(p.RootDir, components, tree.RootNode, dirNodes)
+	if level+1 > tree.TotalLevels {
+		tree.TotalLevels = level + 1
+	}
+
+	pkgNode := &NodeTree{
+		Level:  level + 1,
+		Data:   pkg,
+		Type:   NODE_TYPE_PACKAGE,
+		Parent: parentNode,
+	}
+	parentNode.Children = append(parentNode.Children, pkgNode)
+
+	for _, file := range pkg.Files {
+		if err := processFile(file, pkg, pkgNode); err != nil {
+			return fmt.Errorf("error processing file %s: %w", file.Path, err)
+		}
+	}
+
+	return nil
+}
+
+func createDirectoryNodes(rootPath string, components []string, rootNode *NodeTree, dirNodes map[string]*NodeTree) (*NodeTree, int) {
+	currentPath := rootPath
+	parentNode := rootNode
+	maxLevel := 0
+
+	// Process all components except the last one (which will be the package)
+	for i, component := range components[:len(components)-1] {
+		currentPath = filepath.Join(currentPath, component)
+		level := i + 1
+		maxLevel = level
+
+		if node, exists := dirNodes[currentPath]; exists {
+			parentNode = node
+			continue
+		}
+
+		newDirNode := &NodeTree{
+			Level: level,
+			Data: DirectoryContent{
+				Name: component,
+				Path: currentPath,
+			},
+			Type:   NODE_TYPE_DIRECTORY,
+			Parent: parentNode,
+		}
+		parentNode.Children = append(parentNode.Children, newDirNode)
+
+		dirNodes[currentPath] = newDirNode
+		parentNode = newDirNode
+	}
+
+	return parentNode, maxLevel
+}
+
+func processFile(file *File, pkg *Package, pkgNode *NodeTree) error {
+	file.Functions = make([]*Function, 0)
+	file.FunctionMap = make(map[string]*Function)
+	file.Parent = pkg
+
+	fileNode := &NodeTree{
+		Level:  pkgNode.Level + 1,
+		Data:   file,
+		Type:   NODE_TYPE_FILE,
+		Parent: pkgNode,
+	}
+	pkgNode.Children = append(pkgNode.Children, fileNode)
+
+	for _, fn := range file.Functions {
+		if err := processFunction(fn, fileNode); err != nil {
+			return fmt.Errorf("failed processing function")
+		}
+	}
+
+	return nil
+}
+
+func processFunction(fn *Function, fileNode *NodeTree) error {
+	fnNode := &NodeTree{
+		Level:  fileNode.Level + 1,
+		Data:   fn,
+		Type:   NODE_TYPE_FUNCTION,
+		Parent: fileNode,
+	}
+
+	fileNode.Children = append(fileNode.Children, fnNode)
+	for _, tc := range fn.Cases {
+		if err := processCase(tc, fnNode); err != nil {
+			return fmt.Errorf("failed processing function")
+		}
+	}
+	return nil
+}
+
+func processCase(tc *Case, fnNode *NodeTree) error {
+	caseNode := &NodeTree{
+		Level:  fnNode.Level + 1,
+		Data:   tc,
+		Type:   NODE_TYPE_CASE,
+		Parent: fnNode,
+	}
+
+	fnNode.Children = append(fnNode.Children, caseNode)
+	return nil
 }
 
 func (t *Tree) Print() {

@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/sgrumley/gotex/pkgv2/config"
+	"github.com/sgrumley/gotex/pkgv2/models"
 	"github.com/sgrumley/gotex/pkgv2/scanner"
 )
 
@@ -34,6 +35,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	err = models.GenerateTree(p)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	fmt.Println("dir: ", p.RootDir)
 	p.Tree.Print()
 }
