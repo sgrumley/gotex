@@ -1,7 +1,7 @@
 package components
 
 import (
-	"github.com/sgrumley/gotex/pkg/ansi"
+	"github.com/sgrumley/gotex/pkgv2/ansi"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"

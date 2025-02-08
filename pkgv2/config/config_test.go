@@ -1,12 +1,12 @@
 package config_test
 
 import (
-	"log/slog"
+	"context"
 	"os"
 	"path/filepath"
 	"testing"
 
-	"github.com/sgrumley/gotex/pkg/config"
+	"github.com/sgrumley/gotex/pkgv2/config"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -86,7 +86,7 @@ func Test_SuccessGetConfig(t *testing.T) {
 	for _, tc := range tcs {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.setup()
-			cfg, err := config.GetConfig(slog.Default())
+			cfg, err := config.GetConfig(context.Background())
 			tc.assert(cfg, err)
 		})
 	}

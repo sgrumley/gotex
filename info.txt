@@ -1,9 +1,9 @@
 
 This Branch:
-1. Update TUI tree to gen from data tree
 2. logging from ctx
 3. Make sure sizing can be changed for tree panel
 4. Remove pkg and rename pkg2 -> pkg
+5. Clean comments
 
 
 - Adjust config temporarily
