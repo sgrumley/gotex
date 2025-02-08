@@ -99,6 +99,16 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 			currentPosition, _ := t.state.ui.result.GetScrollOffset()
 			t.state.ui.result.ScrollTo(currentPosition+10, 0)
 			return nil
+			// NOTE: Temp fix until dynamic resizing
+		case tcell.KeyCtrlH:
+			_, horizontalPosition := t.state.ui.result.GetScrollOffset()
+			t.state.ui.result.ScrollTo(0, horizontalPosition-10)
+			return nil
+			// NOTE: Temp fix until dynamic resizing
+		case tcell.KeyCtrlL:
+			_, horizontalPosition := t.state.ui.result.GetScrollOffset()
+			t.state.ui.result.ScrollTo(0, horizontalPosition+10)
+			return nil
 		case tcell.KeyEsc:
 			t.state.ui.pages.SwitchToPage(homePage)
 			return nil

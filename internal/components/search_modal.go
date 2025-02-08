@@ -93,7 +93,7 @@ func fuzzyFindTest(t *TUI) func(currentText string) (entries []string) {
 			return
 		}
 
-		entries = fuzzy.Find(currentText, tests)
+		entries = fuzzy.FindNormalizedFold(currentText, tests)
 		if len(entries) < 1 {
 			entries = nil
 		}

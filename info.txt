@@ -2,7 +2,6 @@
 This Branch:
 2. logging from ctx
 3. Make sure sizing can be changed for tree panel
-4. Remove pkg and rename pkg2 -> pkg
 5. Clean comments
 
 
@@ -21,12 +20,10 @@ This Branch:
 - If struct has implicit initialisation test cases won't show up, is there a solution to this?
 - take config logic and make it a seperate project with clearer code and reusablity
 - log by context
+- dynamic resizing of panels if context is too wide (mainly tree)
 
 Bug:
-# - go test on a file with a failing test case does not run the test?? This is the same behaviour as running go test -run filename. Look at alternative ways
 - add tmux support to readme -> COLORTERM=truecolor
-- add dynamic sizing for tree??
-- fzf case sensitive should be insenseitive -> clean input
 - H should close current level and select one above
 - gg + G page scroll
 - config pane is transparent
