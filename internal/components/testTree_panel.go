@@ -60,7 +60,18 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 				t.state.ui.result.RenderResults("Error can't get node " + node.GetReference().(models.Node).GetName())
 			}
 			node.CollapseAll()
-
+			// NOTE: This should jump through the list rather than scroll
+		// case 'g':
+		// 	if t.state.ui.lastKey == 'g' {
+		// 		t.state.ui.result.ScrollTo(0, 0)
+		// 		t.state.ui.lastKey = 0 // Reset last key
+		// 	} else {
+		// 		t.state.ui.lastKey = 'g'
+		// 	}
+		// 	return nil
+		// case 'G':
+		// 	t.state.ui.result.ScrollToEnd()
+		// 	return nil
 		case 'r':
 			RunTest(t)
 			return nil

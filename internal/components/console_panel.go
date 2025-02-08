@@ -39,6 +39,21 @@ func (c *console) setKeybinding(t *TUI) {
 			currentPosition, _ := t.state.ui.console.panel.GetScrollOffset()
 			t.state.ui.console.panel.ScrollTo(currentPosition+10, 0)
 			return nil
+		case 'g':
+			// Handle potential 'gg' sequence
+			if t.state.ui.lastKey == 'g' {
+				// Second 'g' - scroll to top
+				t.state.ui.result.ScrollTo(0, 0)
+				t.state.ui.lastKey = 0 // Reset last key
+			} else {
+				// First 'g' - store it
+				t.state.ui.lastKey = 'g'
+			}
+			return nil
+		case 'G':
+			t.state.ui.result.ScrollToEnd()
+			return nil
+
 		case tcell.KeyEsc:
 			toggleConsole(t)
 			return nil

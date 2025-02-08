@@ -29,6 +29,7 @@ type UI struct {
 	pages    *tview.Pages
 	search   *searchModal
 	config   *ConfigModal
+	lastKey  rune
 }
 
 type Data struct {
