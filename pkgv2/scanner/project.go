@@ -25,20 +25,34 @@ func Scan(ctx context.Context, cfg config.Config, root string) (*models.Project,
 	}
 	p.Packages = pkgs
 
-	for _, pkg := range pkgs {
+	for i := range p.Packages {
 		// TODO: concurrent
-		for _, file := range pkg.Files {
-			fns, err := FindTestFunctions(ctx, file)
+		for j := range p.Packages[i].Files {
+			p.Packages[i].Files[j].FunctionMap = make(map[string]*models.Function)
+
+			fns, err := FindTestFunctions(ctx, p.Packages[i].Files[j])
 			if err != nil {
-				return nil, fmt.Errorf("failed finding test functions in file: %s: %w", file.Path, err)
+				return nil, fmt.Errorf("failed finding test functions in file: %s: %w", p.Packages[i].Files[j].Path, err)
 			}
 
+			for k := range fns {
+				fns[k].CaseMap = make(map[string]*models.Case)
+				cases := FindTestCases(ctx, fns[k])
+				fns[k].Cases = cases
+				for _, c := range cases {
+					if c.Name != "" {
+						fns[k].CaseMap[c.Name] = c
+					}
+				}
+				fns[k].Parent = p.Packages[i].Files[j]
+			}
+
+			p.Packages[i].Files[j].Functions = fns
 			for _, fn := range fns {
-				_ = FindTestCases(ctx, fn)
+				p.Packages[i].Files[j].FunctionMap[fn.Name] = fn
 			}
 		}
 	}
-
 	return p, nil
 }
 

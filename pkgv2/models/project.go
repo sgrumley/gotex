@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"log/slog"
 	"path/filepath"
 	"strings"
@@ -79,5 +80,19 @@ func (p *Project) FlattenAllNodes() *FlatProject {
 	return &FlatProject{
 		Names:   names,
 		NodeMap: nodes,
+	}
+}
+
+func (p *Project) Print() {
+	fmt.Println("\n=== Final Package State ===")
+	for i, pkg := range p.Packages {
+		fmt.Printf("Package[%d] address: %p\n", i, pkg)
+		for j, file := range pkg.Files {
+			fmt.Printf("  File[%d] address: %p\n", j, file)
+			fmt.Printf("    Functions: %d\n", len(file.Functions))
+			for k, fn := range file.Functions {
+				fmt.Printf("      Function[%d] address: %p, Cases: %d\n", k, fn, len(fn.Cases))
+			}
+		}
 	}
 }

@@ -110,57 +110,121 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 }
 
 func (tt *TestTree) Populate(t *TUI) {
-	data := t.state.data.project
-	root := tview.NewTreeNode(data.GetName()).SetColor(rootColor)
-	tt.SetRoot(root)
-	tt.SetCurrentNode(root)
+	models.GenerateTree(t.state.data.project)
+	tree := t.state.data.project.Tree
+	rootViewNode := convertNode(t, tree.RootNode)
+	tt.SetRoot(rootViewNode)
+	tt.SetCurrentNode(rootViewNode)
 
-	prefillTree(t, root, data, 0)
-	// allow level 1 to be expanded
-	for _, child := range root.GetChildren() {
+	for _, child := range rootViewNode.GetChildren() {
 		child.CollapseAll()
 	}
 
+	// Set up the selection handler
 	tt.SetSelectedFunc(func(node *tview.TreeNode) {
-		if node.GetReference() == nil {
-			return
-		}
-
 		node.SetExpanded(!node.IsExpanded())
 	})
 }
 
-func prefillTree(t *TUI, target *tview.TreeNode, n models.Node, lvl int) {
-	children := n.GetChildren()
-	for _, child := range children {
-		node := tview.NewTreeNode(child.GetName())
-		node.SetReference(child)
-		node.SetSelectable(true)
+func convertNode(t *TUI, node *models.NodeTree) *tview.TreeNode {
+	if node == nil {
+		return nil
+	}
 
-		// node level styling
-		// TODO: consider useing SetPrefixes: https://pkg.go.dev/github.com/rivo/tview#TreeView
+	// Create the tview node
+	viewNode := tview.NewTreeNode(node.Data.GetName())
+	viewNode.SetReference(node) // Store the original node as reference
+	viewNode.SetSelectable(true)
+	nodeStyling(t, viewNode, node)
 
-		switch lvl + 1 {
-		case LevelPackage:
-			node.SetText(" " + node.GetText())
-			node.SetColor(t.theme.Package)
-		case LevelFile:
-			node.SetText(" " + node.GetText())
-			node.SetColor(t.theme.File)
-		case LevelFunction:
-			node.SetText("󰡱 " + node.GetText())
-			node.SetColor(t.theme.Function)
-		case LevelCase:
-			node.SetText("󰙨 " + node.GetText())
-			node.SetColor(t.theme.Case)
-		default:
-			node.SetColor(unknownColor)
+	// Convert all children
+	for _, child := range node.Children {
+		childViewNode := convertNode(t, child)
+		if childViewNode != nil {
+			viewNode.AddChild(childViewNode)
 		}
+	}
 
-		target.AddChild(node)
-		prefillTree(t, node, child, lvl+1)
+	return viewNode
+}
+
+func nodeStyling(t *TUI, node *tview.TreeNode, dnode *models.NodeTree) {
+	switch dnode.Type {
+	case models.NODE_TYPE_PROJECT:
+		node.SetText("  " + node.GetText())
+		node.SetColor(t.theme.Project)
+	case models.NODE_TYPE_DIRECTORY:
+		node.SetText(" " + node.GetText())
+		node.SetColor(t.theme.Directory)
+	case models.NODE_TYPE_PACKAGE:
+		node.SetText(" " + node.GetText())
+		node.SetColor(t.theme.Package)
+	case models.NODE_TYPE_FILE:
+		node.SetText(" " + node.GetText())
+		node.SetColor(t.theme.File)
+	case models.NODE_TYPE_FUNCTION:
+		node.SetText("󰡱 " + node.GetText())
+		node.SetColor(t.theme.Function)
+	case models.NODE_TYPE_CASE:
+		node.SetText("󰙨 " + node.GetText())
+		node.SetColor(t.theme.Case)
+	default:
+		node.SetColor(unknownColor)
 	}
 }
+
+// func (tt *TestTree) Populate(t *TUI) {
+// 	data := t.state.data.project
+// 	root := tview.NewTreeNode(data.GetName()).SetColor(rootColor)
+// 	tt.SetRoot(root)
+// 	tt.SetCurrentNode(root)
+//
+// 	prefillTree(t, root, data, 0)
+// 	// allow level 1 to be expanded
+// 	for _, child := range root.GetChildren() {
+// 		child.CollapseAll()
+// 	}
+//
+// 	tt.SetSelectedFunc(func(node *tview.TreeNode) {
+// 		if node.GetReference() == nil {
+// 			return
+// 		}
+//
+// 		node.SetExpanded(!node.IsExpanded())
+// 	})
+// }
+//
+// func prefillTree(t *TUI, target *tview.TreeNode, n models.Node, lvl int) {
+// 	children := n.GetChildren()
+// 	for _, child := range children {
+// 		node := tview.NewTreeNode(child.GetName())
+// 		node.SetReference(child)
+// 		node.SetSelectable(true)
+//
+// 		// node level styling
+// 		// TODO: consider useing SetPrefixes: https://pkg.go.dev/github.com/rivo/tview#TreeView
+//
+// 		switch lvl + 1 {
+// 		case LevelPackage:
+// 			node.SetText(" " + node.GetText())
+// 			node.SetColor(t.theme.Package)
+// 		case LevelFile:
+// 			node.SetText(" " + node.GetText())
+// 			node.SetColor(t.theme.File)
+// 		case LevelFunction:
+// 			node.SetText("󰡱 " + node.GetText())
+// 			node.SetColor(t.theme.Function)
+// 		case LevelCase:
+// 			node.SetText("󰙨 " + node.GetText())
+// 			node.SetColor(t.theme.Case)
+// 		default:
+// 			node.SetColor(unknownColor)
+// 		}
+//
+// 		target.AddChild(node)
+// 		prefillTree(t, node, child, lvl+1)
+// 	}
+// }
 
 func search(tree *tview.TreeView, searchString string) bool {
 	var matchedNode *tview.TreeNode

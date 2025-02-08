@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/sgrumley/gotex/pkgv2/config"
@@ -41,6 +40,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println("dir: ", p.RootDir)
 	p.Tree.Print()
 }

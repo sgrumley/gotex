@@ -1,8 +1,9 @@
 
 This Branch:
-1. Add GenerateTree()
-2. Opt to use this or perform the logic on the gui side
+1. Update TUI tree to gen from data tree
+2. logging from ctx
 3. Make sure sizing can be changed for tree panel
+4. Remove pkg and rename pkg2 -> pkg
 
 
 - Adjust config temporarily

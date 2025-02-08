@@ -167,10 +167,6 @@ func createDirectoryNodes(rootPath string, components []string, rootNode *NodeTr
 }
 
 func processFile(file *File, pkg *Package, pkgNode *NodeTree) error {
-	file.Functions = make([]*Function, 0)
-	file.FunctionMap = make(map[string]*Function)
-	file.Parent = pkg
-
 	fileNode := &NodeTree{
 		Level:  pkgNode.Level + 1,
 		Data:   file,
