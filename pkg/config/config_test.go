@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/sgrumley/gotex/pkg/config"
+	"github.com/sgrumley/gotex/pkg/path"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -120,7 +121,7 @@ func Test_ReplaceHomeDirChar(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.input, func(t *testing.T) {
-			result, err := config.ReplaceHomeDirChar(tt.input)
+			result, err := path.ReplaceHomeDirChar(tt.input)
 			require.NoError(t, err)
 			if result != tt.expected {
 				t.Errorf("expected %s, got %s", tt.expected, result)

@@ -1,14 +1,21 @@
-package logger
+package slogger
 
 import (
 	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
-	"strings"
+
+	"github.com/sgrumley/gotex/pkg/path"
 )
 
-type Handler string
+type Logger struct {
+	*slog.Logger
+}
+
+type (
+	Handler string
+)
 
 const (
 	HandlerJSON Handler = "json"
@@ -18,10 +25,11 @@ const (
 type (
 	Option        func(*LoggerOptions)
 	LoggerOptions struct {
-		level  slog.Level
-		format Handler
-		output *os.File
-		source bool
+		level   slog.Level
+		format  Handler
+		output  *os.File
+		source  bool
+		handler slog.Handler
 	}
 )
 
@@ -31,6 +39,7 @@ func WithLevel(level slog.Level) Option {
 	}
 }
 
+// Replace this with WithHandler??
 func WithFormat(format Handler) Option {
 	return func(opts *LoggerOptions) {
 		opts.format = format
@@ -49,10 +58,17 @@ func WithOutput(out *os.File) Option {
 	}
 }
 
-func New(options ...Option) (*slog.Logger, error) {
+// WithHandler allows a custom handler to be set
+// NOTE: not yet implemented
+func WithHandler(handler slog.Handler) Option {
+	return func(opts *LoggerOptions) {
+		opts.handler = handler
+	}
+}
+
+func New(options ...Option) (*Logger, error) {
 	opts := LoggerOptions{
-		level: slog.LevelInfo,
-		// format: HandlerText,
+		level:  slog.LevelInfo,
 		format: HandlerJSON,
 		source: false,
 	}
@@ -84,14 +100,16 @@ func New(options ...Option) (*slog.Logger, error) {
 	logger := slog.New(slogHandler)
 	slog.SetDefault(logger)
 
-	return logger, nil
+	return &Logger{
+		logger,
+	}, nil
 }
 
 func newLogFile(format Handler) (*os.File, error) {
 	defaultFolder := "~/.config/gotex"
 	defaultFile := "out.log"
 
-	defaultFolder, err := ReplaceHomeDirChar(defaultFolder)
+	defaultFolder, err := path.ReplaceHomeDirChar(defaultFolder)
 	if err != nil {
 		return nil, err
 	}
@@ -114,17 +132,19 @@ func newLogFile(format Handler) (*os.File, error) {
 	return file, nil
 }
 
-func ReplaceHomeDirChar(fp string) (string, error) {
-	if !strings.Contains(fp, "~") {
-		return fp, nil
+func (l *Logger) Error(msg string, err error, args ...any) {
+	l.Logger.Error(msg, append([]any{"error", err}, args...)...)
+	// l.Logger.Error(msg, slog.Any("error", err), args...)
+}
+
+func (l *Logger) Fatal(msg string, err error) {
+	l.Error(msg, err)
+	os.Exit(1)
+}
+
+func (l *Logger) With(args ...any) *Logger {
+	lw := l.Logger.With(args...)
+	return &Logger{
+		lw,
 	}
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return "", fmt.Errorf("Error getting home directory: %w", err)
-	}
-	// Replace ~ with the home directory path
-	if fp[:2] == "~/" {
-		fp = filepath.Join(homeDir, fp[2:])
-	}
-	return fp, nil
 }

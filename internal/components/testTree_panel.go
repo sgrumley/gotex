@@ -24,12 +24,12 @@ type TestTree struct {
 	*tview.TreeView
 }
 
-func newTestTree(t *TUI) *TestTree {
+func newTestTree(ctx context.Context, t *TUI) *TestTree {
 	tt := &TestTree{
 		TreeView: tview.NewTreeView(),
 	}
 
-	tt.setKeybinding(t)
+	tt.setKeybinding(ctx, t)
 	tt.SetTitle("Tests")
 	tt.SetBorder(true)
 	tt.Populate(t)
@@ -37,9 +37,9 @@ func newTestTree(t *TUI) *TestTree {
 	return tt
 }
 
-func (tt *TestTree) setKeybinding(t *TUI) {
+func (tt *TestTree) setKeybinding(ctx context.Context, t *TUI) {
 	tt.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		t.setGlobalKeybinding(event)
+		t.setGlobalKeybinding(ctx, event)
 
 		// keybinding for single keys
 		switch event.Rune() {
@@ -73,13 +73,13 @@ func (tt *TestTree) setKeybinding(t *TUI) {
 		// 	t.state.ui.result.ScrollToEnd()
 		// 	return nil
 		case 'r':
-			RunTest(t)
+			RunTest(ctx, t)
 			return nil
 		case 's':
 			SyncProject(context.Background(), t)
 			return nil
 		case 'A':
-			RunAllTests(t)
+			RunAllTests(ctx, t)
 			return nil
 
 		// search

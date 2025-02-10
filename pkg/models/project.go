@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"path/filepath"
@@ -14,7 +15,7 @@ type Node interface {
 	GetName() string
 	GetChildren() []Node
 	HasChildren() bool
-	RunTest() (*runner.Response, error)
+	RunTest(ctx context.Context) (*runner.Response, error)
 }
 
 var _ Node = (*Project)(nil)
@@ -50,9 +51,9 @@ func (p *Project) HasChildren() bool {
 	return len(p.Packages) > 0
 }
 
-func (p *Project) RunTest() (*runner.Response, error) {
+func (p *Project) RunTest(ctx context.Context) (*runner.Response, error) {
 	path := filepath.Dir(p.RootDir)
-	return runner.RunTest(runner.TestTypeProject, "", path, p.Config)
+	return runner.RunTest(ctx, runner.TestTypeProject, "", path, p.Config)
 }
 
 // TODO: update to recursive with nodes interface funcs

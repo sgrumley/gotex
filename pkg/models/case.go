@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"fmt"
 	"go/ast"
 	"path/filepath"
@@ -28,7 +29,7 @@ func (c *Case) HasChildren() bool {
 	return false
 }
 
-func (c *Case) RunTest() (*runner.Response, error) {
+func (c *Case) RunTest(ctx context.Context) (*runner.Response, error) {
 	function := c.Parent
 	file := function.Parent
 	pkg := file.Parent
@@ -36,5 +37,5 @@ func (c *Case) RunTest() (*runner.Response, error) {
 
 	caseName := fmt.Sprintf("%s/%s", function.Name, c.Name)
 	path := filepath.Dir(file.Path)
-	return runner.RunTest(runner.TestTypeCase, caseName, path, project.Config)
+	return runner.RunTest(ctx, runner.TestTypeCase, caseName, path, project.Config)
 }

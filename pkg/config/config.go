@@ -6,11 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"log/slog"
 	"os"
-	"path/filepath"
-	"strings"
 
 	"github.com/kelseyhightower/envconfig"
+	"github.com/sgrumley/gotex/pkg/path"
+	"github.com/sgrumley/gotex/pkg/slogger"
 	"gopkg.in/yaml.v3"
 )
 
@@ -43,16 +44,20 @@ type Config struct {
 */
 
 func GetConfig(ctx context.Context) (Config, error) {
+	log, err := slogger.FromContext(ctx)
+	if err != nil {
+		return Config{}, err
+	}
 	filepath, err := GetConfigPath()
 	if err != nil {
 		cfg, errDefault := getDefaultCfg()
 		if errDefault != nil {
 			return Config{}, errDefault
 		}
-		// log.Warn("failed to find user specified config, using default",
-		// 	slog.String("cause", err.Error()),
-		// 	slog.Any("default config", cfg),
-		// )
+		log.Warn("failed to find user specified config, using default",
+			slog.String("cause", err.Error()),
+			slog.Any("default config", cfg),
+		)
 		return cfg, nil
 	}
 
@@ -62,19 +67,19 @@ func GetConfig(ctx context.Context) (Config, error) {
 		if errDefault != nil {
 			return Config{}, errDefault
 		}
-		// log.Error("invalid config file",
-		// 	slog.Any("error", fmt.Errorf("failed to load config at path: %s with error: %w", filepath, err)),
-		// 	slog.Any("default config", cfg),
-		// )
+		log.Error("invalid config file",
+			fmt.Errorf("failed to load config at path: %s with error: %w", filepath, err),
+			slog.Any("default config", cfg),
+		)
 		return cfg, err
 	}
 
-	// log.Info("loaded user config from environment variable", slog.Any("config", cfg))
+	log.Info("loaded user config from environment variable", slog.Any("config", cfg))
 	return cfg, nil
 }
 
 func FileExists(filepath string) bool {
-	fp, err := ReplaceHomeDirChar(filepath)
+	fp, err := path.ReplaceHomeDirChar(filepath)
 	if err != nil {
 		return false
 	}
@@ -119,8 +124,8 @@ func GetConfigPath() (string, error) {
 	return e.ConfigFilePath, nil
 }
 
-func LoadYAML(path string) (Config, error) {
-	fp, err := ReplaceHomeDirChar(path)
+func LoadYAML(filePath string) (Config, error) {
+	fp, err := path.ReplaceHomeDirChar(filePath)
 	if err != nil {
 		return Config{}, err
 	}
@@ -139,21 +144,6 @@ func LoadConfig(b []byte) (Config, error) {
 	}
 
 	return cfg, nil
-}
-
-func ReplaceHomeDirChar(fp string) (string, error) {
-	if !strings.Contains(fp, "~") {
-		return fp, nil
-	}
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return "", fmt.Errorf("Error getting home directory: %w", err)
-	}
-	// Replace ~ with the home directory path
-	if fp[:2] == "~/" {
-		fp = filepath.Join(homeDir, fp[2:])
-	}
-	return fp, nil
 }
 
 // deprecated

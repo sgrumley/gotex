@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 
 	"github.com/sgrumley/gotex/pkg/config"
 	"github.com/sgrumley/gotex/pkg/scanner"
+	"github.com/sgrumley/gotex/pkg/slogger"
 
 	"github.com/sgrumley/gotex/internal/components"
 )
@@ -17,26 +18,26 @@ func main() {
 }
 
 func run() int {
-	// add to ctx
-	// log, err := logger.New(
-	// 	logger.WithLevel(slog.LevelDebug),
-	// 	logger.WithSource(false),
-	// )
-	// if err != nil {
-	// 	fmt.Println("error: ", err.Error())
-	// 	return 1
-	// }
+	ctx := context.Background()
+	log, err := slogger.New(
+		slogger.WithLevel(slog.LevelDebug),
+		slogger.WithSource(false),
+	)
+	if err != nil {
+		fmt.Println("error: ", err.Error())
+		return 1
+	}
+	ctx = slogger.AddToContext(ctx, log)
 
 	root, err := scanner.FindGoProjectRoot()
 	if err != nil {
-		log.Fatal("No go project found, navigate to a repository with a go.mod file and try again")
-		// log.Fatal(err)
+		log.Fatal("No go project found, navigate to a repository with a go.mod file and try again", err)
 	}
 
-	ctx := context.Background()
 	cfg, err := config.GetConfig(ctx)
 	if err != nil {
-		log.Fatal("failed to load a config: %w", err)
+		fmt.Printf("failed to load a config: %s\n", err.Error())
+		log.Fatal("failed to load a config", err)
 	}
 
 	app, err := components.New(ctx, cfg, root)
@@ -44,10 +45,10 @@ func run() int {
 		fmt.Printf("failed to initialise project: %s", err.Error())
 		return 1
 	}
-	err = app.Start()
+	err = app.Start(ctx)
 	if err != nil {
 		// to file
-		// log.Error("application crashed", slog.Any("error", err))
+		log.Error("application crashed", err)
 		// to stdout
 		fmt.Printf("application crashed: %s", err.Error())
 		return 1

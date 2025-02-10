@@ -83,8 +83,8 @@ func New(ctx context.Context, cfg config.Config, root string) (*TUI, error) {
 	}, nil
 }
 
-func (t *TUI) Start() error {
-	t.initPanels()
+func (t *TUI) Start(ctx context.Context) error {
+	t.initPanels(ctx)
 	if err := t.app.Run(); err != nil {
 		t.log.Error("app stopping", slog.Any("error", err))
 		t.app.Stop()
@@ -99,7 +99,7 @@ func (t *TUI) Stop() {
 	t.app.Stop()
 }
 
-func (t *TUI) initPanels() {
+func (t *TUI) initPanels(ctx context.Context) {
 	// TODO: there should be two configs -> theme and options
 	// options should be found as part of finder
 	// theme should be found here
@@ -123,7 +123,7 @@ func (t *TUI) initPanels() {
 	config := newConfigModal(t)
 	t.state.ui.config = config
 
-	testTree := newTestTree(t)
+	testTree := newTestTree(ctx, t)
 	t.app.SetFocus(testTree)
 	t.state.ui.testTree = testTree
 

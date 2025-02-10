@@ -27,3 +27,4 @@ Bug:
 - console should have drop down for each large field (outputs and errors)
 - What happens if you hit run too many times? How to control ongoing tests.. only one in flight?
 - There is a bug to do with how privimatives are listening for key presses. Global keys require to be pressed twice??
+- move logs to .local/share/gotex

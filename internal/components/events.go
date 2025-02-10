@@ -3,10 +3,12 @@ package components
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/sgrumley/gotex/pkg/models"
 	"github.com/sgrumley/gotex/pkg/runner"
 	"github.com/sgrumley/gotex/pkg/scanner"
+	"github.com/sgrumley/gotex/pkg/slogger"
 )
 
 func SyncProject(ctx context.Context, t *TUI) {
@@ -20,7 +22,7 @@ func SyncProject(ctx context.Context, t *TUI) {
 	t.state.ui.result.RenderResults("Project has successfully refreshed")
 }
 
-func RunTest(t *TUI) error {
+func RunTest(ctx context.Context, t *TUI) error {
 	t.state.ui.result.RenderResults("Test is running")
 	dataNode, ok := t.state.ui.testTree.GetCurrentNode().GetReference().(models.Node)
 	if !ok {
@@ -30,10 +32,15 @@ func RunTest(t *TUI) error {
 	}
 
 	go func() {
-		t.state.data.lastTest = dataNode
-		output, err := dataNode.RunTest()
+		log, err := slogger.FromContext(ctx)
 		if err != nil {
-			// t.log.Error("failed running test", slog.Any("error", err), slog.Any("output", output))
+			t.state.ui.result.RenderResults(err.Error())
+			return
+		}
+		t.state.data.lastTest = dataNode
+		output, err := dataNode.RunTest(ctx)
+		if err != nil {
+			log.Error("failed running test", err, slog.Any("output", output))
 			if output == nil {
 				t.state.ui.result.RenderResults("nil output")
 				return
@@ -49,13 +56,18 @@ func RunTest(t *TUI) error {
 	return nil
 }
 
-func RunAllTests(t *TUI) error {
+func RunAllTests(ctx context.Context, t *TUI) error {
 	t.state.ui.result.RenderResults("Test is running")
 
 	go func() {
-		output, err := runner.RunTest(runner.TestTypeProject, "", t.state.data.project.RootDir, t.state.data.project.Config)
+		log, err := slogger.FromContext(ctx)
 		if err != nil {
-			// t.log.Error("failed running all tests", slog.Any("error", err))
+			t.state.ui.result.RenderResults(err.Error())
+			return
+		}
+		output, err := runner.RunTest(ctx, runner.TestTypeProject, "", t.state.data.project.RootDir, t.state.data.project.Config)
+		if err != nil {
+			log.Error("failed running all tests", err)
 			t.state.ui.console.panel.UpdateMeta(t, output)
 			t.state.ui.result.RenderResults(err.Error())
 			return
@@ -67,20 +79,23 @@ func RunAllTests(t *TUI) error {
 	return nil
 }
 
-func RerunTest(t *TUI) error {
+func RerunTest(ctx context.Context, t *TUI) error {
 	t.state.ui.result.RenderResults("Rerunning test")
-	// t.log.Error("this should not have run")
-
+	log, err := slogger.FromContext(ctx)
+	if err != nil {
+		t.state.ui.result.RenderResults(err.Error())
+		return err
+	}
 	node := t.state.data.lastTest
 	if node == nil {
 		t.state.ui.result.RenderResults("failed to run last test. Make sure you run a test before rerunning")
-		// t.log.Error("attempted test rerun, but no test has previously been run")
+		log.Error("attempted test rerun, but no test has previously been run", nil)
 		return fmt.Errorf("no previously run test")
 	}
 
-	output, err := node.RunTest()
+	output, err := node.RunTest(ctx)
 	if err != nil {
-		// t.log.Error("failed to re run valid test", slog.Any("error", err))
+		log.Error("failed to re run valid test", err)
 		t.state.ui.console.panel.UpdateMeta(t, output)
 		t.state.ui.result.RenderResults(err.Error())
 		return err

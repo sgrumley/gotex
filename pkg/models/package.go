@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"strings"
 
 	"github.com/sgrumley/gotex/pkg/runner"
@@ -36,8 +37,8 @@ func (p *Package) HasChildren() bool {
 	return false
 }
 
-func (p *Package) RunTest() (*runner.Response, error) {
+func (p *Package) RunTest(ctx context.Context) (*runner.Response, error) {
 	project := p.Parent
 
-	return runner.RunTest(runner.TestTypePackage, p.Name, p.Path, project.Config)
+	return runner.RunTest(ctx, runner.TestTypePackage, p.Name, p.Path, project.Config)
 }

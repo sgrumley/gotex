@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -39,7 +40,7 @@ func (f *File) HasChildren() bool {
 	return false
 }
 
-func (f *File) RunTest() (*runner.Response, error) {
+func (f *File) RunTest(ctx context.Context) (*runner.Response, error) {
 	return &runner.Response{
 		TestType:       runner.TestTypeFile,
 		Result:         "Test file not supported",

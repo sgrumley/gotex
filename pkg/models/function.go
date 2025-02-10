@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"go/ast"
 	"path/filepath"
 
@@ -36,11 +37,11 @@ func (f *Function) HasChildren() bool {
 	return len(f.Cases) > 0
 }
 
-func (f *Function) RunTest() (*runner.Response, error) {
+func (f *Function) RunTest(ctx context.Context) (*runner.Response, error) {
 	file := f.Parent
 	pkg := file.Parent
 	project := pkg.Parent
 
 	path := filepath.Dir(file.Path)
-	return runner.RunTest(runner.TestTypeFunction, f.Name, path, project.Config)
+	return runner.RunTest(ctx, runner.TestTypeFunction, f.Name, path, project.Config)
 }

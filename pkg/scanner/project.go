@@ -6,10 +6,12 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"log/slog"
 	"strings"
 
 	"github.com/sgrumley/gotex/pkg/config"
 	"github.com/sgrumley/gotex/pkg/models"
+	"github.com/sgrumley/gotex/pkg/slogger"
 )
 
 func Scan(ctx context.Context, cfg config.Config, root string) (*models.Project, error) {
@@ -37,7 +39,10 @@ func Scan(ctx context.Context, cfg config.Config, root string) (*models.Project,
 
 			for k := range fns {
 				fns[k].CaseMap = make(map[string]*models.Case)
-				cases := FindTestCases(ctx, fns[k])
+				cases, err := FindTestCases(ctx, fns[k])
+				if err != nil {
+					return nil, err
+				}
 				fns[k].Cases = cases
 				for _, c := range cases {
 					if c.Name != "" {
@@ -57,6 +62,10 @@ func Scan(ctx context.Context, cfg config.Config, root string) (*models.Project,
 }
 
 func FindTestFunctions(ctx context.Context, file *models.File) ([]*models.Function, error) {
+	log, err := slogger.FromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
 	fset := token.NewFileSet()
 	fns := make([]*models.Function, 0)
 	node, err := parser.ParseFile(fset, file.Path, nil, parser.AllErrors)
@@ -75,12 +84,10 @@ func FindTestFunctions(ctx context.Context, file *models.File) ([]*models.Functi
 			if fn == nil {
 				return false
 			}
-			// from ctx
-			// log.Debug("test case found",
-			// 		slog.String("case name", subtestName),
-			// 		slog.String("function name", fn.Name.Name),
-			// 		slog.String("file name", file.Name),
-			// )
+			log.Debug("test function found",
+				slog.String("function name", fn.Name.Name),
+				slog.String("file name", file.Name),
+			)
 			newFn := &models.Function{
 				Name:             fn.Name.Name,
 				TestFunctionNode: fn,
@@ -99,8 +106,15 @@ func FindTestFunctions(ctx context.Context, file *models.File) ([]*models.Functi
 	return fns, nil
 }
 
-func FindTestCases(ctx context.Context, fn *models.Function) []*models.Case {
-	caseName := extractCaseName(ctx, exprToString(fn.RunCallNode.Args[0]))
+func FindTestCases(ctx context.Context, fn *models.Function) ([]*models.Case, error) {
+	log, err := slogger.FromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	caseName, err := extractCaseName(ctx, exprToString(fn.RunCallNode.Args[0]))
+	if err != nil {
+		return nil, err
+	}
 	var cases []*models.Case
 
 	// findValuesOfIndexedField looks for the value of a field in an array or slice (e.g. tc[i].name)
@@ -113,6 +127,10 @@ func FindTestCases(ctx context.Context, fn *models.Function) []*models.Case {
 						// Extract the value assigned to the field (e.g. "TestA" for `name: "TestA"`)
 						nameValue := extractRHSValue(kvExpr.Value)
 						nameValueStripped := strings.ReplaceAll(nameValue, `"`, "")
+						log.Debug("test function found",
+							slog.String("function name", fn.Name),
+							slog.String("file name", fn.Parent.Name),
+						)
 						tc := &models.Case{
 							Name:     nameValueStripped,
 							Parent:   fn,
@@ -121,7 +139,6 @@ func FindTestCases(ctx context.Context, fn *models.Function) []*models.Case {
 						fn.CaseMap[tc.Name] = tc
 						fn.Cases = append(fn.Cases, tc)
 						cases = append(cases, tc)
-
 					}
 				}
 			}
@@ -129,21 +146,24 @@ func FindTestCases(ctx context.Context, fn *models.Function) []*models.Case {
 		return true
 	})
 
-	return cases
+	return cases, nil
 }
 
 // extractCaseName gets the case field name from the subtest name
-func extractCaseName(ctx context.Context, subtestName string) string {
+func extractCaseName(ctx context.Context, subtestName string) (string, error) {
+	log, err := slogger.FromContext(ctx)
+	if err != nil {
+		return "", err
+	}
 	caseName := "name"
 	subtestNameSplit := strings.Split(subtestName, ".")
 
 	if len(subtestNameSplit) == 2 {
 		caseName = subtestNameSplit[1]
 	} else {
-		// from ctx
-		// log.Error("failed identifying struct.name, defaulting to tc.name",
-		// 	slog.String("name", subtestName))
+		log.Error("failed identifying struct.name, defaulting to tc.name", nil,
+			slog.String("test case name", subtestName))
 	}
 
-	return caseName
+	return caseName, nil
 }

@@ -1,15 +1,17 @@
 package components
 
 import (
+	"context"
+
 	"github.com/gdamore/tcell/v2"
 )
 
-func (t *TUI) setGlobalKeybinding(_ *tcell.EventKey) {
+func (t *TUI) setGlobalKeybinding(ctx context.Context, _ *tcell.EventKey) {
 	t.app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Rune() {
 		// TODO: move all binds into functions
 		case 'R':
-			_ = RerunTest(t)
+			_ = RerunTest(ctx, t)
 			return nil
 		case 'q':
 			t.app.Stop()

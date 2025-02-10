@@ -1,6 +1,10 @@
 package models
 
-import "github.com/sgrumley/gotex/pkg/runner"
+import (
+	"context"
+
+	"github.com/sgrumley/gotex/pkg/runner"
+)
 
 var _ Node = (*DirectoryContent)(nil)
 
@@ -22,7 +26,7 @@ func (d *DirectoryContent) HasChildren() bool {
 	return true
 }
 
-func (d *DirectoryContent) RunTest() (*runner.Response, error) {
+func (d *DirectoryContent) RunTest(ctx context.Context) (*runner.Response, error) {
 	return &runner.Response{
 		TestType:       runner.TestTypeFile,
 		Result:         "Test file not supported",
