@@ -134,7 +134,6 @@ func newLogFile(format Handler) (*os.File, error) {
 
 func (l *Logger) Error(msg string, err error, args ...any) {
 	l.Logger.Error(msg, append([]any{"error", err}, args...)...)
-	// l.Logger.Error(msg, slog.Any("error", err), args...)
 }
 
 func (l *Logger) Fatal(msg string, err error) {

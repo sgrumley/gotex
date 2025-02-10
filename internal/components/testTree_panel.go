@@ -10,15 +10,7 @@ import (
 	"github.com/rivo/tview"
 )
 
-// rootColor    = tcell.ColorRed
 var unknownColor = tcell.ColorYellow
-
-// var (
-// 	LevelPackage  = 1
-// 	LevelFile     = 2
-// 	LevelFunction = 3
-// 	LevelCase     = 4
-// )
 
 type TestTree struct {
 	*tview.TreeView
@@ -84,7 +76,6 @@ func (tt *TestTree) setKeybinding(ctx context.Context, t *TUI) {
 
 		// search
 		case '/':
-			// TODO: update with page system
 			// NOTE: this is an example of when to return the event rather than nil, as it will be passed through and still count as text input
 			// upon close setGlobalKeybinding() is called to undo this
 			t.app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
@@ -128,8 +119,11 @@ func (tt *TestTree) setKeybinding(ctx context.Context, t *TUI) {
 	})
 }
 
-func (tt *TestTree) Populate(t *TUI) {
-	models.GenerateTree(t.state.data.project)
+func (tt *TestTree) Populate(t *TUI) error {
+	err := models.GenerateTree(t.state.data.project)
+	if err != nil {
+		return err
+	}
 	tree := t.state.data.project.Tree
 	rootViewNode := convertNode(t, tree.RootNode)
 	tt.SetRoot(rootViewNode)
@@ -143,6 +137,8 @@ func (tt *TestTree) Populate(t *TUI) {
 	tt.SetSelectedFunc(func(node *tview.TreeNode) {
 		node.SetExpanded(!node.IsExpanded())
 	})
+
+	return nil
 }
 
 func convertNode(t *TUI, node *models.NodeTree) *tview.TreeNode {
@@ -191,59 +187,6 @@ func nodeStyling(t *TUI, node *tview.TreeNode, dnode *models.NodeTree) {
 		node.SetColor(unknownColor)
 	}
 }
-
-// func (tt *TestTree) Populate(t *TUI) {
-// 	data := t.state.data.project
-// 	root := tview.NewTreeNode(data.GetName()).SetColor(rootColor)
-// 	tt.SetRoot(root)
-// 	tt.SetCurrentNode(root)
-//
-// 	prefillTree(t, root, data, 0)
-// 	// allow level 1 to be expanded
-// 	for _, child := range root.GetChildren() {
-// 		child.CollapseAll()
-// 	}
-//
-// 	tt.SetSelectedFunc(func(node *tview.TreeNode) {
-// 		if node.GetReference() == nil {
-// 			return
-// 		}
-//
-// 		node.SetExpanded(!node.IsExpanded())
-// 	})
-// }
-//
-// func prefillTree(t *TUI, target *tview.TreeNode, n models.Node, lvl int) {
-// 	children := n.GetChildren()
-// 	for _, child := range children {
-// 		node := tview.NewTreeNode(child.GetName())
-// 		node.SetReference(child)
-// 		node.SetSelectable(true)
-//
-// 		// node level styling
-// 		// TODO: consider useing SetPrefixes: https://pkg.go.dev/github.com/rivo/tview#TreeView
-//
-// 		switch lvl + 1 {
-// 		case LevelPackage:
-// 			node.SetText(" " + node.GetText())
-// 			node.SetColor(t.theme.Package)
-// 		case LevelFile:
-// 			node.SetText(" " + node.GetText())
-// 			node.SetColor(t.theme.File)
-// 		case LevelFunction:
-// 			node.SetText("󰡱 " + node.GetText())
-// 			node.SetColor(t.theme.Function)
-// 		case LevelCase:
-// 			node.SetText("󰙨 " + node.GetText())
-// 			node.SetColor(t.theme.Case)
-// 		default:
-// 			node.SetColor(unknownColor)
-// 		}
-//
-// 		target.AddChild(node)
-// 		prefillTree(t, node, child, lvl+1)
-// 	}
-// }
 
 func search(tree *tview.TreeView, searchString string) bool {
 	var matchedNode *tview.TreeNode

@@ -2,11 +2,11 @@ package components
 
 import (
 	"context"
-	"log/slog"
 
 	"github.com/sgrumley/gotex/pkg/config"
 	"github.com/sgrumley/gotex/pkg/models"
 	"github.com/sgrumley/gotex/pkg/scanner"
+	"github.com/sgrumley/gotex/pkg/slogger"
 
 	"github.com/rivo/tview"
 )
@@ -49,7 +49,6 @@ type consoleData struct {
 func newState(ctx context.Context, cfg config.Config, root string) (*state, error) {
 	data, err := scanner.Scan(ctx, cfg, root)
 	if err != nil {
-		// log.Error("failed to initialise project", slog.Any("error", err))
 		return nil, err
 	}
 
@@ -68,7 +67,6 @@ type TUI struct {
 	app   *tview.Application
 	state *state
 	theme Theme
-	log   *slog.Logger
 }
 
 func New(ctx context.Context, cfg config.Config, root string) (*TUI, error) {
@@ -79,14 +77,12 @@ func New(ctx context.Context, cfg config.Config, root string) (*TUI, error) {
 	return &TUI{
 		app:   tview.NewApplication(),
 		state: data,
-		// log:   log,
 	}, nil
 }
 
 func (t *TUI) Start(ctx context.Context) error {
 	t.initPanels(ctx)
 	if err := t.app.Run(); err != nil {
-		t.log.Error("app stopping", slog.Any("error", err))
 		t.app.Stop()
 
 		return err
@@ -104,6 +100,12 @@ func (t *TUI) initPanels(ctx context.Context) {
 	// options should be found as part of finder
 	// theme should be found here
 
+	log, err := slogger.FromContext(ctx)
+	if err != nil {
+		log, _ := slogger.New()
+		ctx = slogger.AddToContext(ctx, log)
+	}
+
 	SetAppStyling()
 	t.theme = SetTheme("catppuccin mocha")
 	tview.Styles = t.theme.Theme
@@ -117,7 +119,7 @@ func (t *TUI) initPanels(ctx context.Context) {
 	console := newConsolePane(t)
 	t.state.ui.console.panel = console
 
-	search := newSearchModal(t)
+	search := newSearchModal(ctx, t)
 	t.state.ui.search = search
 
 	config := newConfigModal(t)
@@ -156,5 +158,5 @@ func (t *TUI) initPanels(ctx context.Context) {
 	pages.AddPage(searchPage, search.modal, true, false)
 
 	t.app.SetRoot(pages, true)
-	// t.log.Info("app started successfully")
+	log.Info("app started successfully")
 }

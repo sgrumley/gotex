@@ -1,30 +1,25 @@
-This Branch:
-2. logging from ctx
-5. Clean comments
-
-
-- Adjust config temporarily
-- Custom themes
+- console should have drop down for each large field (outputs and errors)
+- Adjust config temporarily -> looking at a form of sorts
+- Custom themes -> theme file?
 - Add results state to test in tree (tick or cross emoji??)
-- Add a helper modal that shows all keybindings (for current panel)
-- Create my own test result parser??
+- Add a helper modal that shows all keybindings (for current panel) -> page helpers should also update depending on where the focus is 
 - Add focus to results 
   - search 
   - scroll
   - copy 
 - Optimize with concurrency
-- File test (needs a deep dive, seems like easiest way is to run all tests in the file instead of including all deps in test cmd)
 - Create multiple different types of tests and get them working -> t.Run("static", ...)
 - If struct has implicit initialisation test cases won't show up, is there a solution to this?
 - take config logic and make it a seperate project with clearer code and reusablity
-- log by context
 - dynamic resizing of panels if context is too wide (mainly tree)
+- File test (needs a deep dive, seems like easiest way is to run all tests in the file instead of including all deps in test cmd)
+- Create my own test result parser??
 
 Bug:
 - Scrolling moves out of app? is this all terminals? is this tmux?
 - H should close current level and select one above (will need to try this out to see if it feels better)
 - config pane is transparent
-- console should have drop down for each large field (outputs and errors)
 - What happens if you hit run too many times? How to control ongoing tests.. only one in flight?
 - There is a bug to do with how privimatives are listening for key presses. Global keys require to be pressed twice??
 - move logs to .local/share/gotex
+- TODOs in code

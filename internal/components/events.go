@@ -15,18 +15,26 @@ func SyncProject(ctx context.Context, t *TUI) {
 	// NOTE: this could happen on a timer or by watching the the test files for changes
 	data, err := scanner.Scan(ctx, t.state.data.project.Config, t.state.data.project.RootDir)
 	if err != nil {
-		t.state.ui.result.RenderResults(err.Error())
+		t.state.ui.result.RenderResults("Project scan failed: " + err.Error())
 	}
 	t.state.data.project = data
-	t.state.ui.testTree.Populate(t)
+	if err := t.state.ui.testTree.Populate(t); err != nil {
+		t.state.ui.result.RenderResults("Project sync failed: " + err.Error())
+		return
+	}
 	t.state.ui.result.RenderResults("Project has successfully refreshed")
 }
 
 func RunTest(ctx context.Context, t *TUI) error {
+	log, err := slogger.FromContext(ctx)
+	if err != nil {
+		t.state.ui.result.RenderResults(err.Error())
+		return err
+	}
 	t.state.ui.result.RenderResults("Test is running")
 	dataNode, ok := t.state.ui.testTree.GetCurrentNode().GetReference().(models.Node)
 	if !ok {
-		// t.log.Error("reference to current node is not a testable type")
+		log.Error("run test failed", fmt.Errorf("reference to current node is not a testable type"))
 		t.state.ui.result.RenderResults("Error selected node is not a test")
 		return fmt.Errorf("invalid node")
 	}

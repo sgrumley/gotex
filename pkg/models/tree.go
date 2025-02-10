@@ -23,11 +23,6 @@ const (
 	NODE_TYPE_CASE      NodeType = "CASE"
 )
 
-// type Content interface {
-// 	GetName() string
-// 	// GetData() will return the needed from within the concrete type
-// }
-
 type Tree struct {
 	RootNode    *NodeTree
 	TotalLevels int
