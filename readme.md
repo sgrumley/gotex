@@ -20,6 +20,8 @@ A Terminal User Interface (TUI) for discovering and executing Go tests with ease
 - Rerun last test
 
 ## Installation
+>[!Note]
+> If color is not working along side tmux set `export COLORTERM=truecolor`
 
 ```bash
 go install github.com/sgrumley/gotex@latest
@@ -45,6 +47,8 @@ gotex
 - `c`: Config display
 - `C`: Debug Console
 - `ctrl-u/ ctrl-d`: Scroll text
+- `gg`: Top of page 
+- `G`: Bottom of page
 - `q`: Quit
 
 
