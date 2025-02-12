@@ -46,5 +46,9 @@ func main() {
 		log.Fatal("failed to generate tree", err)
 	}
 
+	flat := p.FlattenAllNodes()
+	for _, nm := range flat.Names {
+		fmt.Println(nm)
+	}
 	p.Tree.Print()
 }

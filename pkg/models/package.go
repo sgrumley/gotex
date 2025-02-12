@@ -22,6 +22,12 @@ func (p *Package) GetName() string {
 	return namePath[len(namePath)-1]
 }
 
+func (p *Package) GetPath() string {
+	projectPath := p.Parent.RootDir
+
+	return strings.TrimPrefix(p.Path, projectPath)
+}
+
 func (p *Package) GetChildren() []Node {
 	children := make([]Node, 0)
 	for _, child := range p.Files {

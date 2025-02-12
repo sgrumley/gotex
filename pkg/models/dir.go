@@ -17,6 +17,10 @@ func (d *DirectoryContent) GetName() string {
 	return d.Name
 }
 
+func (d *DirectoryContent) GetPath() string {
+	return d.Path
+}
+
 func (d *DirectoryContent) GetChildren() []Node {
 	// TODO: what effects does this cause
 	return nil

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go/ast"
 	"path/filepath"
+	"strings"
 
 	"github.com/sgrumley/gotex/pkg/runner"
 )
@@ -19,6 +20,13 @@ type Case struct {
 
 func (c *Case) GetName() string {
 	return c.Name
+}
+
+func (c *Case) GetPath() string {
+	projectPath := c.Parent.Parent.Parent.Parent.RootDir
+	casePath := c.Parent.GetPath() + "/" + c.Name
+
+	return strings.TrimPrefix(casePath, projectPath)
 }
 
 func (c *Case) GetChildren() []Node {

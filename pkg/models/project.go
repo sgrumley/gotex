@@ -13,6 +13,7 @@ import (
 
 type Node interface {
 	GetName() string
+	GetPath() string
 	GetChildren() []Node
 	HasChildren() bool
 	RunTest(ctx context.Context) (*runner.Response, error)
@@ -39,6 +40,10 @@ func (p *Project) GetName() string {
 	return paths[len(paths)-1]
 }
 
+func (p *Project) GetPath() string {
+	return "/"
+}
+
 func (p *Project) GetChildren() []Node {
 	children := make([]Node, 0)
 	for _, child := range p.Packages {
@@ -61,19 +66,18 @@ func (p *Project) FlattenAllNodes() *FlatProject {
 	nodes := make(map[string]Node)
 	names := make([]string, 0)
 
-	// TODO: update to append names e.g. pkg/file/func/case
 	for _, pkg := range p.Packages {
-		nodes[pkg.GetName()] = pkg
-		names = append(names, pkg.GetName())
+		nodes[pkg.GetPath()] = pkg
+		names = append(names, pkg.GetPath())
 		for _, file := range pkg.Files {
-			nodes[file.GetName()] = file
-			names = append(names, file.GetName())
+			nodes[file.GetPath()] = file
+			names = append(names, file.GetPath())
 			for _, function := range file.Functions {
-				nodes[function.GetName()] = function
-				names = append(names, function.GetName())
+				nodes[function.GetPath()] = function
+				names = append(names, function.GetPath())
 				for _, c := range function.Cases {
-					nodes[c.GetName()] = c
-					names = append(names, c.GetName())
+					nodes[c.GetPath()] = c
+					names = append(names, c.GetPath())
 				}
 			}
 		}

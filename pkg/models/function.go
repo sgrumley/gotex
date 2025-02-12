@@ -4,6 +4,7 @@ import (
 	"context"
 	"go/ast"
 	"path/filepath"
+	"strings"
 
 	"github.com/sgrumley/gotex/pkg/runner"
 )
@@ -23,6 +24,13 @@ type Function struct {
 
 func (f *Function) GetName() string {
 	return f.Name
+}
+
+func (f *Function) GetPath() string {
+	projectPath := f.Parent.Parent.Parent.RootDir
+	fnPath := f.Parent.GetPath() + "/" + f.Name
+
+	return strings.TrimPrefix(fnPath, projectPath)
 }
 
 func (f *Function) GetChildren() []Node {

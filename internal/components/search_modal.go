@@ -8,6 +8,7 @@ import (
 	"github.com/gdamore/tcell/v2"
 	"github.com/lithammer/fuzzysearch/fuzzy"
 	"github.com/rivo/tview"
+
 	"github.com/sgrumley/gotex/pkg/slogger"
 )
 
@@ -99,6 +100,8 @@ func fuzzyFindTest(t *TUI) func(currentText string) (entries []string) {
 		entries = fuzzy.FindNormalizedFold(currentText, tests)
 		if len(entries) < 1 {
 			entries = nil
+		} else if len(entries) > 10 {
+			entries = entries[:10]
 		}
 		return
 	}

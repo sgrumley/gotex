@@ -24,6 +24,12 @@ func (f *File) GetName() string {
 	return nodeName
 }
 
+func (f *File) GetPath() string {
+	projectPath := f.Parent.Parent.RootDir
+
+	return strings.TrimPrefix(f.Path, projectPath)
+}
+
 func (f *File) GetChildren() []Node {
 	children := make([]Node, 0)
 	for _, child := range f.Functions {
