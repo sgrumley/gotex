@@ -1,16 +1,17 @@
 package config
 
 import (
+	"context"
 	"embed"
 	"errors"
 	"fmt"
 	"io/fs"
 	"log/slog"
 	"os"
-	"path/filepath"
-	"strings"
 
 	"github.com/kelseyhightower/envconfig"
+	"github.com/sgrumley/gotex/pkg/path"
+	"github.com/sgrumley/gotex/pkg/slogger"
 	"gopkg.in/yaml.v3"
 )
 
@@ -42,7 +43,11 @@ type Config struct {
 - else use the default yaml file in this folder
 */
 
-func GetConfig(log *slog.Logger) (Config, error) {
+func GetConfig(ctx context.Context) (Config, error) {
+	log, err := slogger.FromContext(ctx)
+	if err != nil {
+		return Config{}, err
+	}
 	filepath, err := GetConfigPath()
 	if err != nil {
 		cfg, errDefault := getDefaultCfg()
@@ -63,7 +68,7 @@ func GetConfig(log *slog.Logger) (Config, error) {
 			return Config{}, errDefault
 		}
 		log.Error("invalid config file",
-			slog.Any("error", fmt.Errorf("failed to load config at path: %s with error: %w", filepath, err)),
+			fmt.Errorf("failed to load config at path: %s with error: %w", filepath, err),
 			slog.Any("default config", cfg),
 		)
 		return cfg, err
@@ -74,7 +79,7 @@ func GetConfig(log *slog.Logger) (Config, error) {
 }
 
 func FileExists(filepath string) bool {
-	fp, err := ReplaceHomeDirChar(filepath)
+	fp, err := path.ReplaceHomeDirChar(filepath)
 	if err != nil {
 		return false
 	}
@@ -119,8 +124,8 @@ func GetConfigPath() (string, error) {
 	return e.ConfigFilePath, nil
 }
 
-func LoadYAML(path string) (Config, error) {
-	fp, err := ReplaceHomeDirChar(path)
+func LoadYAML(filePath string) (Config, error) {
+	fp, err := path.ReplaceHomeDirChar(filePath)
 	if err != nil {
 		return Config{}, err
 	}
@@ -139,21 +144,6 @@ func LoadConfig(b []byte) (Config, error) {
 	}
 
 	return cfg, nil
-}
-
-func ReplaceHomeDirChar(fp string) (string, error) {
-	if !strings.Contains(fp, "~") {
-		return fp, nil
-	}
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return "", fmt.Errorf("Error getting home directory: %w", err)
-	}
-	// Replace ~ with the home directory path
-	if fp[:2] == "~/" {
-		fp = filepath.Join(homeDir, fp[2:])
-	}
-	return fp, nil
 }
 
 // deprecated

@@ -8,12 +8,13 @@ import (
 )
 
 type Theme struct {
-	Name     string
-	Project  tcell.Color
-	Package  tcell.Color
-	File     tcell.Color
-	Function tcell.Color
-	Case     tcell.Color
+	Name      string
+	Project   tcell.Color
+	Directory tcell.Color
+	Package   tcell.Color
+	File      tcell.Color
+	Function  tcell.Color
+	Case      tcell.Color
 	tview.Theme
 }
 
@@ -29,11 +30,12 @@ func getDefaultThemes() map[string]Theme {
 				PrimaryTextColor:         HexToColor("#cdd6f4"), // Text
 				SecondaryTextColor:       HexToColor("#f5e0dc"), // Rosewater
 			},
-			Project:  HexToColor("#b4befe"), // Lavender
-			Package:  HexToColor("#94e2d5"), // Teal
-			File:     HexToColor("#89b4fa"), // Blue
-			Function: HexToColor("#cba6f7"), // Mauve
-			Case:     HexToColor("#f5c2e7"), // Pink
+			Project:   HexToColor("#b4befe"), // Lavender
+			Directory: HexToColor("#cdd6f4"), // Text
+			Package:   HexToColor("#94e2d5"), // Teal
+			File:      HexToColor("#89b4fa"), // Blue
+			Function:  HexToColor("#cba6f7"), // Mauve
+			Case:      HexToColor("#f5c2e7"), // Pink
 		},
 	}
 

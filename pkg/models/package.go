@@ -1,6 +1,11 @@
-package finder
+package models
 
-import "sgrumley/gotex/pkg/runner"
+import (
+	"context"
+	"strings"
+
+	"github.com/sgrumley/gotex/pkg/runner"
+)
 
 var _ Node = (*Package)(nil)
 
@@ -13,7 +18,14 @@ type Package struct {
 }
 
 func (p *Package) GetName() string {
-	return p.Name
+	namePath := strings.Split(p.Name, "/")
+	return namePath[len(namePath)-1]
+}
+
+func (p *Package) GetPath() string {
+	projectPath := p.Parent.RootDir
+
+	return strings.TrimPrefix(p.Path, projectPath)
 }
 
 func (p *Package) GetChildren() []Node {
@@ -31,8 +43,8 @@ func (p *Package) HasChildren() bool {
 	return false
 }
 
-func (p *Package) RunTest() (*runner.Response, error) {
+func (p *Package) RunTest(ctx context.Context) (*runner.Response, error) {
 	project := p.Parent
 
-	return runner.RunTest(runner.TestTypePackage, p.Name, p.Path, project.Config)
+	return runner.RunTest(ctx, runner.TestTypePackage, p.Name, p.Path, project.Config)
 }
