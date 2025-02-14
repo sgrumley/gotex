@@ -1,7 +1,5 @@
-This Branch:
-- fuzzy find highlight chars input? use ANSI? how do I find each char? wrap fuzzy or postprocess?
-- If a pkg is a parent folder they are getting duplicated
-
+TODO: 
+- search qol -> fuzzy find highlight chars input? use ANSI? how do I find each char? wrap fuzzy or postprocess?
 - console should have drop down for each large field (outputs and errors)
 - Adjust config temporarily -> looking at a form of sorts
 - Custom themes -> theme file?
