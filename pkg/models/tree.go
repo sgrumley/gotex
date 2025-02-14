@@ -107,6 +107,10 @@ func processPackage(p *Project, pkg *Package, tree *Tree, dirNodes map[string]*N
 		Type:   NODE_TYPE_PACKAGE,
 		Parent: parentNode,
 	}
+
+	// since a pkg is just a dir with test files it should be added to the existing map
+	dirNodes[pkg.Path] = pkgNode
+
 	parentNode.Children = append(parentNode.Children, pkgNode)
 
 	for _, file := range pkg.Files {
