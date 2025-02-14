@@ -111,13 +111,56 @@ func FindTestCases(ctx context.Context, fn *models.Function) ([]*models.Case, er
 	if err != nil {
 		return nil, err
 	}
-	caseName, err := extractCaseName(ctx, exprToString(fn.RunCallNode.Args[0]))
-	if err != nil {
-		return nil, err
+
+	// exprToString(fn.RunCallNode.Args[0]) prints subtest e.g. name:tc.name // subtest name:tt.input // subtest name:name
+	tRunParamType := ""
+	if lit, ok := fn.RunCallNode.Args[0].(*ast.BasicLit); ok && lit.Kind == token.STRING {
+		tRunParamType = "STRING"
+	} else if _, ok := fn.RunCallNode.Args[0].(*ast.Ident); ok {
+		tRunParamType = "IDENTIFIER"
 	}
+
+	tRunParam := exprToString(fn.RunCallNode.Args[0])
+	tRunParamSplit := strings.Split(tRunParam, ".")
 	var cases []*models.Case
 
-	// findValuesOfIndexedField looks for the value of a field in an array or slice (e.g. tc[i].name)
+	// this switches on if the variable for test name in t.Run(name, ...) contains a '.' inferring that it is an element of a struct
+	switch len(tRunParamSplit) {
+	case 1:
+		// could be a static name ("success", BasicLit) or map key (name, Identifier)
+		caseName := tRunParamSplit[0]
+		fmt.Printf("param type: %s\n", tRunParamType)
+		switch tRunParamType {
+		case "STRING":
+			tc := &models.Case{
+				Name:   caseName,
+				Parent: fn,
+				// Location: fn.RunCallNode.Lparen, // TODO: Location should be a more general type
+			}
+			fn.Cases = append(fn.Cases, tc)
+			fn.CaseMap[tc.Name] = tc
+			cases = append(cases, tc)
+
+			fmt.Printf("tc: %s\n", tc.Name)
+			fmt.Printf("fn: %s\n", fn.Name)
+		case "IDENTIFIER":
+			cases = append(cases, GetMapCase(log, fn, caseName)...)
+		}
+	case 2:
+		// an element of a struct (tc.name)
+		caseName := tRunParamSplit[1]
+		cases = append(cases, GetElementCase(log, fn, caseName)...)
+	default:
+		log.Error("failed identifying first t.Run() param", nil,
+			slog.String("closest param", tRunParam))
+	}
+
+	return cases, nil
+}
+
+func GetElementCase(log *slogger.Logger, fn *models.Function, caseName string) []*models.Case {
+	var cases []*models.Case
+	// looking for the value of a field in an array or slice (e.g. tc[i].name)
 	ast.Inspect(fn.TestFunctionNode.Body, func(n ast.Node) bool {
 		// We're looking for composite literals (array/slice initialization) or assignments
 		if compLit, ok := n.(*ast.CompositeLit); ok {
@@ -127,7 +170,7 @@ func FindTestCases(ctx context.Context, fn *models.Function) ([]*models.Case, er
 						// Extract the value assigned to the field (e.g. "TestA" for `name: "TestA"`)
 						nameValue := extractRHSValue(kvExpr.Value)
 						nameValueStripped := strings.ReplaceAll(nameValue, `"`, "")
-						log.Debug("test function found",
+						log.Debug("test case found",
 							slog.String("function name", fn.Name),
 							slog.String("file name", fn.Parent.Name),
 						)
@@ -143,27 +186,45 @@ func FindTestCases(ctx context.Context, fn *models.Function) ([]*models.Case, er
 				}
 			}
 		}
+
 		return true
 	})
 
-	return cases, nil
+	return cases
 }
 
-// extractCaseName gets the case field name from the subtest name
-func extractCaseName(ctx context.Context, subtestName string) (string, error) {
-	log, err := slogger.FromContext(ctx)
-	if err != nil {
-		return "", err
-	}
-	caseName := "name"
-	subtestNameSplit := strings.Split(subtestName, ".")
+func GetMapCase(log *slogger.Logger, fn *models.Function, caseName string) []*models.Case {
+	var cases []*models.Case
+	ast.Inspect(fn.TestFunctionNode.Body, func(n ast.Node) bool {
+		// Looking for composite literals (map initialization)
+		if compLit, ok := n.(*ast.CompositeLit); ok {
+			for _, elt := range compLit.Elts {
+				if kvExpr, ok := elt.(*ast.KeyValueExpr); ok {
+					if bLit, ok := kvExpr.Key.(*ast.BasicLit); ok && bLit.Kind == token.STRING {
+						nameValueStripped := strings.ReplaceAll(bLit.Value, `"`, "")
+						log.Debug("test case found",
+							slog.String("function name", fn.Name),
+							slog.String("file name", fn.Parent.Name),
+						)
+						tc := &models.Case{
+							Name:     nameValueStripped,
+							Parent:   fn,
+							Location: kvExpr,
+						}
+						fn.CaseMap[tc.Name] = tc
+						fn.Cases = append(fn.Cases, tc)
+						cases = append(cases, tc)
+					}
+					continue
+				}
+			}
+			// since there is a nesting of key values on the structs as values
+			// stop traversing once this level of the tree has been iterated
+			return false
+		}
 
-	if len(subtestNameSplit) == 2 {
-		caseName = subtestNameSplit[1]
-	} else {
-		log.Error("failed identifying struct.name, defaulting to tc.name", nil,
-			slog.String("test case name", subtestName))
-	}
+		return true
+	})
 
-	return caseName, nil
+	return cases
 }

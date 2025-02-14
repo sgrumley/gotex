@@ -1,5 +1,7 @@
 This Branch:
 - fuzzy find highlight chars input? use ANSI? how do I find each char? wrap fuzzy or postprocess?
+- If a pkg is a parent folder they are getting duplicated
+- If t.Run is called more than once the function is duplicated each with one test case being the name of that call
 
 - console should have drop down for each large field (outputs and errors)
 - Adjust config temporarily -> looking at a form of sorts
@@ -11,7 +13,7 @@ This Branch:
   - scroll
   - copy 
 - Optimize with concurrency
-- Create multiple different types of tests and get them working -> t.Run("static", ...)
+- Create multiple different types of tests and get them working -> t.Run("static", ...) -> static, map, embeded, ...
 - If struct has implicit initialisation test cases won't show up, is there a solution to this?
 - take config logic and make it a seperate project with clearer code and reusablity
 - dynamic resizing of panels if context is too wide (mainly tree)

@@ -6,7 +6,6 @@ import (
 	"log/slog"
 
 	"github.com/sgrumley/gotex/pkg/config"
-	"github.com/sgrumley/gotex/pkg/models"
 	"github.com/sgrumley/gotex/pkg/scanner"
 	"github.com/sgrumley/gotex/pkg/slogger"
 )
@@ -36,19 +35,19 @@ func main() {
 		log.Fatal("failed to load a config: %w", err)
 	}
 
-	p, err := scanner.Scan(ctx, cfg, root)
+	_, err = scanner.Scan(ctx, cfg, root)
 	if err != nil {
 		log.Fatal("failed scanning project", err)
 	}
 
-	err = models.GenerateTree(p)
-	if err != nil {
-		log.Fatal("failed to generate tree", err)
-	}
+	// err = models.GenerateTree(p)
+	// if err != nil {
+	// 	log.Fatal("failed to generate tree", err)
+	// }
 
-	flat := p.FlattenAllNodes()
-	for _, nm := range flat.Names {
-		fmt.Println(nm)
-	}
-	p.Tree.Print()
+	// flat := p.FlattenAllNodes()
+	// for _, nm := range flat.Names {
+	// 	fmt.Println(nm)
+	// }
+	// p.Tree.Print()
 }
