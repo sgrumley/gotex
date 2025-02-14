@@ -1,7 +1,6 @@
 This Branch:
 - fuzzy find highlight chars input? use ANSI? how do I find each char? wrap fuzzy or postprocess?
 - If a pkg is a parent folder they are getting duplicated
-- If t.Run is called more than once the function is duplicated each with one test case being the name of that call
 
 - console should have drop down for each large field (outputs and errors)
 - Adjust config temporarily -> looking at a form of sorts
@@ -28,3 +27,7 @@ Bug:
 - There is a bug to do with how privimatives are listening for key presses. Global keys require to be pressed twice??
 - move logs to .local/share/gotex
 - TODOs in code
+
+Hacks to look back at:
+- If t.Run is called more than once the function is duplicated each with one test case being the name of that call
+  -  post processing hack to merge any cases into duplicate functions within a file

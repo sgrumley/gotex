@@ -52,6 +52,7 @@ func Scan(ctx context.Context, cfg config.Config, root string) (*models.Project,
 				fns[k].Parent = p.Packages[i].Files[j]
 			}
 
+			fns = mergeDuplicateFunctions(fns)
 			p.Packages[i].Files[j].Functions = fns
 			for _, fn := range fns {
 				p.Packages[i].Files[j].FunctionMap[fn.Name] = fn
@@ -106,6 +107,46 @@ func FindTestFunctions(ctx context.Context, file *models.File) ([]*models.Functi
 	return fns, nil
 }
 
+// HACK: post processing the functions to combine any duplicates. This comes from multiple t.Run calls in the same test function
+// This means that the VarName and RunCallNode elements of the Function are not accurate
+// NOTE: this needs to be called after the cases have been found other wise it will only generate for one function
+func mergeDuplicateFunctions(functions []*models.Function) []*models.Function {
+	// Use map to track unique functions by name
+	funcMap := make(map[string]*models.Function)
+
+	// First pass: collect all functions and merge their cases
+	for i := range functions {
+		fn := functions[i]
+		if existing, exists := funcMap[fn.Name]; exists {
+			// Merge Cases
+			existing.Cases = append(existing.Cases, fn.Cases...)
+
+			// Merge CaseMap
+			if existing.CaseMap == nil {
+				existing.CaseMap = make(map[string]*models.Case)
+			}
+			for k, v := range fn.CaseMap {
+				existing.CaseMap[k] = v
+			}
+
+			if existing.TestFunctionNode == nil {
+				existing.TestFunctionNode = fn.TestFunctionNode
+			}
+		} else {
+			// Create a new entry if it doesn't exist
+			funcMap[fn.Name] = fn
+		}
+	}
+
+	// Convert map back to slice
+	result := make([]*models.Function, 0, len(funcMap))
+	for _, fn := range funcMap {
+		result = append(result, fn)
+	}
+
+	return result
+}
+
 func FindTestCases(ctx context.Context, fn *models.Function) ([]*models.Case, error) {
 	log, err := slogger.FromContext(ctx)
 	if err != nil {
@@ -129,7 +170,6 @@ func FindTestCases(ctx context.Context, fn *models.Function) ([]*models.Case, er
 	case 1:
 		// could be a static name ("success", BasicLit) or map key (name, Identifier)
 		caseName := tRunParamSplit[0]
-		fmt.Printf("param type: %s\n", tRunParamType)
 		switch tRunParamType {
 		case "STRING":
 			tc := &models.Case{
@@ -140,9 +180,6 @@ func FindTestCases(ctx context.Context, fn *models.Function) ([]*models.Case, er
 			fn.Cases = append(fn.Cases, tc)
 			fn.CaseMap[tc.Name] = tc
 			cases = append(cases, tc)
-
-			fmt.Printf("tc: %s\n", tc.Name)
-			fmt.Printf("fn: %s\n", fn.Name)
 		case "IDENTIFIER":
 			cases = append(cases, GetMapCase(log, fn, caseName)...)
 		}
