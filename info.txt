@@ -1,5 +1,11 @@
 TODO: 
-- search qol -> fuzzy find highlight chars input? use ANSI? how do I find each char? wrap fuzzy or postprocess?
+- tree should sort each level alphabetically / or should it remain as seen in the files. e.g the order of test functions and cases matches the actual file
+- search qol 
+  - fuzzy search is shit, need to look into why. e.g. 
+  internal/store/mapper_test.go/Test_toReports will only show up by searching `store/toreport`. searching `toreport` will show unrelated things, how can letter inorder be weighted higher
+  - fuzzy find highlight chars input? use ANSI? how do I find each char? wrap fuzzy or postprocess?
+  - search should also have a filter e.g 1. files, 2. functions ...
+  - matching emojis at the start of the option would be good as well
 - console should have drop down for each large field (outputs and errors)
 - Adjust config temporarily -> looking at a form of sorts
 - Custom themes -> theme file?
@@ -8,6 +14,7 @@ TODO:
 - Add focus to results 
   - search 
   - scroll
+  - G + gg to top/bottom
   - copy 
 - Optimize with concurrency
 - Create multiple different types of tests and get them working -> t.Run("static", ...) -> static, map, embeded, ...
@@ -25,6 +32,7 @@ Bug:
 - There is a bug to do with how privimatives are listening for key presses. Global keys require to be pressed twice??
 - move logs to .local/share/gotex
 - TODOs in code
+- syncing causes panic
 
 Hacks to look back at:
 - If t.Run is called more than once the function is duplicated each with one test case being the name of that call
