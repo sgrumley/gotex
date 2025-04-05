@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"sort"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/lithammer/fuzzysearch/fuzzy"
@@ -97,14 +98,26 @@ func fuzzyFindTest(t *TUI) func(currentText string) (entries []string) {
 			return
 		}
 
-		entries = fuzzy.FindNormalizedFold(currentText, tests)
-		if len(entries) < 1 {
-			entries = nil
-		} else if len(entries) > 10 {
-			entries = entries[:10]
+		rankedEntries := fuzzy.RankFindNormalizedFold(currentText, tests)
+		if len(rankedEntries) < 1 {
+			rankedEntries = nil
+		} else if len(rankedEntries) > 10 {
+			rankedEntries = rankedEntries[:10]
 		}
+		entries = formatEntries(rankedEntries)
+
 		return
 	}
+}
+
+func formatEntries(rankedEntries fuzzy.Ranks) []string {
+	sort.Sort(rankedEntries)
+	entries := make([]string, len(rankedEntries))
+	for _, re := range rankedEntries {
+		entries = append(entries, re.Target)
+	}
+
+	return entries
 }
 
 func selectTest(ctx context.Context, t *TUI) func(text string, index, source int) bool {
