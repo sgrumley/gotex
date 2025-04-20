@@ -4,13 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"sort"
 
 	"github.com/gdamore/tcell/v2"
-	"github.com/lithammer/fuzzysearch/fuzzy"
 	"github.com/rivo/tview"
-
 	"github.com/sgrumley/gotex/pkg/slogger"
+	"github.com/sgrumley/hotfuzz/pkg/fuzzy"
 )
 
 type searchModal struct {
@@ -98,27 +96,26 @@ func fuzzyFindTest(t *TUI) func(currentText string) (entries []string) {
 			return
 		}
 
-		rankedEntries := fuzzy.RankFindNormalizedFold(currentText, tests)
-		if len(rankedEntries) < 1 {
+		rankedEntries := fuzzy.Find(currentText, tests)
+		if len(rankedEntries.Ranked) < 1 {
 			rankedEntries = nil
-		} else if len(rankedEntries) > 10 {
-			rankedEntries = rankedEntries[:10]
+		} else if len(rankedEntries.Ranked) > 10 {
+			rankedEntries.Ranked = rankedEntries.Ranked[:10]
 		}
-		entries = formatEntries(rankedEntries)
-
+		entries = rankedEntries.ToStringSlice()
 		return
 	}
 }
 
-func formatEntries(rankedEntries fuzzy.Ranks) []string {
-	sort.Sort(rankedEntries)
-	entries := make([]string, len(rankedEntries))
-	for _, re := range rankedEntries {
-		entries = append(entries, re.Target)
-	}
-
-	return entries
-}
+// func formatEntries(rankedEntries fuzzy.Ranks) []string {
+// 	sort.Sort(rankedEntries)
+// 	entries := make([]string, len(rankedEntries))
+// 	for _, re := range rankedEntries {
+// 		entries = append(entries, re.Target)
+// 	}
+//
+// 	return entries
+// }
 
 func selectTest(ctx context.Context, t *TUI) func(text string, index, source int) bool {
 	return func(text string, index, source int) bool {

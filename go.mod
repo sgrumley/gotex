@@ -1,12 +1,14 @@
 module github.com/sgrumley/gotex
 
-go 1.21.4
+go 1.24
+
+toolchain go1.24.2
 
 require (
 	github.com/gdamore/tcell/v2 v2.7.4
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/lithammer/fuzzysearch v1.1.8
 	github.com/rivo/tview v0.0.0-20241016194538-c5e4fb24af13
+	github.com/sgrumley/hotfuzz v0.0.0-20250420165132-96189594f2b8
 	github.com/stretchr/testify v1.9.0
 	gopkg.in/yaml.v3 v3.0.1
 )
