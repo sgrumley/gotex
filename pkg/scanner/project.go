@@ -65,8 +65,13 @@ func Scan(ctx context.Context, cfg config.Config, root string) (*models.Project,
 func FindTestFunctions(ctx context.Context, file *models.File) ([]*models.Function, error) {
 	log, err := slogger.FromContext(ctx)
 	if err != nil {
-		return nil, err
+		log, _ = slogger.New(
+			slogger.WithLevel(slog.LevelDebug),
+			slogger.WithSource(false),
+		)
 	}
+
+	ctx = slogger.AddToContext(ctx, log)
 	fset := token.NewFileSet()
 	fns := make([]*models.Function, 0)
 	node, err := parser.ParseFile(fset, file.Path, nil, parser.AllErrors)

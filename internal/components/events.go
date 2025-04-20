@@ -12,12 +12,16 @@ import (
 )
 
 func SyncProject(ctx context.Context, t *TUI) {
-	// NOTE: this could happen on a timer or by watching the the test files for changes
 	data, err := scanner.Scan(ctx, t.state.data.project.Config, t.state.data.project.RootDir)
 	if err != nil {
 		t.state.ui.result.RenderResults("Project scan failed: " + err.Error())
+		return
 	}
-	t.state.data.project = data
+
+	t.state.data = Data{
+		project:   data,
+		flattened: data.FlattenAllNodes(),
+	}
 	if err := t.state.ui.testTree.Populate(t); err != nil {
 		t.state.ui.result.RenderResults("Project sync failed: " + err.Error())
 		return

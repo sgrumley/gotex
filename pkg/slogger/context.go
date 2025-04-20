@@ -3,6 +3,7 @@ package slogger
 import (
 	"context"
 	"fmt"
+	"log/slog"
 )
 
 type ctxKey struct{}
@@ -14,7 +15,14 @@ func AddToContext(ctx context.Context, logger *Logger) context.Context {
 func FromContext(ctx context.Context) (*Logger, error) {
 	logger, ok := ctx.Value(ctxKey{}).(*Logger)
 	if !ok {
-		return nil, fmt.Errorf("failed to get logger from context")
+		log, err := New(
+			WithLevel(slog.LevelDebug),
+			WithSource(false),
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get logger from context")
+		}
+		return log, nil
 	}
 	return logger, nil
 }
