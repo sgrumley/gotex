@@ -65,10 +65,7 @@ func Scan(ctx context.Context, cfg config.Config, root string) (*models.Project,
 func FindTestFunctions(ctx context.Context, file *models.File) ([]*models.Function, error) {
 	log, err := slogger.FromContext(ctx)
 	if err != nil {
-		log, _ = slogger.New(
-			slogger.WithLevel(slog.LevelDebug),
-			slogger.WithSource(false),
-		)
+		return nil, err
 	}
 
 	ctx = slogger.AddToContext(ctx, log)
