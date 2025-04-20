@@ -2,12 +2,15 @@ package runner
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"log/slog"
 	"os"
 	"os/exec"
-	"sgrumley/gotex/pkg/config"
 	"strings"
+
+	"github.com/sgrumley/gotex/pkg/config"
+	"github.com/sgrumley/gotex/pkg/slogger"
 )
 
 type TestType int
@@ -34,9 +37,11 @@ type Response struct {
 	ExternalError   string
 }
 
-func RunTest(testType TestType, testName string, dir string, cfg config.Config) (*Response, error) {
-	// TODO: how does default work?
-	log := slog.Default()
+func RunTest(ctx context.Context, testType TestType, testName string, dir string, cfg config.Config) (*Response, error) {
+	log, err := slogger.FromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
 	cmdStr := GetCommand(testType, testName)
 	cmdStr = applyConfig(cfg, cmdStr)
 
@@ -47,7 +52,7 @@ func RunTest(testType TestType, testName string, dir string, cfg config.Config) 
 			res.TestType = testType
 			res.TestDir = dir
 			res.CommandExecuted = argsToString(cmdStr) + " | " + cfg.PipeTo
-			log.Error("failed to run piped command", slog.Any("error", err))
+			log.Error("failed to run piped command", err)
 			return res, err
 		}
 		res.TestName = testName

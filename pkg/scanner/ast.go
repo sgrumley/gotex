@@ -1,4 +1,4 @@
-package finder
+package scanner
 
 import (
 	"fmt"
@@ -7,7 +7,44 @@ import (
 	"strings"
 )
 
-// extractSubtestName handles both string literals and dynamic subtest names
+// isTestRunCall assumes all test functions contain a call to t.Run()
+// NOTE: This will break if t.Run() is not used
+// TODO: expression shouldn't be hard coded t, it should be determined by the parameters into the function
+func isTestRunCall(callExpr *ast.CallExpr) (*ast.SelectorExpr, bool) {
+	// a selector expression is the syntax used to access fields or methods of a struct
+	// checking that the selector is `Run`, the expression is then checked for `t`
+	selExpr, ok := callExpr.Fun.(*ast.SelectorExpr)
+	if !ok || selExpr.Sel.Name != "Run" {
+		return nil, false
+	}
+
+	if ex := exprToString(selExpr.X); ex != "t" {
+		return nil, false
+	}
+
+	return selExpr, true
+}
+
+// findEnclosingFunction traverses the AST upwards to find the function that encloses the node
+func findEnclosingFunction(node ast.Node, n ast.Node) *ast.FuncDecl {
+	// Walk the AST to find the wrapping function
+	var fn *ast.FuncDecl
+	ast.Inspect(node, func(x ast.Node) bool {
+		if f, ok := x.(*ast.FuncDecl); ok {
+			if f.Body != nil && f.Body.Pos() <= n.Pos() && f.Body.End() >= n.End() {
+				fn = f
+				return false // Stop traversing
+			}
+		}
+		return true
+	})
+
+	return fn
+}
+
+// HELPERS
+
+// exprToString converts an AST expression into a string
 func exprToString(expr ast.Expr) string {
 	if lit, ok := expr.(*ast.BasicLit); ok && lit.Kind == token.STRING {
 		return strings.Trim(lit.Value, "\"")

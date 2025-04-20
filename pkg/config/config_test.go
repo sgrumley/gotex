@@ -1,11 +1,13 @@
 package config_test
 
 import (
-	"log/slog"
+	"context"
 	"os"
 	"path/filepath"
-	"sgrumley/gotex/pkg/config"
 	"testing"
+
+	"github.com/sgrumley/gotex/pkg/config"
+	"github.com/sgrumley/gotex/pkg/path"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -85,7 +87,7 @@ func Test_SuccessGetConfig(t *testing.T) {
 	for _, tc := range tcs {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.setup()
-			cfg, err := config.GetConfig(slog.Default())
+			cfg, err := config.GetConfig(context.Background())
 			tc.assert(cfg, err)
 		})
 	}
@@ -119,7 +121,7 @@ func Test_ReplaceHomeDirChar(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.input, func(t *testing.T) {
-			result, err := config.ReplaceHomeDirChar(tt.input)
+			result, err := path.ReplaceHomeDirChar(tt.input)
 			require.NoError(t, err)
 			if result != tt.expected {
 				t.Errorf("expected %s, got %s", tt.expected, result)

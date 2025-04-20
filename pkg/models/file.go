@@ -1,9 +1,11 @@
-package finder
+package models
 
 import (
+	"context"
 	"fmt"
-	"sgrumley/gotex/pkg/runner"
 	"strings"
+
+	"github.com/sgrumley/gotex/pkg/runner"
 )
 
 var _ Node = (*File)(nil)
@@ -22,6 +24,12 @@ func (f *File) GetName() string {
 	return nodeName
 }
 
+func (f *File) GetPath() string {
+	projectPath := f.Parent.Parent.RootDir
+
+	return strings.TrimPrefix(f.Path, projectPath)
+}
+
 func (f *File) GetChildren() []Node {
 	children := make([]Node, 0)
 	for _, child := range f.Functions {
@@ -38,11 +46,7 @@ func (f *File) HasChildren() bool {
 	return false
 }
 
-func (f *File) RunTest() (*runner.Response, error) {
-	// project := f.Parent.Parent
-	// path := filepath.Dir(f.Path)
-	//
-	// return runner.RunTest(runner.TestTypeFile, f.Name, path, project.Config)
+func (f *File) RunTest(ctx context.Context) (*runner.Response, error) {
 	return &runner.Response{
 		TestType:       runner.TestTypeFile,
 		Result:         "Test file not supported",

@@ -1,13 +1,14 @@
 package components
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 
 	"github.com/gdamore/tcell/v2"
-	"github.com/lithammer/fuzzysearch/fuzzy"
 	"github.com/rivo/tview"
-	// "github.com/sahilm/fuzzy"
+	"github.com/sgrumley/gotex/pkg/slogger"
+	"github.com/sgrumley/hotfuzz/pkg/fuzzy"
 )
 
 type searchModal struct {
@@ -17,13 +18,13 @@ type searchModal struct {
 	active bool
 }
 
-func newSearchModal(t *TUI) *searchModal {
+func newSearchModal(ctx context.Context, t *TUI) *searchModal {
 	input := tview.NewInputField().
 		SetLabel("Search test: ").
 		SetFieldWidth(40)
 
 	input.SetAutocompleteFunc(fuzzyFindTest(t))
-	input.SetAutocompletedFunc(selectTest(t))
+	input.SetAutocompletedFunc(selectTest(ctx, t))
 	// SetDoneFunc only executes if a field has not been autoselected, if this is hit it means that the user is searching for something that we know does not exist
 	input.SetDoneFunc(noTest(t))
 
@@ -95,16 +96,33 @@ func fuzzyFindTest(t *TUI) func(currentText string) (entries []string) {
 			return
 		}
 
-		entries = fuzzy.Find(currentText, tests)
-		if len(entries) < 1 {
-			entries = nil
+		rankedEntries := fuzzy.Find(currentText, tests)
+		if len(rankedEntries.Ranked) < 1 {
+			rankedEntries = nil
+		} else if len(rankedEntries.Ranked) > 10 {
+			rankedEntries.Ranked = rankedEntries.Ranked[:10]
 		}
+		entries = rankedEntries.ToStringSlice()
 		return
 	}
 }
 
-func selectTest(t *TUI) func(text string, index, source int) bool {
+// func formatEntries(rankedEntries fuzzy.Ranks) []string {
+// 	sort.Sort(rankedEntries)
+// 	entries := make([]string, len(rankedEntries))
+// 	for _, re := range rankedEntries {
+// 		entries = append(entries, re.Target)
+// 	}
+//
+// 	return entries
+// }
+
+func selectTest(ctx context.Context, t *TUI) func(text string, index, source int) bool {
 	return func(text string, index, source int) bool {
+		log, err := slogger.FromContext(ctx)
+		if err != nil {
+			log, _ = slogger.New()
+		}
 		switch source {
 		case 0:
 			// navigate
@@ -120,20 +138,19 @@ func selectTest(t *TUI) func(text string, index, source int) bool {
 			searchStr := text
 			ref, exists := t.state.data.flattened.NodeMap[searchStr]
 			if !exists {
-				t.log.Error("error", slog.String("search term not in tree", searchStr))
+				log.Error("search failed", fmt.Errorf("search term not in tree %s", searchStr))
 				t.state.ui.search.text.SetText("search term does not exist in test tree: " + searchStr)
 				return false
 			}
 
 			found := search(t.state.ui.testTree.TreeView, ref.GetName())
 			if !found {
-				t.log.Error("error", slog.String("search term not found", searchStr))
+				log.Error("search failed", fmt.Errorf("search term not found: %s", searchStr))
 				t.state.ui.search.modal.SetBorderColor(tcell.ColorRed)
 				return false
 			}
 
-			// t.state.ui.search.modal.SetBorderColor(t.theme.Border)
-			t.log.Info("search",
+			log.Debug("search",
 				slog.String("search term", searchStr),
 				slog.String("ref", ref.GetName()),
 				slog.Bool("found", found),

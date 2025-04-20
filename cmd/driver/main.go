@@ -4,20 +4,14 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"os"
 
 	"github.com/sgrumley/gotex/pkg/config"
 	"github.com/sgrumley/gotex/pkg/scanner"
 	"github.com/sgrumley/gotex/pkg/slogger"
-
-	"github.com/sgrumley/gotex/internal/components"
 )
 
+// Driver serves as an example of how to use the scanning api
 func main() {
-	os.Exit(run())
-}
-
-func run() int {
 	ctx := context.Background()
 	log, err := slogger.New(
 		slogger.WithLevel(slog.LevelDebug),
@@ -25,34 +19,35 @@ func run() int {
 	)
 	if err != nil {
 		fmt.Println("error: ", err.Error())
-		return 1
+		return
 	}
 	ctx = slogger.AddToContext(ctx, log)
 
 	root, err := scanner.FindGoProjectRoot()
 	if err != nil {
-		log.Fatal("No go project found, navigate to a repository with a go.mod file and try again", err)
+		log.Fatal("failed to find root of project", err)
 	}
 
 	cfg, err := config.GetConfig(ctx)
 	if err != nil {
+
 		fmt.Printf("failed to load a config: %s\n", err.Error())
-		log.Fatal("failed to load a config", err)
+		log.Fatal("failed to load a config: %w", err)
 	}
 
-	app, err := components.New(ctx, cfg, root)
+	_, err = scanner.Scan(ctx, cfg, root)
 	if err != nil {
-		fmt.Printf("failed to initialise project: %s", err.Error())
-		return 1
-	}
-	err = app.Start(ctx)
-	if err != nil {
-		// to file
-		log.Error("application crashed", err)
-		// to stdout
-		fmt.Printf("application crashed: %s", err.Error())
-		return 1
+		log.Fatal("failed scanning project", err)
 	}
 
-	return 0
+	// err = models.GenerateTree(p)
+	// if err != nil {
+	// 	log.Fatal("failed to generate tree", err)
+	// }
+
+	// flat := p.FlattenAllNodes()
+	// for _, nm := range flat.Names {
+	// 	fmt.Println(nm)
+	// }
+	// p.Tree.Print()
 }
