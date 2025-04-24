@@ -103,6 +103,7 @@ func fuzzyFindTest(t *TUI) func(currentText string) (entries []string) {
 			rankedEntries.Ranked = rankedEntries.Ranked[:10]
 		}
 		entries = rankedEntries.ToStringSlice()
+		// entries = rankedEntries.ToStringSliceANSI() // ansi not supported in search modal??
 		return
 	}
 }
