@@ -23,13 +23,14 @@ type state struct {
 }
 
 type UI struct {
-	result   *results
-	testTree *TestTree
-	console  *consoleData
-	pages    *tview.Pages
-	search   *searchModal
-	config   *ConfigModal
-	lastKey  rune
+	homeLayout *tview.Flex
+	result     *results
+	testTree   *TestTree
+	console    *consoleData
+	pages      *tview.Pages
+	search     *searchModal
+	config     *ConfigModal
+	lastKey    rune
 }
 
 type Data struct {
@@ -143,6 +144,7 @@ func (t *TUI) initPanels(ctx context.Context) {
 		SetDirection(tview.FlexColumn).
 		AddItem(testTree.TreeView, 45, 1, true).
 		AddItem(outputLayout, 0, 10, false)
+	t.state.ui.homeLayout = contentLayout
 
 	layout := tview.NewFlex().
 		SetDirection(tview.FlexRow).
