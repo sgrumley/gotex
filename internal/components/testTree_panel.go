@@ -25,6 +25,10 @@ func newTestTree(ctx context.Context, t *TUI) *TestTree {
 	tt.SetTitle("Tests")
 	tt.SetBorder(true)
 	tt.Populate(t)
+	tt.SetSelectedFunc(func(node *tview.TreeNode) {
+		node.SetExpanded(!node.IsExpanded())
+		dynamicResize(tt, t)
+	})
 
 	return tt
 }
@@ -46,12 +50,14 @@ func (tt *TestTree) setKeybinding(ctx context.Context, t *TUI) {
 				t.state.ui.result.RenderResults("Error can't get node " + node.GetReference().(models.Node).GetName())
 			}
 			node.ExpandAll()
+			dynamicResize(tt, t)
 		case 'h':
 			node := t.state.ui.testTree.GetCurrentNode()
 			if node == nil {
 				t.state.ui.result.RenderResults("Error can't get node " + node.GetReference().(models.Node).GetName())
 			}
 			node.CollapseAll()
+			dynamicResize(tt, t)
 			// NOTE: This should jump through the list rather than scroll
 		// case 'g':
 		// 	if t.state.ui.lastKey == 'g' {
@@ -132,11 +138,6 @@ func (tt *TestTree) Populate(t *TUI) error {
 	for _, child := range rootViewNode.GetChildren() {
 		child.CollapseAll()
 	}
-
-	// Set up the selection handler
-	tt.SetSelectedFunc(func(node *tview.TreeNode) {
-		node.SetExpanded(!node.IsExpanded())
-	})
 
 	return nil
 }
@@ -223,4 +224,56 @@ func search(tree *tview.TreeView, searchString string) bool {
 	}
 
 	return true
+}
+
+func abs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
+}
+
+func calculateOptimalTreeWidth(node *tview.TreeNode, depth int) int {
+	if node == nil {
+		return 0
+	}
+
+	// Calculate width for this node
+	nodeText := tview.TaggedStringWidth(node.GetText())
+	indentWidth := depth * 4 // Tree indentation
+	nodeWidth := nodeText + indentWidth
+
+	maxWidth := nodeWidth
+
+	// Only include children if this node is expanded
+	if node.IsExpanded() {
+		children := node.GetChildren()
+		for _, child := range children {
+			childWidth := calculateOptimalTreeWidth(child, depth+1)
+			if childWidth > maxWidth {
+				maxWidth = childWidth
+			}
+		}
+	}
+
+	return maxWidth
+}
+
+func dynamicResize(tt *TestTree, t *TUI) {
+	_, _, currentWidth, _ := tt.GetRect()
+	minWidth := 45
+	maxWidth := 100
+	padding := 6
+	optimalWidth := calculateOptimalTreeWidth(tt.GetRoot(), 0) + padding
+
+	if optimalWidth < minWidth {
+		optimalWidth = minWidth
+	} else if optimalWidth > maxWidth {
+		optimalWidth = maxWidth
+	}
+
+	// Only resize if there's a meaningful difference (reduces flickering)
+	if abs(optimalWidth-currentWidth) > 2 {
+		t.state.ui.homeLayout.ResizeItem(tt.TreeView, optimalWidth, 0)
+	}
 }
