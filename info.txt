@@ -10,7 +10,6 @@ TODO:
 
 Bug:
 - running gotex without a go repo shows no error
-- go install is not working
 - Scrolling moves out of app? is this all terminals? is this tmux?
 - config pane is transparent
 - What happens if you hit run too many times? How to control ongoing tests.. only one in flight?
