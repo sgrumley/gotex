@@ -126,7 +126,7 @@ func newLogFile(format Handler) (*os.File, error) {
 
 	file, err := os.OpenFile(logFilePath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to open log file: %v", err)
+		return nil, fmt.Errorf("failed to open log file: %v", err)
 	}
 
 	return file, nil
@@ -137,6 +137,7 @@ func (l *Logger) Error(msg string, err error, args ...any) {
 }
 
 func (l *Logger) Fatal(msg string, err error) {
+	fmt.Printf("%s:\n%s\n", msg, err.Error())
 	l.Error(msg, err)
 	os.Exit(1)
 }

@@ -16,7 +16,6 @@ Bug:
 - There is a bug to do with how privimatives are listening for key presses. Global keys require to be pressed twice??
 - move logs to .local/share/gotex
 - TODOs in code
-- syncing causes panic
 
 Hacks to look back at:
 - If t.Run is called more than once the function is duplicated each with one test case being the name of that call
