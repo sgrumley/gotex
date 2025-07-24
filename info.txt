@@ -1,4 +1,5 @@
 TODO: 
+- fix error display
 - update readme
 - update docs for pkg/* code. Using https://pkg.go.dev/license-policy
 - console should have drop down for each large field (outputs and errors)

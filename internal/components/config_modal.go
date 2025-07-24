@@ -14,17 +14,21 @@ type ConfigModal struct {
 }
 
 func newConfigModal(t *TUI) *ConfigModal {
+	background := t.theme.PrimitiveBackgroundColor
+	boxFill := tview.NewBox()
+	boxFill.SetBackgroundColor(background)
+
 	tab := tview.NewTable()
+	tab.SetBackgroundColor(background)
 
 	// HACK: The table won't center well within it's flex, offset using 2,2,1 proportions
 	modalContent := tview.NewFlex().
 		SetDirection(tview.FlexColumn).
-		AddItem(nil, 0, 2, false).
+		AddItem(boxFill, 0, 2, false).
 		AddItem(tab, 0, 2, true).
-		AddItem(nil, 0, 1, false)
+		AddItem(boxFill, 0, 1, false)
 
 	modal := NewModal("Config", modalContent)
-	modal.SetBorder(true)
 
 	cfg := &ConfigModal{
 		content: tab,
@@ -55,7 +59,7 @@ func (m *ConfigModal) Render(t *TUI, tab *tview.Table) {
 	newRow(tab, "Piped Command:", t.state.data.project.Config.PipeTo, 7)
 }
 
-func newRow(tab *tview.Table, key string, val interface{}, rowInd int) {
+func newRow(tab *tview.Table, key string, val any, rowInd int) {
 	cell1 := tview.NewTableCell(key)
 	tab.SetCell(rowInd, 0, cell1)
 

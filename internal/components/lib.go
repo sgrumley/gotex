@@ -1,6 +1,8 @@
 package components
 
-import "github.com/rivo/tview"
+import (
+	"github.com/rivo/tview"
+)
 
 // NewModal returns a tview.Flex with the provided content centered
 func NewModal(name string, modalContent *tview.Flex) *tview.Flex {
