@@ -1,3 +1,20 @@
+// Package ansi provides ANSI terminal color and formatting utilities.
+// It includes functions for applying colors and styles to terminal output,
+// making it easier to create visually appealing command-line interfaces.
+//
+// The package supports:
+//   - Text coloring (foreground and background)
+//   - Text styling (bold, italic, underline, etc.)
+//   - ANSI escape sequence handling
+//   - Terminal output formatting
+//
+// Example usage:
+//
+//	coloredText := ansi.Color("Hello, World!", ansi.Red)
+//	fmt.Println(coloredText) // Outputs red text
+//	
+//	styledText := ansi.Bold(ansi.Color("Important", ansi.Green))
+//	fmt.Println(styledText) // Outputs bold green text
 package ansi
 
 import (

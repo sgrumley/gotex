@@ -1,3 +1,25 @@
+// Package slogger provides structured logging capabilities for the gotex library.
+// It wraps Go's standard log/slog package with additional functionality for
+// context-aware logging and configurable output formatting.
+//
+// The package provides:
+//   - Structured logging with customizable levels and output
+//   - Context-based logger storage and retrieval
+//   - Configurable log formatting and destinations
+//   - Integration with the gotex configuration system
+//
+// Example usage:
+//
+//	logger, err := slogger.New(
+//		slogger.WithLevel(slog.LevelDebug),
+//		slogger.WithSource(true),
+//	)
+//	if err != nil {
+//		log.Fatal("Logger creation failed:", err)
+//	}
+//	
+//	ctx := slogger.AddToContext(ctx, logger)
+//	logger.Info("Operation completed", slog.String("operation", "scan"))
 package slogger
 
 import (
