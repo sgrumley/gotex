@@ -1,3 +1,30 @@
+// Package models provides data structures for representing Go projects,
+// packages, files, functions, and test cases in a hierarchical tree structure.
+//
+// The models package is central to the gotex library, defining the core
+// data structures used throughout the test analysis and execution system.
+// All model types implement the Node interface, enabling uniform tree
+// traversal and test execution operations.
+//
+// The hierarchy is:
+//   Project -> Package -> File -> Function -> Case
+//
+// Each level supports:
+//   - Tree navigation (GetName, GetPath, GetChildren, HasChildren)
+//   - Test execution (RunTest)
+//   - Structured representation of Go test code
+//
+// Example usage:
+//
+//	project := &models.Project{
+//		RootDir: "/path/to/project",
+//		Config:  cfg,
+//	}
+//	
+//	// Navigate the project structure
+//	for _, pkg := range project.Packages {
+//		fmt.Printf("Package: %s\n", pkg.GetName())
+//	}
 package models
 
 import (
@@ -11,27 +38,35 @@ import (
 	"github.com/sgrumley/gotex/pkg/runner"
 )
 
+// Node represents any navigable element in the project tree hierarchy.
+// It provides a uniform interface for traversing and executing tests
+// across projects, packages, files, functions, and test cases.
 type Node interface {
-	GetName() string
-	GetPath() string
-	GetChildren() []Node
-	HasChildren() bool
-	RunTest(ctx context.Context) (*runner.Response, error)
+	GetName() string                                    // Returns the display name of the node
+	GetPath() string                                    // Returns the hierarchical path from root
+	GetChildren() []Node                                // Returns child nodes in the tree
+	HasChildren() bool                                  // Indicates if the node has children
+	RunTest(ctx context.Context) (*runner.Response, error) // Executes tests for this node
 }
 
 var _ Node = (*Project)(nil)
 
+// Project represents the root of a Go project's test structure.
+// It contains all packages, maintains configuration, and provides
+// the entry point for project-wide operations.
 type Project struct {
-	Config   config.Config
-	RootDir  string
-	Packages []*Package
-	Tree     *Tree
-	Log      *slog.Logger
+	Config   config.Config // Test execution configuration
+	RootDir  string        // Absolute path to the project root
+	Packages []*Package    // All packages in the project
+	Tree     *Tree         // Hierarchical tree representation
+	Log      *slog.Logger  // Logger instance
 }
 
+// FlatProject provides a flattened view of all nodes in the project
+// for efficient lookup and navigation operations.
 type FlatProject struct {
-	NodeMap map[string]Node
-	Names   []string
+	NodeMap map[string]Node // Map of path -> Node for O(1) lookup
+	Names   []string        // Ordered list of all node paths
 }
 
 func (p *Project) GetName() string {
@@ -61,7 +96,10 @@ func (p *Project) RunTest(ctx context.Context) (*runner.Response, error) {
 	return runner.RunTest(ctx, runner.TestTypeProject, "", path, p.Config)
 }
 
-// TODO: update to recursive with nodes interface funcs
+// FlattenAllNodes creates a flattened representation of the entire project tree.
+// This enables efficient lookups and provides ordered access to all nodes
+// across the project hierarchy. The returned FlatProject contains both
+// a map for O(1) lookups and an ordered slice for iteration.
 func (p *Project) FlattenAllNodes() *FlatProject {
 	nodes := make(map[string]Node)
 	names := make([]string, 0)

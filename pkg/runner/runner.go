@@ -1,3 +1,25 @@
+// Package runner provides test execution capabilities for Go projects.
+// It handles running tests at different granularity levels (project, package,
+// file, function, or individual test case) and processes the results.
+//
+// The runner package supports various test execution modes:
+//   - Full project test runs
+//   - Package-specific test runs  
+//   - Individual test function execution
+//   - Single test case execution
+//
+// It integrates with the Go test command and can be configured to use
+// different output formats, timeouts, and execution parameters through
+// the configuration system.
+//
+// Example usage:
+//
+//	response, err := runner.RunTest(ctx, runner.TestTypeFunction, 
+//		"TestMyFunction", "/path/to/package", config)
+//	if err != nil {
+//		log.Fatal("Test execution failed:", err)
+//	}
+//	fmt.Printf("Test result: %s\n", response.Output)
 package runner
 
 import (

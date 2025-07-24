@@ -1,3 +1,32 @@
+// Package scanner provides Go source code analysis capabilities for extracting
+// test structure information from Go projects. It parses Go files using the
+// go/ast package to identify test functions, test cases, and project structure.
+//
+// The scanner package is responsible for:
+//   - Discovering Go packages and test files in a project
+//   - Parsing test functions (those containing t.Run calls)
+//   - Extracting individual test cases from table-driven tests
+//   - Building the hierarchical project structure used by gotex
+//
+// The main entry point is the Scan function, which takes a project root
+// directory and returns a fully populated Project model with all discovered
+// test structure.
+//
+// Example usage:
+//
+//	project, err := scanner.Scan(ctx, config, "/path/to/go/project")
+//	if err != nil {
+//		log.Fatal("Failed to scan project:", err)
+//	}
+//	
+//	// Access discovered test structure
+//	for _, pkg := range project.Packages {
+//		for _, file := range pkg.Files {
+//			for _, fn := range file.Functions {
+//				fmt.Printf("Found test function: %s\n", fn.Name)
+//			}
+//		}
+//	}
 package scanner
 
 import (
@@ -14,6 +43,21 @@ import (
 	"github.com/sgrumley/gotex/pkg/slogger"
 )
 
+// Scan analyzes a Go project and extracts its complete test structure.
+// It recursively discovers packages, parses test files, identifies test functions,
+// and extracts individual test cases from table-driven tests.
+//
+// The function returns a fully populated Project model that represents
+// the hierarchical structure of the project's tests, ready for navigation
+// and execution operations.
+//
+// Parameters:
+//   - ctx: Context for cancellation and logging
+//   - cfg: Configuration settings for the analysis
+//   - root: Absolute path to the Go project root directory
+//
+// Returns a Project containing all discovered packages, files, functions,
+// and test cases, or an error if the project cannot be analyzed.
 func Scan(ctx context.Context, cfg config.Config, root string) (*models.Project, error) {
 	p := &models.Project{
 		Config: cfg,
@@ -62,6 +106,12 @@ func Scan(ctx context.Context, cfg config.Config, root string) (*models.Project,
 	return p, nil
 }
 
+// FindTestFunctions discovers all test functions in a Go file that contain t.Run calls.
+// It parses the AST of the given file and identifies functions that call t.Run,
+// which indicates table-driven or sub-test patterns.
+//
+// The function returns a slice of Function models, each representing a test
+// function with its associated AST nodes for further analysis.
 func FindTestFunctions(ctx context.Context, file *models.File) ([]*models.Function, error) {
 	log, err := slogger.FromContext(ctx)
 	if err != nil {
