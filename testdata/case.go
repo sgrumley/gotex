@@ -1,8 +1,13 @@
 package testdata
 
-import "github.com/davecgh/go-spew/spew"
+import (
+	"fmt"
+
+	"github.com/davecgh/go-spew/spew"
+)
 
 func AddNumbers(a, b int) int {
+	fmt.Println("some text for terminal")
 	if a == -10 {
 		spew.Dump(a)
 	}

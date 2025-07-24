@@ -1,11 +1,12 @@
 TODO: 
+- update readme
+- update docs for pkg/* code. Using https://pkg.go.dev/license-policy
 - console should have drop down for each large field (outputs and errors)
-- Optimize with concurrency
+- Optimize with concurrency (so far not needed)
 - Create multiple different types of tests and get them working -> t.Run("static", ...) -> static, map, embeded, ...
 - If struct has implicit initialisation test cases won't show up, is there a solution to this?
 - File test (needs a deep dive, seems like easiest way is to run all tests in the file instead of including all deps in test cmd)
 - H should close current level and select one above (will need to try this out to see if it feels better)
-- open test in editor. Requires config to be updated
 
 Bug:
 - Scrolling moves out of app? is this all terminals? is this tmux?
@@ -25,6 +26,7 @@ Search Enchancement:
 - emojies showing the type eg. same as tree icons 
 
 Results Enchancement:
+- Update page structure: Add some extra data showing test name...
 - Some form of overview (thinking tick cross icons on test tree)
 - Test results page should have navigation:
   - search
@@ -40,4 +42,6 @@ Config Enchancement:
 
 Might do:
 - Create my own test result parser??
+- View code executed in test. research.swtch.com/diffcover
 - Add a helper modal that shows all keybindings (for current panel) -> page helpers should also update depending on where the focus is 
+- open test in editor. Requires config to be updated. might be pretty easy

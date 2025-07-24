@@ -194,7 +194,7 @@ func TestSingle(t *testing.T) {
 
 		result := AddNumbers(a, b)
 		if result != expected {
-			t.Errorf("expected %d, but got %d", tc.expected, result)
+			t.Errorf("expected %d, but got %d", expected, result)
 		}
 	})
 
@@ -205,7 +205,7 @@ func TestSingle(t *testing.T) {
 
 		result := AddNumbers(a, b)
 		if result != expected {
-			t.Errorf("expected %d, but got %d", tc.expected, result)
+			t.Errorf("expected %d, but got %d", expected, result)
 		}
 	})
 }
