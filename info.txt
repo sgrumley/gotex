@@ -1,24 +1,19 @@
 TODO: 
-- fix error display
 - update readme
 - update docs for pkg/* code. Using https://pkg.go.dev/license-policy
-- console should have drop down for each large field (outputs and errors)
-- Optimize with concurrency (so far not needed)
 - Create multiple different types of tests and get them working -> t.Run("static", ...) -> static, map, embeded, ...
 - If struct has implicit initialisation test cases won't show up, is there a solution to this?
 - File test (needs a deep dive, seems like easiest way is to run all tests in the file instead of including all deps in test cmd)
-- H should close current level and select one above (will need to try this out to see if it feels better)
 
 Bug:
 - Scrolling moves out of app? is this all terminals? is this tmux?
-- config pane is transparent
 - What happens if you hit run too many times? How to control ongoing tests.. only one in flight?
 - There is a bug to do with how privimatives are listening for key presses. Global keys require to be pressed twice??
 - move logs to .local/share/gotex
 - TODOs in code
 
 Hacks to look back at:
-- If t.Run is called more than once the function is duplicated each with one test case being the name of that call
+- If t.Run is called more than once in a function. The test tree shows duplicate tests
   -  post processing hack to merge any cases into duplicate functions within a file
 
 Search Enchancement:
@@ -46,3 +41,7 @@ Might do:
 - View code executed in test. research.swtch.com/diffcover
 - Add a helper modal that shows all keybindings (for current panel) -> page helpers should also update depending on where the focus is 
 - open test in editor. Requires config to be updated. might be pretty easy
+
+- console should have drop down for each large field (outputs and errors) -> I think this will require some form of tabs for meta, output ... (as things get more stable this should be less used)
+- Optimize with concurrency (so far not needed)
+- H should close current level and select one above (will need to try this out to see if it feels better)

@@ -23,6 +23,23 @@ const (
 	TestTypeCase
 )
 
+func (t TestType) String() string {
+	switch t {
+	case TestTypeProject:
+		return "Project"
+	case TestTypePackage:
+		return "Package"
+	case TestTypeFile:
+		return "File"
+	case TestTypeFunction:
+		return "Function"
+	case TestTypeCase:
+		return "Case"
+	default:
+		return "Unknown"
+	}
+}
+
 type Response struct {
 	TestName        string
 	TestType        TestType
@@ -88,6 +105,7 @@ func RunTest(ctx context.Context, testType TestType, testName string, dir string
 				// This should mean that the tests failed (not an actual error)
 				res.Output = buf.String()
 				res.Error = errBuf.String()
+				res.Result = buf.String()
 				res.ExitStatus = exitErr.ExitCode()
 				return res, nil
 			}
@@ -95,6 +113,7 @@ func RunTest(ctx context.Context, testType TestType, testName string, dir string
 			// Actual execution error e.g. command not found
 			res.Output = buf.String()
 			res.Error = errBuf.String()
+			res.Result = buf.String()
 			return res, err
 		}
 	}

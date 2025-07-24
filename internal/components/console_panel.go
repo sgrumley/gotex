@@ -2,6 +2,7 @@ package components
 
 import (
 	"github.com/sgrumley/gotex/pkg/ansi"
+	"github.com/sgrumley/gotex/pkg/procjson"
 	"github.com/sgrumley/gotex/pkg/runner"
 
 	"github.com/gdamore/tcell/v2"
@@ -83,6 +84,9 @@ func (c *console) UpdateMeta(t *TUI, meta *runner.Response) {
 	// HACK: text is janky if not new lined
 	if meta.Output != "" {
 		meta.Output = "\n" + meta.Output
+		if t.state.data.project.Config.Json {
+			meta.Output = "\n" + procjson.Format(meta.Output)
+		}
 	}
 	if meta.Error != "" {
 		meta.Error = "\n" + meta.Error
@@ -93,17 +97,23 @@ func (c *console) UpdateMeta(t *TUI, meta *runner.Response) {
 	if meta.ExternalError != "" {
 		meta.ExternalError = "\n" + meta.ExternalError
 	}
+
+	external := "false"
+	if meta.External {
+		external = "true"
+	}
+
 	data := ansi.Data{
 		Fields: []ansi.Field{
-			ansi.CreateField("Name", meta.TestName),
-			ansi.CreateField("Command Executed", meta.CommandExecuted),
-			ansi.CreateField("Execution Filepath", meta.TestDir),
-			ansi.CreateField("Type (1=project,2=package,3=file,4=function,5=case)", meta.TestType),
-			ansi.CreateField("Piped to external", meta.External),
-			ansi.CreateField("Output", meta.Output),
-			ansi.CreateField("Error", meta.Error),
-			ansi.CreateField("External Output", meta.ExternalOutput),
-			ansi.CreateField("External Error", meta.ExternalError),
+			ansi.NewField("Name", meta.TestName, ""),
+			ansi.NewField("Test Type", meta.TestType.String(), ""),
+			ansi.NewField("Command Executed", meta.CommandExecuted, ""),
+			ansi.NewField("Execution Filepath", meta.TestDir, ""),
+			ansi.NewField("Error", meta.Error, ""),
+			ansi.NewField("External Error", meta.ExternalError, ""),
+			ansi.NewField("Piped to external", external, ""),
+			ansi.NewField("External Output", meta.ExternalOutput, ""),
+			ansi.NewField("Formatted Output", meta.Output, ""),
 		},
 	}
 	c.RenderConsole(t, ansi.OutputKeyVal(data))

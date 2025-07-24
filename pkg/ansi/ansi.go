@@ -3,7 +3,7 @@ package ansi
 import (
 	"bytes"
 	"fmt"
-	"html/template"
+	"text/template"
 )
 
 type Data struct {
@@ -18,7 +18,7 @@ type Field struct {
 
 func OutputKeyVal(data Data) string {
 	// This uses the ANSI tags specified in tview: https://github.com/rivo/tview/wiki/ANSI
-	tmplStr := `{{range .Fields}}{{if eq .Color "red"}}{{printf "[red]%s:[-] " .Name}}{{printf "[red]%s[-]" .DisplayValue}}{{else if eq .Color "green"}}{{printf "[green]%s:[-] " .Name}}{{printf "[green]%s[-]" .DisplayValue}}{{else}}{{.DisplayValue}}{{end}}
+	tmplStr := `{{range .Fields}}{{if eq .Color "red"}}{{printf "[red]%s:[-] " .Name}}{{printf "[red]%s[-]" .DisplayValue}}{{else if eq .Color "green"}}{{printf "[green]%s:[-] " .Name}}{{printf "[green]%s[-]" .DisplayValue}}{{else}}{{printf "%s:%s" .Name .DisplayValue}}{{end}}
 {{end}}`
 
 	tmpl, err := template.New("output").Parse(tmplStr)
@@ -34,7 +34,15 @@ func OutputKeyVal(data Data) string {
 	return output.String()
 }
 
-func CreateField(name string, value interface{}) Field {
+func NewField(name string, value string, color string) Field {
+	return Field{
+		Name:         name,
+		DisplayValue: value,
+		Color:        color,
+	}
+}
+
+func CreateField(name string, value any) Field {
 	var displayValue string
 	var color string
 
@@ -60,14 +68,10 @@ func CreateField(name string, value interface{}) Field {
 		color = "default"
 	}
 
-	return Field{
-		Name:         name,
-		DisplayValue: displayValue,
-		Color:        color,
-	}
+	return NewField(name, displayValue, color)
 }
 
-func SimpleString(value interface{}) string {
+func SimpleString(value any) string {
 	field := CreateField("", value)
 	return fmt.Sprintf("[%s]%s[-]", field.Color, field.DisplayValue)
 }
